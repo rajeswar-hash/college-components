@@ -49,3 +49,16 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const CONDITIONS: Condition[] = ["New", "Like New", "Good", "Fair"];
+
+export const COLLEGES: string[] = [
+  "IIT Bombay",
+  "IIT Delhi",
+  "IIT Madras",
+  "IIT Kanpur",
+  "NIT Trichy",
+  "NIT Warangal",
+  "BITS Pilani",
+  "VIT Vellore",
+  "DTU Delhi",
+  "NSUT Delhi",
+];

@@ -65,13 +65,21 @@ export function Navbar() {
             <Link to="/" onClick={() => setMobileMenu(false)}>
               <Button variant="ghost" className="w-full justify-start">Browse</Button>
             </Link>
-            {isAuthenticated ? (
+            <Button
+              className="w-full gradient-bg text-primary-foreground border-0"
+              onClick={() => {
+                setMobileMenu(false);
+                if (isAuthenticated) {
+                  navigate("/sell");
+                } else {
+                  setShowAuth(true);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Sell Item
+            </Button>
+            {isAuthenticated && (
               <>
-                <Link to="/sell" onClick={() => setMobileMenu(false)}>
-                  <Button className="w-full gradient-bg text-primary-foreground border-0">
-                    <Plus className="w-4 h-4 mr-1" /> Sell Item
-                  </Button>
-                </Link>
                 <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className="w-full justify-start">
                     <User className="w-4 h-4 mr-2" /> Dashboard
@@ -81,10 +89,6 @@ export function Navbar() {
                   <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </Button>
               </>
-            ) : (
-              <Button className="w-full gradient-bg text-primary-foreground border-0" onClick={() => { setShowAuth(true); setMobileMenu(false); }}>
-                Sign In
-              </Button>
             )}
           </div>
         )}
