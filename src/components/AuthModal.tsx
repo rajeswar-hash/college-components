@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { User } from "@/lib/types";
+import { User, COLLEGES } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface AuthModalProps {
@@ -76,8 +77,17 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
               </div>
               <div>
-                <Label htmlFor="college">College Name</Label>
-                <Input id="college" value={college} onChange={(e) => setCollege(e.target.value)} placeholder="IIT Bombay" />
+                <Label htmlFor="college">College</Label>
+                <Select value={college} onValueChange={setCollege}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your college" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COLLEGES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>

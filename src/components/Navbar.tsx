@@ -28,13 +28,21 @@ export function Navbar() {
             <Link to="/">
               <Button variant="ghost" size="sm">Browse</Button>
             </Link>
-            {isAuthenticated ? (
+            <Button
+              size="sm"
+              className="gradient-bg text-primary-foreground border-0 hover:opacity-90"
+              onClick={() => {
+                if (isAuthenticated) {
+                  navigate("/sell");
+                } else {
+                  setShowAuth(true);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Sell
+            </Button>
+            {isAuthenticated && (
               <>
-                <Link to="/sell">
-                  <Button size="sm" className="gradient-bg text-primary-foreground border-0 hover:opacity-90">
-                    <Plus className="w-4 h-4 mr-1" /> Sell
-                  </Button>
-                </Link>
                 <Link to="/dashboard">
                   <Button variant="ghost" size="sm">
                     <User className="w-4 h-4 mr-1" /> {user?.name?.split(" ")[0]}
@@ -44,10 +52,6 @@ export function Navbar() {
                   <LogOut className="w-4 h-4" />
                 </Button>
               </>
-            ) : (
-              <Button size="sm" onClick={() => setShowAuth(true)} className="gradient-bg text-primary-foreground border-0 hover:opacity-90">
-                Sign In
-              </Button>
             )}
           </div>
 
@@ -61,13 +65,21 @@ export function Navbar() {
             <Link to="/" onClick={() => setMobileMenu(false)}>
               <Button variant="ghost" className="w-full justify-start">Browse</Button>
             </Link>
-            {isAuthenticated ? (
+            <Button
+              className="w-full gradient-bg text-primary-foreground border-0"
+              onClick={() => {
+                setMobileMenu(false);
+                if (isAuthenticated) {
+                  navigate("/sell");
+                } else {
+                  setShowAuth(true);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Sell Item
+            </Button>
+            {isAuthenticated && (
               <>
-                <Link to="/sell" onClick={() => setMobileMenu(false)}>
-                  <Button className="w-full gradient-bg text-primary-foreground border-0">
-                    <Plus className="w-4 h-4 mr-1" /> Sell Item
-                  </Button>
-                </Link>
                 <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className="w-full justify-start">
                     <User className="w-4 h-4 mr-2" /> Dashboard
@@ -77,10 +89,6 @@ export function Navbar() {
                   <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </Button>
               </>
-            ) : (
-              <Button className="w-full gradient-bg text-primary-foreground border-0" onClick={() => { setShowAuth(true); setMobileMenu(false); }}>
-                Sign In
-              </Button>
             )}
           </div>
         )}
