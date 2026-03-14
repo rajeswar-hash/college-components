@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { User } from "@/lib/types";
+import { User, COLLEGES } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
