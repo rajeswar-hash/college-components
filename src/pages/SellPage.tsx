@@ -27,6 +27,7 @@ const SellPage = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground text-lg">Please sign in to list an item.</p>
+          <AuthModal open={true} onClose={() => navigate("/")} />
         </div>
       </div>
     );
