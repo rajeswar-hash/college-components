@@ -1,0 +1,93 @@
+import { Listing } from "@/lib/types";
+import { Heart, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { toggleLike, getLikedIds } from "@/lib/store";
+
+interface ProductCardProps {
+  listing: Listing;
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Arduino: "bg-primary/10 text-primary",
+  Sensors: "bg-success/10 text-success",
+  Motors: "bg-warning/10 text-warning",
+  Tools: "bg-destructive/10 text-destructive",
+  Displays: "bg-accent text-accent-foreground",
+  Communication: "bg-primary/10 text-primary",
+  Power: "bg-warning/10 text-warning",
+  Misc: "bg-muted text-muted-foreground",
+};
+
+export function ProductCard({ listing }: ProductCardProps) {
+  const [liked, setLiked] = useState(() => getLikedIds().includes(listing.id));
+  const [likeCount, setLikeCount] = useState(listing.likes);
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isNowLiked = toggleLike(listing.id);
+    setLiked(isNowLiked);
+    setLikeCount((c) => (isNowLiked ? c + 1 : c - 1));
+  };
+
+  return (
+    <Link to={`/product/${listing.id}`} className="group block">
+      <div className="glass rounded-xl overflow-hidden transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
+        <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />
+            <span className="absolute text-muted-foreground text-sm font-medium">
+              {listing.category}
+            </span>
+          </div>
+          {listing.sold && (
+            <div className="absolute inset-0 bg-foreground/60 flex items-center justify-center">
+              <span className="font-display font-bold text-2xl text-background rotate-[-12deg]">
+                SOLD
+              </span>
+            </div>
+          )}
+          <button
+            onClick={handleLike}
+            className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center transition-transform hover:scale-110"
+          >
+            <Heart
+              className={`w-4 h-4 transition-colors ${liked ? "fill-destructive text-destructive" : "text-muted-foreground"}`}
+            />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
+              {listing.title}
+            </h3>
+            <span className="font-display font-bold text-lg gradient-text whitespace-nowrap">
+              ₹{listing.price}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="secondary" className={CATEGORY_COLORS[listing.category] || ""}>
+              {listing.category}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {listing.condition}
+            </Badge>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" /> {listing.college}
+            </span>
+            <span className="flex items-center gap-1">
+              <Heart className="w-3 h-3" /> {likeCount}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
