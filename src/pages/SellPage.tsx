@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { addListing } from "@/lib/store";
 import { CATEGORIES, CONDITIONS, Category, Condition, Listing } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
+import { AuthModal } from "@/components/AuthModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
