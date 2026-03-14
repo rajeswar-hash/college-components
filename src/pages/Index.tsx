@@ -9,10 +9,12 @@ import { Cpu, Zap, Users } from "lucide-react";
 const Index = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
 
   const listings = useMemo(() => {
     let items = getListings();
     if (selectedCategory) items = items.filter((l) => l.category === selectedCategory);
+    if (selectedCollege) items = items.filter((l) => l.college === selectedCollege);
     if (search) {
       const q = search.toLowerCase();
       items = items.filter(
@@ -23,7 +25,7 @@ const Index = () => {
       );
     }
     return items;
-  }, [search, selectedCategory]);
+  }, [search, selectedCategory, selectedCollege]);
 
   return (
     <div className="min-h-screen bg-background">
