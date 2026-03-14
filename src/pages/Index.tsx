@@ -65,6 +65,8 @@ const Index = () => {
           onSearchChange={setSearch}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
+          selectedCollege={selectedCollege}
+          onCollegeChange={setSelectedCollege}
         />
 
         {listings.length === 0 ? (

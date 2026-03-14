@@ -77,8 +77,17 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
               </div>
               <div>
-                <Label htmlFor="college">College Name</Label>
-                <Input id="college" value={college} onChange={(e) => setCollege(e.target.value)} placeholder="IIT Bombay" />
+                <Label htmlFor="college">College</Label>
+                <Select value={college} onValueChange={setCollege}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your college" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COLLEGES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
