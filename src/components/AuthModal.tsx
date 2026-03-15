@@ -38,6 +38,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       return;
     }
 
+    if (!password || password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     if (mode === "register" && (!name || !phone || !college)) {
       toast.error("Please fill in all fields");
       return;
