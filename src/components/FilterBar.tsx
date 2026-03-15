@@ -1,4 +1,6 @@
-import { CATEGORIES, Category, COLLEGES } from "@/lib/types";
+import { useMemo } from "react";
+import { CATEGORIES, Category } from "@/lib/types";
+import { getListings } from "@/lib/store";
 import { Search, X, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
