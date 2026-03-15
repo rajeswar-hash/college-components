@@ -83,19 +83,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 <Label htmlFor="name">Full Name</Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
               </div>
-              <div>
-                <Label htmlFor="college">College</Label>
-                <Select value={college} onValueChange={setCollege}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your college" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COLLEGES.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <CollegeAutocomplete value={college} onChange={setCollege} />
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
                 <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="919876543210" />
