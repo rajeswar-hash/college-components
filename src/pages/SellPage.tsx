@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { addListing } from "@/lib/store";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 
 const SellPage = () => {
   const { user, isAuthenticated } = useAuth();
@@ -21,6 +21,32 @@ const SellPage = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<Category | "">("");
   const [condition, setCondition] = useState<Condition | "">("");
+  const [images, setImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files) return;
+    if (images.length + files.length > 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
+    }
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImages((prev) => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   if (!isAuthenticated) {
     return (
@@ -48,7 +74,7 @@ const SellPage = () => {
       price: Number(price),
       category: category as Category,
       condition: condition as Condition,
-      images: [],
+      images,
       sellerId: user!.id,
       sellerName: user!.name,
       sellerPhone: user!.phone,
@@ -77,10 +103,42 @@ const SellPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6 glass rounded-xl p-6">
             {/* Image Upload Area */}
-            <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-              <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">Drag & drop images or click to upload</p>
-              <p className="text-xs text-muted-foreground mt-1">(Image upload is simulated in this mockup)</p>
+            <div>
+              <Label>Photos (up to 5)</Label>
+              <div
+                className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer mt-2"
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleImageUpload(e.dataTransfer.files); }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleImageUpload(e.target.files)}
+                />
+                <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Drag & drop images or click to upload</p>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG up to 5MB each</p>
+              </div>
+              {images.length > 0 && (
+                <div className="flex flex-wrap gap-3 mt-3">
+                  {images.map((img, i) => (
+                    <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+                      <img src={img} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>

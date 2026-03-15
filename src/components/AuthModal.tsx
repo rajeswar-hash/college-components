@@ -22,6 +22,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const { login } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
@@ -34,6 +35,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
     if (!isValidEmail(email)) {
       toast.error("Please use a valid .edu or .ac.in email address");
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
@@ -55,6 +61,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     toast.success(mode === "login" ? "Welcome back!" : "Account created!");
     onClose();
     setEmail("");
+    setPassword("");
     setName("");
     setPhone("");
     setCollege("");
@@ -100,6 +107,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             <Label htmlFor="email">College Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@college.edu" />
             <p className="text-xs text-muted-foreground mt-1">Must be a .edu or .ac.in email</p>
+          </div>
+
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+            {mode === "register" && <p className="text-xs text-muted-foreground mt-1">At least 6 characters</p>}
           </div>
 
           <Button type="submit" className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
