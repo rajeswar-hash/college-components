@@ -22,6 +22,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const { login } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
