@@ -1,4 +1,6 @@
-import { CATEGORIES, Category, COLLEGES } from "@/lib/types";
+import { useMemo } from "react";
+import { CATEGORIES, Category } from "@/lib/types";
+import { getListings } from "@/lib/store";
 import { Search, X, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,12 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ search, onSearchChange, selectedCategory, onCategoryChange, selectedCollege, onCollegeChange }: FilterBarProps) {
+  const collegesWithListings = useMemo(() => {
+    const listings = getListings();
+    const colleges = [...new Set(listings.map((l) => l.college))].sort();
+    return colleges;
+  }, []);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -43,7 +51,7 @@ export function FilterBar({ search, onSearchChange, selectedCategory, onCategory
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Colleges</SelectItem>
-              {COLLEGES.map((c) => (
+              {collegesWithListings.map((c) => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
