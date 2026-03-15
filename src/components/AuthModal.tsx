@@ -61,6 +61,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     toast.success(mode === "login" ? "Welcome back!" : "Account created!");
     onClose();
     setEmail("");
+    setPassword("");
     setName("");
     setPhone("");
     setCollege("");
