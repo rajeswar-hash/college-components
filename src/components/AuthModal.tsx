@@ -108,6 +108,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             <p className="text-xs text-muted-foreground mt-1">Must be a .edu or .ac.in email</p>
           </div>
 
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+            {mode === "register" && <p className="text-xs text-muted-foreground mt-1">At least 6 characters</p>}
+          </div>
+
           <Button type="submit" className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
             {mode === "login" ? "Sign In" : "Create Account"}
           </Button>
