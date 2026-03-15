@@ -21,6 +21,32 @@ const SellPage = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<Category | "">("");
   const [condition, setCondition] = useState<Condition | "">("");
+  const [images, setImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files) return;
+    if (images.length + files.length > 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
+    }
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 5MB)`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImages((prev) => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   if (!isAuthenticated) {
     return (
