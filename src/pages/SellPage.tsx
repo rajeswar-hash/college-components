@@ -74,7 +74,7 @@ const SellPage = () => {
       price: Number(price),
       category: category as Category,
       condition: condition as Condition,
-      images: [],
+      images,
       sellerId: user!.id,
       sellerName: user!.name,
       sellerPhone: user!.phone,
