@@ -25,7 +25,7 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
     try {
       const res = await fetch(`https://universities.hipolabs.com/search?name=${encodeURIComponent(q)}`);
       const data = await res.json();
-      const names: string[] = [...new Set(data.map((d: any) => d.name as string))].slice(0, 30);
+      const names: string[] = ([...new Set(data.map((d: any) => d.name as string))] as string[]).slice(0, 30);
       setResults(names);
     } catch {
       setResults([]);
