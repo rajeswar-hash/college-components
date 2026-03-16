@@ -1,8 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { COLLEGES } from "@/lib/types";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
 interface CollegeAutocompleteProps {
   value: string;
@@ -12,22 +11,34 @@ interface CollegeAutocompleteProps {
 export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  const [results, setResults] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const filtered = useMemo(() => {
-    if (!query) return COLLEGES.slice(0, 20);
-    const q = query.toLowerCase();
-    return COLLEGES.filter((c) => c.toLowerCase().includes(q));
-  }, [query]);
+  const fetchColleges = useCallback(async (q: string) => {
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`https://universities.hipolabs.com/search?name=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const names: string[] = ([...new Set(data.map((d: any) => d.name as string))] as string[]).slice(0, 30);
+      setResults(names);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
-        // Accept whatever the user typed when clicking outside
-        if (query.trim() && !value) {
-          onChange(query.trim());
-        }
+        if (query.trim() && !value) onChange(query.trim());
       }
     };
     document.addEventListener("mousedown", handler);
@@ -43,30 +54,29 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
         placeholder="Start typing your college name..."
         autoComplete="off"
         onChange={(e) => {
-          setQuery(e.target.value);
-          onChange(e.target.value);
+          const val = e.target.value;
+          setQuery(val);
+          onChange(val);
           setOpen(true);
+          clearTimeout(debounceRef.current);
+          debounceRef.current = setTimeout(() => fetchColleges(val), 300);
         }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => {
-          // Accept custom text on blur
-          if (query.trim()) {
-            onChange(query.trim());
-          }
-        }}
+        onFocus={() => { if (query.length >= 2) setOpen(true); }}
+        onBlur={() => { if (query.trim()) onChange(query.trim()); }}
       />
-      {open && filtered.length > 0 && (
+      {open && (loading || results.length > 0) && (
         <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-lg border border-border bg-popover shadow-lg">
-          {filtered.map((c) => (
+          {loading && (
+            <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching colleges...
+            </div>
+          )}
+          {!loading && results.map((c) => (
             <button
               key={c}
               type="button"
               className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left transition-colors"
-              onClick={() => {
-                onChange(c);
-                setQuery(c);
-                setOpen(false);
-              }}
+              onClick={() => { onChange(c); setQuery(c); setOpen(false); }}
             >
               {value === c && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
               <span className={value === c ? "font-medium" : ""}>{c}</span>
@@ -74,7 +84,7 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
           ))}
         </div>
       )}
-      {open && query && filtered.length === 0 && (
+      {open && !loading && query.length >= 2 && results.length === 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground">
           No suggestions found — your typed name will be used
         </div>
