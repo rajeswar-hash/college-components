@@ -15,7 +15,7 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
-    if (!query) return COLLEGES;
+    if (!query) return COLLEGES.slice(0, 20);
     const q = query.toLowerCase();
     return COLLEGES.filter((c) => c.toLowerCase().includes(q));
   }, [query]);
@@ -24,11 +24,15 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
+        // Accept whatever the user typed when clicking outside
+        if (query.trim() && !value) {
+          onChange(query.trim());
+        }
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [query, value, onChange]);
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -40,10 +44,16 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
         autoComplete="off"
         onChange={(e) => {
           setQuery(e.target.value);
-          onChange("");
+          onChange(e.target.value);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onBlur={() => {
+          // Accept custom text on blur
+          if (query.trim()) {
+            onChange(query.trim());
+          }
+        }}
       />
       {open && filtered.length > 0 && (
         <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-lg border border-border bg-popover shadow-lg">
@@ -66,7 +76,7 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
       )}
       {open && query && filtered.length === 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground">
-          No matching college found
+          No suggestions found — your typed name will be used
         </div>
       )}
     </div>
