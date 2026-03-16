@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { COLLEGES } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Loader2 } from "lucide-react";
@@ -11,24 +12,46 @@ interface CollegeAutocompleteProps {
 export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
-  const [results, setResults] = useState<string[]>([]);
+  const [apiResults, setApiResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Local fallback filtering
+  const localResults = useMemo(() => {
+    if (!query || query.length < 2) return [];
+    const q = query.toLowerCase();
+    return COLLEGES.filter((c) => c.toLowerCase().includes(q)).slice(0, 20);
+  }, [query]);
+
+  // Merge API + local, deduplicated
+  const results = useMemo(() => {
+    const merged = [...apiResults];
+    for (const local of localResults) {
+      if (!merged.some((r) => r.toLowerCase() === local.toLowerCase())) {
+        merged.push(local);
+      }
+    }
+    return merged.slice(0, 30);
+  }, [apiResults, localResults]);
+
   const fetchColleges = useCallback(async (q: string) => {
     if (q.length < 2) {
-      setResults([]);
+      setApiResults([]);
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(`https://universities.hipolabs.com/search?name=${encodeURIComponent(q)}`);
+      const res = await fetch(
+        `https://universities.hipolabs.com/search?name=${encodeURIComponent(q)}`
+      );
+      if (!res.ok) throw new Error("API error");
       const data = await res.json();
-      const names: string[] = ([...new Set(data.map((d: any) => d.name as string))] as string[]).slice(0, 30);
-      setResults(names);
+      const names = ([...new Set(data.map((d: any) => d.name as string))] as string[]).slice(0, 30);
+      setApiResults(names);
     } catch {
-      setResults([]);
+      // API failed — local results will still show
+      setApiResults([]);
     } finally {
       setLoading(false);
     }
@@ -61,22 +84,30 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
           clearTimeout(debounceRef.current);
           debounceRef.current = setTimeout(() => fetchColleges(val), 300);
         }}
-        onFocus={() => { if (query.length >= 2) setOpen(true); }}
-        onBlur={() => { if (query.trim()) onChange(query.trim()); }}
+        onFocus={() => {
+          if (query.length >= 2) setOpen(true);
+        }}
+        onBlur={() => {
+          if (query.trim()) onChange(query.trim());
+        }}
       />
       {open && (loading || results.length > 0) && (
         <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-lg border border-border bg-popover shadow-lg">
-          {loading && (
+          {loading && results.length === 0 && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching colleges...
             </div>
           )}
-          {!loading && results.map((c) => (
+          {results.map((c) => (
             <button
               key={c}
               type="button"
               className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left transition-colors"
-              onClick={() => { onChange(c); setQuery(c); setOpen(false); }}
+              onClick={() => {
+                onChange(c);
+                setQuery(c);
+                setOpen(false);
+              }}
             >
               {value === c && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
               <span className={value === c ? "font-medium" : ""}>{c}</span>
