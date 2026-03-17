@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { CATEGORIES, Category } from "@/lib/types";
+import { CATEGORIES, COLLEGES, Category } from "@/lib/types";
 import { getListings } from "@/lib/store";
 import { Search, X, SlidersHorizontal, MapPin, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,8 @@ async function loadAllColleges(): Promise<string[]> {
         fetch("/data/indian_universities.json"),
       ]);
       const names = new Set<string>();
+      // Add shorthand names from local list (IIT Goa, NIT Trichy, etc.)
+      for (const c of COLLEGES) names.add(c);
       if (cRes.ok) {
         const colleges: CollegeEntry[] = await cRes.json();
         for (const c of colleges) names.add(cleanName(c["College Name"]));
