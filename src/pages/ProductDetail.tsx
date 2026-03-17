@@ -3,15 +3,27 @@ import { getListingById, toggleLike, getLikedIds } from "@/lib/store";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+function formatPhone(phone: string): string {
+  // Strip non-digits
+  const digits = phone.replace(/\D/g, "");
+  // If already has country code (10+ digits starting with non-0), use as-is
+  // Otherwise prepend India code 91
+  if (digits.length > 10) return digits;
+  // Remove leading 0 if present
+  const cleaned = digits.replace(/^0+/, "");
+  return "91" + cleaned;
+}
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const listing = id ? getListingById(id) : undefined;
   const [liked, setLiked] = useState(() => (id ? getLikedIds().includes(id) : false));
+  const [currentImage, setCurrentImage] = useState(0);
 
   if (!listing) {
     return (
@@ -25,6 +37,8 @@ const ProductDetail = () => {
     );
   }
 
+  const hasImages = listing.images && listing.images.length > 0 && listing.images[0];
+
   const handleLike = () => {
     if (!id) return;
     const isNowLiked = toggleLike(id);
@@ -32,12 +46,12 @@ const ProductDetail = () => {
     toast.success(isNowLiked ? "Added to favorites" : "Removed from favorites");
   };
 
-  const handleWhatsApp = () => {
+  const whatsappUrl = (() => {
     const msg = encodeURIComponent(
       `Hi! I'm interested in your listing on Campus Components:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
     );
-    window.open(`https://wa.me/${listing.sellerPhone}?text=${msg}`, "_blank");
-  };
+    return `https://wa.me/${formatPhone(listing.sellerPhone)}?text=${msg}`;
+  })();
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -58,9 +72,46 @@ const ProductDetail = () => {
 
         <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
           {/* Image */}
-          <div className="aspect-square rounded-xl bg-muted glass overflow-hidden flex items-center justify-center relative">
-            <div className="w-24 h-24 rounded-xl gradient-bg opacity-20" />
-            <span className="absolute text-muted-foreground font-medium">{listing.category}</span>
+          <div className="aspect-square rounded-xl bg-muted glass overflow-hidden relative">
+            {hasImages ? (
+              <>
+                <img
+                  src={listing.images[currentImage]}
+                  alt={`${listing.title} - Image ${currentImage + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                {listing.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentImage((p) => (p === 0 ? listing.images.length - 1 : p - 1))}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentImage((p) => (p === listing.images.length - 1 ? 0 : p + 1))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {listing.images.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentImage(i)}
+                          className={`w-2 h-2 rounded-full transition-colors ${i === currentImage ? "bg-primary" : "bg-background/60"}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="w-24 h-24 rounded-xl gradient-bg opacity-20" />
+                <span className="absolute text-muted-foreground font-medium">{listing.category}</span>
+              </div>
+            )}
             {listing.sold && (
               <div className="absolute inset-0 bg-foreground/60 flex items-center justify-center">
                 <span className="font-display font-bold text-4xl text-background rotate-[-12deg]">SOLD</span>
@@ -89,13 +140,19 @@ const ProductDetail = () => {
 
             <div className="flex gap-3 pt-2">
               {!listing.sold && (
-                <Button
-                  onClick={handleWhatsApp}
-                  className="flex-1 bg-success text-success-foreground hover:opacity-90 border-0"
-                  size="lg"
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
-                </Button>
+                  <Button
+                    className="w-full bg-success text-success-foreground hover:opacity-90 border-0"
+                    size="lg"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
+                  </Button>
+                </a>
               )}
               <Button variant="outline" size="lg" onClick={handleLike}>
                 <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />

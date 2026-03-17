@@ -23,6 +23,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 export function ProductCard({ listing }: ProductCardProps) {
   const [liked, setLiked] = useState(() => getLikedIds().includes(listing.id));
   const [likeCount, setLikeCount] = useState(listing.likes);
+  const hasImage = listing.images && listing.images.length > 0 && listing.images[0];
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,12 +37,20 @@ export function ProductCard({ listing }: ProductCardProps) {
     <Link to={`/product/${listing.id}`} className="group block">
       <div className="glass rounded-xl overflow-hidden transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
         <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />
-            <span className="absolute text-muted-foreground text-sm font-medium">
-              {listing.category}
-            </span>
-          </div>
+          {hasImage ? (
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />
+              <span className="absolute text-muted-foreground text-sm font-medium">
+                {listing.category}
+              </span>
+            </div>
+          )}
           {listing.sold && (
             <div className="absolute inset-0 bg-foreground/60 flex items-center justify-center">
               <span className="font-display font-bold text-2xl text-background rotate-[-12deg]">
