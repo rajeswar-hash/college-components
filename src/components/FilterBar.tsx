@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { CATEGORIES, Category } from "@/lib/types";
+import { CATEGORIES, COLLEGES, Category } from "@/lib/types";
 import { getListings } from "@/lib/store";
 import { Search, X, SlidersHorizontal, MapPin, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
