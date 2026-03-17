@@ -82,8 +82,16 @@ export function FilterBar({ search, onSearchChange, selectedCategory, onCategory
 
   const searchColleges = useCallback((q: string) => {
     if (!cachedColleges || q.length < 2) { setCollegeResults([]); return; }
-    const lower = q.toLowerCase();
-    setCollegeResults(cachedColleges.filter(c => c.toLowerCase().includes(lower)).slice(0, 30));
+    // Split query into words — match colleges containing ALL words in any order
+    const words = q.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    setCollegeResults(
+      cachedColleges
+        .filter(c => {
+          const lower = c.toLowerCase();
+          return words.every(w => lower.includes(w));
+        })
+        .slice(0, 40)
+    );
   }, []);
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (selectedCollege ? 1 : 0);
