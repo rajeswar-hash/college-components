@@ -77,12 +77,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <div>
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
+          </div>
           {mode === "register" && (
             <>
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
-              </div>
               <CollegeAutocomplete value={college} onChange={setCollege} />
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
