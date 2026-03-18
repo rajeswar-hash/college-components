@@ -43,7 +43,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       return;
     }
 
-    if (mode === "register" && (!name || !phone || !college)) {
+    if (!name) {
+      toast.error("Please enter your name");
+      return;
+    }
+
+    if (mode === "register" && (!phone || !college)) {
       toast.error("Please fill in all fields");
       return;
     }
