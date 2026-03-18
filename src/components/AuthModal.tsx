@@ -43,17 +43,22 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       return;
     }
 
-    if (mode === "register" && (!name || !phone || !college)) {
+    if (!name) {
+      toast.error("Please enter your name");
+      return;
+    }
+
+    if (mode === "register" && (!phone || !college)) {
       toast.error("Please fill in all fields");
       return;
     }
 
     const user: User = {
       id: "user-" + Date.now(),
-      name: mode === "login" ? email.split("@")[0] : name,
+      name,
       email,
       phone: mode === "login" ? "" : phone,
-      college: mode === "login" ? "Unknown College" : college,
+      college: mode === "login" ? "" : college,
       joinedAt: new Date().toISOString(),
     };
 
@@ -77,12 +82,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <div>
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
+          </div>
           {mode === "register" && (
             <>
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
-              </div>
               <CollegeAutocomplete value={college} onChange={setCollege} />
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
