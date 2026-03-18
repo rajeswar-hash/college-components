@@ -4,17 +4,26 @@ import { Category } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
-import { Cpu, Zap, Users } from "lucide-react";
+import { Cpu, Zap, Users, ArrowRight } from "lucide-react";
 
 const Index = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
+
+  const allListings = useMemo(() => getListings(), []);
+  const maxPrice = useMemo(() => Math.max(...allListings.map(l => l.price), 50000), [allListings]);
+
+  const hasActiveFilters = !!search || !!selectedCategory || !!selectedCollege || priceRange[0] > 0 || priceRange[1] < maxPrice;
 
   const listings = useMemo(() => {
-    let items = getListings();
+    let items = allListings;
     if (selectedCategory) items = items.filter((l) => l.category === selectedCategory);
     if (selectedCollege) items = items.filter((l) => l.college === selectedCollege);
+    if (priceRange[0] > 0 || priceRange[1] < maxPrice) {
+      items = items.filter((l) => l.price >= priceRange[0] && l.price <= priceRange[1]);
+    }
     if (search) {
       const q = search.toLowerCase();
       items = items.filter(
@@ -25,41 +34,43 @@ const Index = () => {
       );
     }
     return items;
-  }, [search, selectedCategory, selectedCollege]);
+  }, [search, selectedCategory, selectedCollege, priceRange, allListings, maxPrice]);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-2xl mx-auto text-center animate-fade-in">
-            <h1 className="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-4">
-              Buy & Sell <span className="gradient-text">Components</span> on Campus
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto">
-              The peer-to-peer marketplace for engineering students. Find Arduino boards, sensors, tools — right on your campus.
-            </p>
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-primary" /> 100+ Components
-              </span>
-              <span className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" /> Campus Verified
-              </span>
-              <span className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary" /> Instant WhatsApp
-              </span>
+      {/* Compact Hero - only when no filters */}
+      {!hasActiveFilters && (
+        <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+          <div className="container mx-auto px-4 py-8 md:py-12">
+            <div className="max-w-xl mx-auto text-center">
+              <h1 className="font-display font-extrabold text-2xl md:text-3xl lg:text-4xl text-foreground leading-tight mb-2">
+                Buy & Sell <span className="gradient-text">Components</span> on Campus
+              </h1>
+              <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+                Peer-to-peer marketplace for engineering students. Arduino, sensors, tools — on your campus.
+              </p>
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-primary" /> 100+ Parts
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-primary" /> Verified
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-primary" /> WhatsApp
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="absolute top-10 left-10 w-32 h-32 rounded-full gradient-bg opacity-5 blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full gradient-accent-bg opacity-5 blur-3xl" />
-      </section>
+          <div className="absolute top-5 left-5 w-24 h-24 rounded-full gradient-bg opacity-5 blur-3xl" />
+          <div className="absolute bottom-5 right-5 w-32 h-32 rounded-full gradient-accent-bg opacity-5 blur-3xl" />
+        </section>
+      )}
 
       {/* Listings */}
-      <section className="container mx-auto px-4 py-10">
+      <section className="container mx-auto px-4 py-6">
         <FilterBar
           search={search}
           onSearchChange={setSearch}
@@ -67,17 +78,28 @@ const Index = () => {
           onCategoryChange={setSelectedCategory}
           selectedCollege={selectedCollege}
           onCollegeChange={setSelectedCollege}
+          priceRange={priceRange}
+          onPriceRangeChange={setPriceRange}
+          maxPrice={maxPrice}
         />
 
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between mt-4 mb-2">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">{listings.length}</span> result{listings.length !== 1 ? "s" : ""} found
+            </p>
+          </div>
+        )}
+
         {listings.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-16">
             <p className="text-muted-foreground text-lg">No components found.</p>
             <p className="text-muted-foreground text-sm mt-1">Try adjusting your search or filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mt-4">
             {listings.map((listing, i) => (
-              <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
+              <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
                 <ProductCard listing={listing} />
               </div>
             ))}
@@ -86,10 +108,10 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border mt-16">
-        <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground">
-          <p className="font-display font-semibold text-foreground mb-1">Campus Components</p>
-          <p>Built for students, by students. Reduce e-waste, save money.</p>
+      <footer className="border-t border-border mt-12">
+        <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
+          <p className="font-display font-semibold text-sm text-foreground mb-0.5">Campus Components</p>
+          <p>Built for students, by students.</p>
         </div>
       </footer>
     </div>
