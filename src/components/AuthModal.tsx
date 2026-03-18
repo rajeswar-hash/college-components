@@ -55,10 +55,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
     const user: User = {
       id: "user-" + Date.now(),
-      name: mode === "login" ? email.split("@")[0] : name,
+      name,
       email,
       phone: mode === "login" ? "" : phone,
-      college: mode === "login" ? "Unknown College" : college,
+      college: mode === "login" ? "" : college,
       joinedAt: new Date().toISOString(),
     };
 
