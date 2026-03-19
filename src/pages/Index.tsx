@@ -1,18 +1,57 @@
-import { useState, useMemo } from "react";
-import { getListings } from "@/lib/store";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Category } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
-import { Cpu, Zap, Users, ArrowRight } from "lucide-react";
+import { Cpu, Zap, Users } from "lucide-react";
+
+interface ListingRow {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  condition: string;
+  images: string[];
+  seller_id: string;
+  college: string;
+  sold: boolean;
+  likes: number;
+  created_at: string;
+  seller_name?: string;
+  seller_phone?: string;
+}
 
 const Index = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
+  const [allListings, setAllListings] = useState<ListingRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const allListings = useMemo(() => getListings(), []);
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("listings")
+        .select("*, profiles!listings_seller_id_fkey(name, phone)")
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        setAllListings(
+          data.map((d: any) => ({
+            ...d,
+            seller_name: d.profiles?.name || "Unknown",
+            seller_phone: d.profiles?.phone || "",
+          }))
+        );
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
   const maxPrice = useMemo(() => Math.max(...allListings.map(l => l.price), 50000), [allListings]);
 
   const hasActiveFilters = !!search || !!selectedCategory || !!selectedCollege || priceRange[0] > 0 || priceRange[1] < maxPrice;
@@ -36,11 +75,28 @@ const Index = () => {
     return items;
   }, [search, selectedCategory, selectedCollege, priceRange, allListings, maxPrice]);
 
+  // Adapt to ProductCard expected format
+  const adaptedListings = listings.map(l => ({
+    id: l.id,
+    title: l.title,
+    description: l.description,
+    price: l.price,
+    category: l.category as Category,
+    condition: l.condition as any,
+    images: l.images || [],
+    sellerId: l.seller_id,
+    sellerName: l.seller_name || "Unknown",
+    sellerPhone: l.seller_phone || "",
+    college: l.college,
+    createdAt: l.created_at,
+    sold: l.sold,
+    likes: l.likes,
+  }));
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Compact Hero - only when no filters */}
       {!hasActiveFilters && (
         <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
           <div className="container mx-auto px-4 py-8 md:py-12">
@@ -69,7 +125,6 @@ const Index = () => {
         </section>
       )}
 
-      {/* Listings */}
       <section className="container mx-auto px-4 py-6">
         <FilterBar
           search={search}
@@ -91,14 +146,18 @@ const Index = () => {
           </div>
         )}
 
-        {listings.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground text-lg">Loading listings...</p>
+          </div>
+        ) : listings.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-muted-foreground text-lg">No components found.</p>
             <p className="text-muted-foreground text-sm mt-1">Try adjusting your search or filters.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mt-4">
-            {listings.map((listing, i) => (
+            {adaptedListings.map((listing, i) => (
               <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
                 <ProductCard listing={listing} />
               </div>
@@ -107,7 +166,6 @@ const Index = () => {
         )}
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
           <p className="font-display font-semibold text-sm text-foreground mb-0.5">Campus Components</p>

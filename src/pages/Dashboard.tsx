@@ -1,22 +1,40 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { getListings, updateListing, deleteListing } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, CheckCircle, Package } from "lucide-react";
 import { toast } from "sonner";
 
-const Dashboard = () => {
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const [refresh, setRefresh] = useState(0);
+interface ListingRow {
+  id: string;
+  title: string;
+  price: number;
+  category: string;
+  sold: boolean;
+}
 
-  const myListings = useMemo(
-    () => getListings().filter((l) => l.sellerId === user?.id),
-    [user?.id, refresh]
-  );
+const Dashboard = () => {
+  const { user, isAuthenticated, supabaseUser } = useAuth();
+  const navigate = useNavigate();
+  const [myListings, setMyListings] = useState<ListingRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!supabaseUser) return;
+    const fetchListings = async () => {
+      const { data } = await supabase
+        .from("listings")
+        .select("id, title, price, category, sold")
+        .eq("seller_id", supabaseUser.id)
+        .order("created_at", { ascending: false });
+      setMyListings(data || []);
+      setLoading(false);
+    };
+    fetchListings();
+  }, [supabaseUser]);
 
   if (!isAuthenticated) {
     return (
@@ -29,15 +47,17 @@ const Dashboard = () => {
     );
   }
 
-  const handleMarkSold = (id: string) => {
-    updateListing(id, { sold: true });
-    setRefresh((r) => r + 1);
+  const handleMarkSold = async (id: string) => {
+    const { error } = await supabase.from("listings").update({ sold: true }).eq("id", id);
+    if (error) { toast.error("Failed to update"); return; }
+    setMyListings((prev) => prev.map((l) => (l.id === id ? { ...l, sold: true } : l)));
     toast.success("Item marked as sold!");
   };
 
-  const handleDelete = (id: string) => {
-    deleteListing(id);
-    setRefresh((r) => r + 1);
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("listings").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete"); return; }
+    setMyListings((prev) => prev.filter((l) => l.id !== id));
     toast.success("Listing deleted");
   };
 
@@ -46,20 +66,18 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="animate-fade-in">
-          {/* Profile Header */}
           <div className="glass rounded-xl p-6 mb-8">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-display font-bold text-xl">
-                {user?.name?.charAt(0)}
+                {user?.name?.charAt(0) || "?"}
               </div>
               <div>
-                <h1 className="font-display font-bold text-2xl text-foreground">{user?.name}</h1>
+                <h1 className="font-display font-bold text-2xl text-foreground">{user?.name || "Loading..."}</h1>
                 <p className="text-sm text-muted-foreground">{user?.email} • {user?.college}</p>
               </div>
             </div>
           </div>
 
-          {/* Listings */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
             <Button onClick={() => navigate("/sell")} className="gradient-bg text-primary-foreground border-0 hover:opacity-90" size="sm">
@@ -67,7 +85,11 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          {myListings.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16 glass rounded-xl">
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          ) : myListings.length === 0 ? (
             <div className="text-center py-16 glass rounded-xl">
               <Package className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">You haven't listed any components yet.</p>

@@ -11,6 +11,11 @@ export function Navbar() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
   return (
     <>
       <nav className="sticky top-0 z-50 glass border-b border-border">
@@ -45,10 +50,10 @@ export function Navbar() {
               <>
                 <Link to="/dashboard">
                   <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-1" /> {user?.name?.split(" ")[0]}
+                    <User className="w-4 h-4 mr-1" /> {user?.name?.split(" ")[0] || "Profile"}
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={logout}>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="w-4 h-4" />
                 </Button>
               </>
@@ -85,7 +90,7 @@ export function Navbar() {
                     <User className="w-4 h-4 mr-2" /> Dashboard
                   </Button>
                 </Link>
-                <Button variant="ghost" className="w-full justify-start" onClick={() => { logout(); setMobileMenu(false); }}>
+                <Button variant="ghost" className="w-full justify-start" onClick={() => { handleLogout(); setMobileMenu(false); }}>
                   <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </Button>
               </>
