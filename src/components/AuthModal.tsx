@@ -1,6 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, COLLEGES } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
@@ -19,57 +18,49 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onClose }: AuthModalProps) {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const isValidEmail = (e: string) =>
-    /\.edu$|\.ac\.in$|\.edu\.\w+$/i.test(e);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
 
-    if (!isValidEmail(email)) {
-      toast.error("Please use a valid .edu or .ac.in email address");
+    if (!email || !password || password.length < 6) {
+      toast.error("Please enter email and password (min 6 chars)");
       return;
     }
 
-    if (!password || password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    if (!name) {
-      toast.error("Please enter your name");
-      return;
-    }
-
-    if (mode === "register" && (!phone || !college)) {
+    if (mode === "register" && (!name || !phone || !college)) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const user: User = {
-      id: "user-" + Date.now(),
-      name,
-      email,
-      phone: mode === "login" ? "" : phone,
-      college: mode === "login" ? "" : college,
-      joinedAt: new Date().toISOString(),
-    };
-
-    login(user);
-    toast.success(mode === "login" ? "Welcome back!" : "Account created!");
-    onClose();
-    setEmail("");
-    setPassword("");
-    setName("");
-    setPhone("");
-    setCollege("");
+    setSubmitting(true);
+    try {
+      if (mode === "login") {
+        await login(email, password);
+        toast.success("Welcome back!");
+      } else {
+        await register(email, password, name, phone, college);
+        toast.success("Account created! You may need to verify your email.");
+      }
+      onClose();
+      setEmail("");
+      setPassword("");
+      setName("");
+      setPhone("");
+      setCollege("");
+    } catch (err: any) {
+      toast.error(err.message || "Authentication failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -82,12 +73,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div>
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
-          </div>
           {mode === "register" && (
             <>
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
+              </div>
               <CollegeAutocomplete value={college} onChange={setCollege} />
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
@@ -97,9 +88,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           )}
 
           <div>
-            <Label htmlFor="email">College Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@college.edu" />
-            <p className="text-xs text-muted-foreground mt-1">Must be a .edu or .ac.in email</p>
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
           </div>
 
           <div>
@@ -108,8 +98,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             {mode === "register" && <p className="text-xs text-muted-foreground mt-1">At least 6 characters</p>}
           </div>
 
-          <Button type="submit" className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
-            {mode === "login" ? "Sign In" : "Create Account"}
+          <Button type="submit" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
+            {submitting ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
