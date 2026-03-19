@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { addListing } from "@/lib/store";
-import { CATEGORIES, CONDITIONS, Category, Condition, Listing } from "@/lib/types";
+import { supabase } from "@/integrations/supabase/client";
+import { CATEGORIES, CONDITIONS, Category, Condition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Upload, X } from "lucide-react";
 
 const SellPage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, supabaseUser } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -22,6 +22,7 @@ const SellPage = () => {
   const [category, setCategory] = useState<Category | "">("");
   const [condition, setCondition] = useState<Condition | "">("");
   const [images, setImages] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (files: FileList | null) => {
@@ -60,33 +61,36 @@ const SellPage = () => {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description || !price || !category || !condition) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const listing: Listing = {
-      id: "listing-" + Date.now(),
-      title,
-      description,
-      price: Number(price),
-      category: category as Category,
-      condition: condition as Condition,
-      images,
-      sellerId: user!.id,
-      sellerName: user!.name,
-      sellerPhone: user!.phone,
-      college: user!.college,
-      createdAt: new Date().toISOString(),
-      sold: false,
-      likes: 0,
-    };
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("listings").insert({
+        title,
+        description,
+        price: Number(price),
+        category,
+        condition,
+        images,
+        seller_id: supabaseUser!.id,
+        college: user?.college || "",
+        sold: false,
+        likes: 0,
+      });
 
-    addListing(listing);
-    toast.success("Listing created successfully!");
-    navigate("/dashboard");
+      if (error) throw error;
+      toast.success("Listing created successfully!");
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create listing");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -102,7 +106,6 @@ const SellPage = () => {
           <p className="text-muted-foreground mb-8">List your unused components for other students on campus.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6 glass rounded-xl p-6">
-            {/* Image Upload Area */}
             <div>
               <Label>Photos (up to 5)</Label>
               <div
@@ -187,8 +190,8 @@ const SellPage = () => {
               <Input id="price" type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="500" />
             </div>
 
-            <Button type="submit" size="lg" className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
-              Publish Listing
+            <Button type="submit" size="lg" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
+              {submitting ? "Publishing..." : "Publish Listing"}
             </Button>
           </form>
         </div>
