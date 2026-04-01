@@ -1,4 +1,4 @@
-This is your separate editable copy of the Lovable project.
+This is your separate editable copy of the College Components project.
 
 Folder:
 C:\Users\rajes\OneDrive\Documents\New project\campus-component-swap-copy

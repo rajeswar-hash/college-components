@@ -136,10 +136,10 @@ const Index = () => {
           <div className="container mx-auto px-4 py-8 md:py-12">
             <div className="max-w-xl mx-auto text-center">
               <h1 className="font-display font-extrabold text-2xl md:text-3xl lg:text-4xl text-foreground leading-tight mb-2">
-                Buy & Sell <span className="gradient-text">Components</span> on Campus
+                Buy & Sell <span className="gradient-text">Components</span> Across College
               </h1>
               <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-                Peer-to-peer marketplace for engineering students. Arduino, sensors, tools — on your campus.
+                A cleaner, faster marketplace for engineering students to trade Arduino boards, sensors, tools, and project gear with confidence.
               </p>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
@@ -203,7 +203,7 @@ const Index = () => {
       <footer className="border-t border-border mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
           <p className="font-display font-semibold text-sm text-foreground mb-0.5">College Components</p>
-          <p>Built for students, by students.</p>
+          <p>Trusted listings for serious student builders.</p>
         </div>
       </footer>
     </div>
