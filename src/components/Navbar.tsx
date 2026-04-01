@@ -59,6 +59,12 @@ export function Navbar() {
             <Link to="/contact">
               <Button variant="ghost" size="sm">Contact</Button>
             </Link>
+            <Link to="/privacy">
+              <Button variant="ghost" size="sm">Privacy</Button>
+            </Link>
+            <Link to="/terms">
+              <Button variant="ghost" size="sm">Terms</Button>
+            </Link>
             {isAdmin && (
               <Link to="/admin">
                 <Button variant="ghost" size="sm">
@@ -140,6 +146,12 @@ export function Navbar() {
               </Link>
               <Link to="/contact" onClick={() => setMobileMenu(false)}>
                 <Button variant="ghost" className="w-full justify-start">Contact Us</Button>
+              </Link>
+              <Link to="/privacy" onClick={() => setMobileMenu(false)}>
+                <Button variant="ghost" className="w-full justify-start">Privacy Policy</Button>
+              </Link>
+              <Link to="/terms" onClick={() => setMobileMenu(false)}>
+                <Button variant="ghost" className="w-full justify-start">Terms & Conditions</Button>
               </Link>
               {isAdmin && (
                 <Link to="/admin" onClick={() => setMobileMenu(false)}>
