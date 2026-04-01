@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -24,6 +25,7 @@ interface ListingRow {
 }
 
 const Index = () => {
+  const location = useLocation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
@@ -31,26 +33,28 @@ const Index = () => {
   const [allListings, setAllListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("listings")
-        .select("*, profiles!listings_seller_id_fkey(name, phone)")
-        .order("created_at", { ascending: false });
+  const fetchListings = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("listings")
+      .select("*, profiles(name, phone)")
+      .order("created_at", { ascending: false });
 
-      if (data) {
-        setAllListings(
-          data.map((d: any) => ({
-            ...d,
-            seller_name: d.profiles?.name || "Unknown",
-            seller_phone: d.profiles?.phone || "",
-          }))
-        );
-      }
-      setLoading(false);
-    };
-    fetch();
+    if (data) {
+      setAllListings(
+        data.map((d: any) => ({
+          ...d,
+          seller_name: d.profiles?.name || "Unknown",
+          seller_phone: d.profiles?.phone || "",
+        }))
+      );
+    }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings, location.key]);
 
   const maxPrice = useMemo(() => Math.max(...allListings.map(l => l.price), 50000), [allListings]);
 
