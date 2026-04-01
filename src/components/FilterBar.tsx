@@ -211,7 +211,7 @@ export function FilterBar({
           {/* College */}
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">College / University</p>
-            <div ref={collegeWrapperRef} className="relative">
+            <div ref={collegeWrapperRef} className="relative space-y-2">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
@@ -242,18 +242,20 @@ export function FilterBar({
                 )}
               </div>
               {collegeDropdownOpen && collegeResults.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full max-h-40 overflow-auto rounded-md border border-border bg-popover shadow-lg">
-                  {collegeResults.map((c) => (
-                    <button key={c} type="button"
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-accent text-left transition-colors"
-                      onClick={() => { onCollegeChange(c); setCollegeQuery(c); setCollegeDropdownOpen(false); }}>
-                      <span className={selectedCollege === c ? "font-medium text-primary" : ""}>{c}</span>
-                    </button>
-                  ))}
+                <div className="overflow-hidden rounded-lg border border-border bg-popover shadow-md">
+                  <div className="max-h-48 overflow-auto py-1">
+                    {collegeResults.map((c) => (
+                      <button key={c} type="button"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-xs text-left transition-colors hover:bg-accent"
+                        onClick={() => { onCollegeChange(c); setCollegeQuery(c); setCollegeDropdownOpen(false); }}>
+                        <span className={selectedCollege === c ? "font-medium text-primary" : ""}>{c}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               {collegeDropdownOpen && collegeQuery.length >= 2 && collegeResults.length === 0 && (
-                <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg p-2 text-xs text-muted-foreground">
+                <div className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                   No match — type will be used as-is
                 </div>
               )}
