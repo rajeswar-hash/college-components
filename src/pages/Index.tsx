@@ -202,7 +202,7 @@ const Index = () => {
 
       <footer className="border-t border-border mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
-          <p className="font-display font-semibold text-sm text-foreground mb-0.5">Campus Components</p>
+          <p className="font-display font-semibold text-sm text-foreground mb-0.5">College Components</p>
           <p>Built for students, by students.</p>
         </div>
       </footer>

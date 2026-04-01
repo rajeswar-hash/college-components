@@ -1,0 +1,14 @@
+This is your separate editable copy of the Lovable project.
+
+Folder:
+C:\Users\rajes\OneDrive\Documents\New project\campus-component-swap-copy
+
+What is safe here:
+- You can edit this copy without changing the original GitHub-connected project.
+- The original remote has been removed from this copy.
+
+If you want this copy on GitHub too:
+1. Create a new empty GitHub repository.
+2. In this folder run:
+   git remote add origin <your-new-repo-url>
+   git push -u origin main

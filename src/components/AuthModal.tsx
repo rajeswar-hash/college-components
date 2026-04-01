@@ -68,7 +68,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       <DialogContent className="sm:max-w-md glass">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">
-            {mode === "login" ? "Welcome Back" : "Join Campus Components"}
+            {mode === "login" ? "Welcome Back" : "Join College Components"}
           </DialogTitle>
         </DialogHeader>
 
