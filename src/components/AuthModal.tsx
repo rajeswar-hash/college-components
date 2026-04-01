@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ interface AuthModalProps {
 
 export function AuthModal({ open, onClose }: AuthModalProps) {
   const { login, register } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,8 +46,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setSubmitting(true);
     try {
       if (mode === "login") {
-        await login(email, password);
-        toast.success("Welcome back!");
+        const result = await login(email, password);
+        toast.success(result.isAdmin ? "Admin access granted." : "Welcome back!");
+        if (result.isAdmin) {
+          navigate("/admin");
+        }
       } else {
         await register(email, password, name, phone, college);
         toast.success("Account created! You may need to verify your email.");

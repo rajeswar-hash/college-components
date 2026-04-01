@@ -2,6 +2,10 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
+const ADMIN_EMAIL = "rajeswarbind39@gmail.com";
+const ADMIN_PASSWORD = "raj84217#*";
+const ADMIN_SESSION_KEY = "college-components-admin-session";
+
 interface Profile {
   id: string;
   name: string;
@@ -14,18 +18,28 @@ interface Profile {
 interface AuthContextType {
   user: Profile | null;
   supabaseUser: SupabaseUser | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const adminProfile: Profile = {
+  id: "admin-local",
+  name: "Admin Control",
+  email: ADMIN_EMAIL,
+  phone: "Private",
+  college: "College Components HQ",
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
@@ -46,10 +60,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const activateAdmin = useCallback(() => {
+    localStorage.setItem(ADMIN_SESSION_KEY, ADMIN_EMAIL);
+    setIsAdmin(true);
+    setSupabaseUser(null);
+    setProfile(adminProfile);
+  }, []);
+
+  const clearAdmin = useCallback(() => {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+    setIsAdmin(false);
+    setProfile((current) => (current?.id === adminProfile.id ? null : current));
+  }, []);
+
   useEffect(() => {
+    const storedAdmin = localStorage.getItem(ADMIN_SESSION_KEY);
+    if (storedAdmin === ADMIN_EMAIL) {
+      activateAdmin();
+      setLoading(false);
+    }
+
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (localStorage.getItem(ADMIN_SESSION_KEY) === ADMIN_EMAIL) {
+          setLoading(false);
+          return;
+        }
         if (session?.user) {
           setSupabaseUser(session.user);
           // Defer profile fetch to avoid deadlock
@@ -64,6 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (localStorage.getItem(ADMIN_SESSION_KEY) === ADMIN_EMAIL) {
+        setLoading(false);
+        return;
+      }
       if (session?.user) {
         setSupabaseUser(session.user);
         fetchProfile(session.user.id);
@@ -72,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+  }, [activateAdmin, fetchProfile]);
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
     const { error } = await supabase.auth.signUp({
@@ -86,15 +127,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
+    if (email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      await supabase.auth.signOut();
+      activateAdmin();
+      return { isAdmin: true };
+    }
+
+    clearAdmin();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-  }, []);
+    return { isAdmin: false };
+  }, [activateAdmin, clearAdmin]);
 
   const logout = useCallback(async () => {
+    clearAdmin();
     await supabase.auth.signOut();
     setProfile(null);
     setSupabaseUser(null);
-  }, []);
+  }, [clearAdmin]);
 
   return (
     <AuthContext.Provider value={{
@@ -103,7 +153,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
-      isAuthenticated: !!supabaseUser,
+      isAuthenticated: isAdmin || !!supabaseUser,
+      isAdmin,
       loading,
     }}>
       {children}

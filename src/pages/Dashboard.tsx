@@ -17,12 +17,16 @@ interface ListingRow {
 }
 
 const Dashboard = () => {
-  const { user, isAuthenticated, supabaseUser } = useAuth();
+  const { user, isAuthenticated, supabaseUser, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isAdmin) {
+      navigate("/admin", { replace: true });
+      return;
+    }
     if (!supabaseUser) return;
     const fetchListings = async () => {
       const { data } = await supabase
@@ -34,7 +38,7 @@ const Dashboard = () => {
       setLoading(false);
     };
     fetchListings();
-  }, [supabaseUser]);
+  }, [isAdmin, navigate, supabaseUser]);
 
   if (!isAuthenticated) {
     return (

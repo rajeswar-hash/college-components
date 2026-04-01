@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Search, Plus, User, LogOut, Menu, X, Cpu } from "lucide-react";
+import { Plus, User, LogOut, Menu, X, Cpu, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
 
 export function Navbar() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const navigate = useNavigate();
@@ -33,6 +33,13 @@ export function Navbar() {
             <Link to="/">
               <Button variant="ghost" size="sm">Browse</Button>
             </Link>
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="ghost" size="sm">
+                  <Shield className="w-4 h-4 mr-1" /> Admin
+                </Button>
+              </Link>
+            )}
             <Button
               size="sm"
               className="gradient-bg text-primary-foreground border-0 hover:opacity-90"
@@ -70,6 +77,13 @@ export function Navbar() {
             <Link to="/" onClick={() => setMobileMenu(false)}>
               <Button variant="ghost" className="w-full justify-start">Browse</Button>
             </Link>
+            {isAdmin && (
+              <Link to="/admin" onClick={() => setMobileMenu(false)}>
+                <Button variant="ghost" className="w-full justify-start">
+                  <Shield className="w-4 h-4 mr-2" /> Admin Panel
+                </Button>
+              </Link>
+            )}
             <Button
               className="w-full gradient-bg text-primary-foreground border-0"
               onClick={() => {
