@@ -23,9 +23,8 @@ export function Navbar() {
     };
   }, [mobileMenu]);
 
-  const closeMobileMenuToHome = () => {
+  const closeMobileMenu = () => {
     setMobileMenu(false);
-    navigate("/");
   };
 
   const handleLogout = async () => {
@@ -100,7 +99,7 @@ export function Navbar() {
             className="md:hidden"
             onClick={() => {
               if (mobileMenu) {
-                closeMobileMenuToHome();
+                closeMobileMenu();
               } else {
                 setMobileMenu(true);
               }
@@ -159,7 +158,7 @@ export function Navbar() {
               type="button"
               aria-label="Close mobile menu"
               className="flex-1 bg-background/55 backdrop-blur-md"
-              onClick={closeMobileMenuToHome}
+              onClick={closeMobileMenu}
             />
           </div>
         )}
