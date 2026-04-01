@@ -118,7 +118,7 @@ export function Navbar() {
               className="fixed inset-x-0 top-16 bottom-0 z-40 bg-background/55 backdrop-blur-md md:hidden"
               onClick={closeMobileMenuToHome}
             />
-            <div className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-border p-4 flex flex-col gap-2 glass shadow-glass md:hidden">
+            <div className="fixed inset-x-0 top-16 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-border bg-background p-4 flex flex-col gap-2 shadow-lg md:hidden">
               <Button
                 className="w-full gradient-bg text-primary-foreground border-0"
                 onClick={() => {
