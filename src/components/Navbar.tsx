@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, User, LogOut, Menu, X, Cpu, Shield } from "lucide-react";
@@ -9,9 +9,7 @@ export function Navbar() {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [mobileMenuBottom, setMobileMenuBottom] = useState(64);
   const navigate = useNavigate();
-  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!mobileMenu) {
@@ -24,21 +22,6 @@ export function Navbar() {
       document.body.style.overflow = "";
     };
   }, [mobileMenu]);
-
-  useLayoutEffect(() => {
-    if (!mobileMenu || !mobileMenuRef.current) return;
-
-    const updateMenuBounds = () => {
-      const rect = mobileMenuRef.current?.getBoundingClientRect();
-      if (rect) {
-        setMobileMenuBottom(rect.bottom);
-      }
-    };
-
-    updateMenuBounds();
-    window.addEventListener("resize", updateMenuBounds);
-    return () => window.removeEventListener("resize", updateMenuBounds);
-  }, [isAdmin, isAuthenticated, mobileMenu]);
 
   const closeMobileMenuToHome = () => {
     setMobileMenu(false);
@@ -128,18 +111,8 @@ export function Navbar() {
         </div>
 
         {mobileMenu && (
-          <>
-            <button
-              type="button"
-              aria-label="Close mobile menu"
-              className="fixed inset-x-0 bottom-0 z-40 bg-background/55 backdrop-blur-md md:hidden"
-              style={{ top: `${mobileMenuBottom}px` }}
-              onClick={closeMobileMenuToHome}
-            />
-            <div
-              ref={mobileMenuRef}
-              className="fixed inset-x-0 top-16 z-50 border-t border-border bg-background p-4 flex flex-col gap-2 shadow-lg md:hidden"
-            >
+          <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex flex-col md:hidden">
+            <div className="border-t border-border bg-background p-4 flex flex-col gap-2 shadow-lg">
               <Button
                 className="w-full gradient-bg text-primary-foreground border-0"
                 onClick={() => {
@@ -182,7 +155,13 @@ export function Navbar() {
                 </Button>
               )}
             </div>
-          </>
+            <button
+              type="button"
+              aria-label="Close mobile menu"
+              className="flex-1 bg-background/55 backdrop-blur-md"
+              onClick={closeMobileMenuToHome}
+            />
+          </div>
         )}
       </nav>
 
