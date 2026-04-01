@@ -35,20 +35,50 @@ const Index = () => {
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+
+    const { data: listingsData, error: listingsError } = await supabase
       .from("listings")
-      .select("*, profiles(name, phone)")
+      .select("*")
       .order("created_at", { ascending: false });
 
-    if (data) {
-      setAllListings(
-        data.map((d: any) => ({
-          ...d,
-          seller_name: d.profiles?.name || "Unknown",
-          seller_phone: d.profiles?.phone || "",
-        }))
-      );
+    if (listingsError || !listingsData) {
+      setAllListings([]);
+      setLoading(false);
+      return;
     }
+
+    const sellerIds = Array.from(new Set(listingsData.map((listing) => listing.seller_id)));
+    let profilesData: { id: string; name: string; phone: string }[] = [];
+
+    if (sellerIds.length > 0) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, name, phone")
+        .in("id", sellerIds);
+
+      profilesData = data ?? [];
+    }
+
+    const sellers = new Map(
+      profilesData.map((profile) => [
+        profile.id,
+        {
+          name: profile.name,
+          phone: profile.phone || "",
+        },
+      ])
+    );
+
+    setAllListings(
+      listingsData.map((listing) => {
+        const seller = sellers.get(listing.seller_id);
+        return {
+          ...listing,
+          seller_name: seller?.name || "Unknown",
+          seller_phone: seller?.phone || "",
+        };
+      })
+    );
     setLoading(false);
   }, []);
 
