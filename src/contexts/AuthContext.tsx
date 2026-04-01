@@ -21,6 +21,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   loading: boolean;
@@ -149,6 +150,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSupabaseUser(null);
   }, [clearAdmin]);
 
+  const deleteAccount = useCallback(async () => {
+    if (isAdmin) {
+      throw new Error("The local admin account cannot be deleted from the user dashboard.");
+    }
+
+    const { error } = await supabase.rpc("delete_my_account");
+    if (error) throw error;
+
+    await supabase.auth.signOut();
+    setProfile(null);
+    setSupabaseUser(null);
+  }, [isAdmin]);
+
   return (
     <AuthContext.Provider value={{
       user: profile,
@@ -156,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      deleteAccount,
       isAuthenticated: isAdmin || !!supabaseUser,
       isAdmin,
       loading,
