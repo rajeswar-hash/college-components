@@ -13,6 +13,54 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X } from "lucide-react";
 
+const MAX_IMAGE_BYTES = 600 * 1024;
+const MAX_IMAGE_DIMENSION = 1280;
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Could not process image"));
+    image.src = dataUrl;
+  });
+}
+
+async function compressImage(file: File) {
+  const originalDataUrl = await readFileAsDataUrl(file);
+  const image = await loadImage(originalDataUrl);
+  const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) return originalDataUrl;
+
+  context.drawImage(image, 0, 0, width, height);
+
+  let quality = 0.82;
+  let compressed = canvas.toDataURL("image/jpeg", quality);
+
+  while (compressed.length > MAX_IMAGE_BYTES * 1.37 && quality > 0.45) {
+    quality -= 0.08;
+    compressed = canvas.toDataURL("image/jpeg", quality);
+  }
+
+  return compressed;
+}
+
 const SellPage = () => {
   const { user, isAuthenticated, supabaseUser } = useAuth();
   const navigate = useNavigate();
@@ -23,26 +71,37 @@ const SellPage = () => {
   const [condition, setCondition] = useState<Condition | "">("");
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (files: FileList | null) => {
+  const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
     if (images.length + files.length > 5) {
       toast.error("Maximum 5 images allowed");
       return;
     }
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
+
+    setProcessingImages((count) => count + files.length);
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("image/")) {
+        setProcessingImages((count) => Math.max(0, count - 1));
+        continue;
+      }
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`${file.name} is too large (max 5MB)`);
-        return;
+        setProcessingImages((count) => Math.max(0, count - 1));
+        continue;
       }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImages((prev) => [...prev, e.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+
+      try {
+        const compressed = await compressImage(file);
+        setImages((prev) => [...prev, compressed]);
+      } catch (error) {
+        toast.error(`Could not process ${file.name}`);
+      } finally {
+        setProcessingImages((count) => Math.max(0, count - 1));
+      }
+    }
   };
 
   const removeImage = (index: number) => {
@@ -67,6 +126,14 @@ const SellPage = () => {
       toast.error("Please fill in all fields");
       return;
     }
+    if (processingImages > 0) {
+      toast.error("Please wait for image processing to finish.");
+      return;
+    }
+    if (!supabaseUser?.id) {
+      toast.error("Your session is not ready. Please sign out and sign back in.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -77,7 +144,7 @@ const SellPage = () => {
         category,
         condition,
         images,
-        seller_id: supabaseUser!.id,
+        seller_id: supabaseUser.id,
         college: user?.college || "",
         sold: false,
         likes: 0,
@@ -124,8 +191,13 @@ const SellPage = () => {
                 />
                 <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">Drag & drop images or click to upload</p>
-                <p className="text-xs text-muted-foreground mt-1">JPG, PNG up to 5MB each</p>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG up to 5MB each, optimized automatically</p>
               </div>
+              {processingImages > 0 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Processing {processingImages} image{processingImages !== 1 ? "s" : ""}...
+                </p>
+              )}
               {images.length > 0 && (
                 <div className="flex flex-wrap gap-3 mt-3">
                   {images.map((img, i) => (
@@ -190,8 +262,8 @@ const SellPage = () => {
               <Input id="price" type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="500" />
             </div>
 
-            <Button type="submit" size="lg" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
-              {submitting ? "Publishing..." : "Publish Listing"}
+            <Button type="submit" size="lg" disabled={submitting || processingImages > 0} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
+              {processingImages > 0 ? "Preparing Images..." : submitting ? "Publishing..." : "Publish Listing"}
             </Button>
           </form>
         </div>
