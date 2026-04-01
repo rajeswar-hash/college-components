@@ -128,6 +128,10 @@ export default function AdminDashboard() {
     window.open(`https://supabase.com/dashboard/project/${PROJECT_ID}/${path}`, "_blank", "noopener,noreferrer");
   };
 
+  const openExternalPage = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   const handleDeleteListing = async (id: string) => {
     const { error } = await supabase.from("listings").delete().eq("id", id);
     if (error) {
@@ -180,8 +184,8 @@ export default function AdminDashboard() {
             <Button variant="outline" onClick={() => openSupabasePage("editor")}>
               <Database className="mr-2 h-4 w-4" /> Open database
             </Button>
-            <Button className="gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => openSupabasePage("settings/billing")}>
-              <Wallet className="mr-2 h-4 w-4" /> Buy extra capacity
+            <Button className="gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => openExternalPage("https://supabase.com/pricing")}>
+              <Wallet className="mr-2 h-4 w-4" /> View upgrade options
             </Button>
           </div>
         </div>
@@ -276,8 +280,11 @@ export default function AdminDashboard() {
               <CardTitle>Admin actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-between" variant="outline" onClick={() => openSupabasePage("settings/billing")}>
-                Review billing and upgrades <ExternalLink className="h-4 w-4" />
+              <Button className="w-full justify-between" variant="outline" onClick={() => openExternalPage("https://supabase.com/pricing")}>
+                Review pricing plans <ExternalLink className="h-4 w-4" />
+              </Button>
+              <Button className="w-full justify-between" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
+                Open billing guide <ExternalLink className="h-4 w-4" />
               </Button>
               <Button className="w-full justify-between" variant="outline" onClick={() => openSupabasePage("storage/buckets")}>
                 Open storage settings <ExternalLink className="h-4 w-4" />
@@ -288,7 +295,7 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-border/70 bg-background/70 p-4">
                 <p className="text-sm font-medium text-foreground">What this admin panel controls directly</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Marketplace summaries, listing moderation, and quick links into the real Supabase management screens.
+                  Marketplace summaries, listing moderation, and safe links into Supabase project tools. Billing lives at the organization level in Supabase, so this panel opens the pricing and billing guide instead of a broken project billing route.
                 </p>
               </div>
             </CardContent>
