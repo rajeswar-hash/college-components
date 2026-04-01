@@ -110,8 +110,8 @@ export function Navbar() {
         </div>
 
         {mobileMenu && (
-          <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex flex-col md:hidden">
-            <div className="border-t border-border bg-background p-4 flex flex-col gap-2 shadow-lg">
+          <div className="fixed inset-x-0 top-16 bottom-0 z-40 md:hidden">
+            <div className="relative z-50 border-t border-border bg-background p-4 flex flex-col gap-2 shadow-lg">
               <Button
                 className="w-full gradient-bg text-primary-foreground border-0"
                 onClick={() => {
@@ -154,12 +154,14 @@ export function Navbar() {
                 </Button>
               )}
             </div>
-            <button
-              type="button"
-              aria-label="Close mobile menu"
-              className="flex-1 bg-background/55 backdrop-blur-md"
-              onClick={closeMobileMenu}
-            />
+            <div className="absolute inset-x-0 top-full bottom-0 bg-background/40 backdrop-blur-xl">
+              <button
+                type="button"
+                aria-label="Close mobile menu"
+                className="absolute inset-0 h-full w-full"
+                onClick={closeMobileMenu}
+              />
+            </div>
           </div>
         )}
       </nav>
