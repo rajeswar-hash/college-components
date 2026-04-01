@@ -94,7 +94,16 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+            />
           </div>
 
           <div>

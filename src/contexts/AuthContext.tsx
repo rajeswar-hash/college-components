@@ -116,25 +116,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [activateAdmin, fetchProfile]);
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
-        data: { name, phone, college },
+        data: { name, phone, college, email: normalizedEmail },
       },
     });
     if (error) throw error;
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    if (email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (normalizedEmail === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       await supabase.auth.signOut();
       activateAdmin();
       return { isAdmin: true };
     }
 
     clearAdmin();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     if (error) throw error;
     return { isAdmin: false };
   }, [activateAdmin, clearAdmin]);
