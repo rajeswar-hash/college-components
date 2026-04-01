@@ -11,7 +11,13 @@ export function Navbar() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const navigate = useNavigate();
 
+  const closeMobileMenuToHome = () => {
+    setMobileMenu(false);
+    navigate("/");
+  };
+
   const handleLogout = async () => {
+    setMobileMenu(false);
     await logout();
     navigate("/");
   };
@@ -82,10 +88,34 @@ export function Navbar() {
         </div>
 
         {mobileMenu && (
-          <div className="md:hidden border-t border-border p-4 flex flex-col gap-2 glass">
-            <Link to="/" onClick={() => setMobileMenu(false)}>
-              <Button variant="ghost" className="w-full justify-start">Browse</Button>
-            </Link>
+          <>
+            <button
+              type="button"
+              aria-label="Close mobile menu"
+              className="fixed inset-0 z-40 bg-background/45 backdrop-blur-md md:hidden"
+              onClick={closeMobileMenuToHome}
+            />
+            <div className="absolute inset-x-0 top-full z-50 md:hidden border-t border-border p-4 flex flex-col gap-2 glass shadow-glass">
+            <Button
+              className="w-full gradient-bg text-primary-foreground border-0"
+              onClick={() => {
+                setMobileMenu(false);
+                if (isAuthenticated) {
+                  navigate("/sell");
+                } else {
+                  setShowAuth(true);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" /> Sell Item
+            </Button>
+            {isAuthenticated && (
+              <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
+                <Button variant="ghost" className="w-full justify-start">
+                  <User className="w-4 h-4 mr-2" /> Dashboard
+                </Button>
+              </Link>
+            )}
             <Link to="/about" onClick={() => setMobileMenu(false)}>
               <Button variant="ghost" className="w-full justify-start">About</Button>
             </Link>
@@ -102,32 +132,15 @@ export function Navbar() {
                 </Button>
               </Link>
             )}
-            <Button
-              className="w-full gradient-bg text-primary-foreground border-0"
-              onClick={() => {
-                setMobileMenu(false);
-                if (isAuthenticated) {
-                  navigate("/sell");
-                } else {
-                  setShowAuth(true);
-                }
-              }}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Sell Item
-            </Button>
             {isAuthenticated && (
               <>
-                <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="w-4 h-4 mr-2" /> Dashboard
-                  </Button>
-                </Link>
-                <Button variant="ghost" className="w-full justify-start" onClick={() => { handleLogout(); setMobileMenu(false); }}>
+                <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </Button>
               </>
             )}
-          </div>
+            </div>
+          </>
         )}
       </nav>
 
