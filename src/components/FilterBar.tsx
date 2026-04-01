@@ -170,7 +170,7 @@ export function FilterBar({
 
       {/* Expandable Filter Panel */}
       {filtersOpen && (
-        <div className="glass border border-border rounded-lg p-3 space-y-3 animate-fade-in">
+        <div className="glass border border-border rounded-lg p-3 space-y-3 animate-fade-in relative z-40">
           {/* Category */}
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Category</p>
