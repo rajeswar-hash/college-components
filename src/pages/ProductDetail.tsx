@@ -42,20 +42,29 @@ const ProductDetail = () => {
   useEffect(() => {
     if (!id) return;
     const fetchListing = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("listings")
-        .select("*, profiles!listings_seller_id_fkey(name, phone)")
+        .select("*")
         .eq("id", id)
         .single();
 
-      if (data) {
-        setListing({
-          ...data,
-          images: data.images || [],
-          seller_name: (data as any).profiles?.name || "Unknown",
-          seller_phone: (data as any).profiles?.phone || "",
-        });
+      if (error || !data) {
+        setLoading(false);
+        return;
       }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name, phone")
+        .eq("id", data.seller_id)
+        .maybeSingle();
+
+      setListing({
+        ...data,
+        images: data.images || [],
+        seller_name: profile?.name || "Unknown",
+        seller_phone: profile?.phone || "",
+      });
       setLoading(false);
     };
     fetchListing();
