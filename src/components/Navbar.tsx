@@ -33,6 +33,15 @@ export function Navbar() {
             <Link to="/">
               <Button variant="ghost" size="sm">Browse</Button>
             </Link>
+            <Link to="/about">
+              <Button variant="ghost" size="sm">About</Button>
+            </Link>
+            <Link to="/help">
+              <Button variant="ghost" size="sm">Help</Button>
+            </Link>
+            <Link to="/contact">
+              <Button variant="ghost" size="sm">Contact</Button>
+            </Link>
             {isAdmin && (
               <Link to="/admin">
                 <Button variant="ghost" size="sm">
@@ -76,6 +85,15 @@ export function Navbar() {
           <div className="md:hidden border-t border-border p-4 flex flex-col gap-2 glass">
             <Link to="/" onClick={() => setMobileMenu(false)}>
               <Button variant="ghost" className="w-full justify-start">Browse</Button>
+            </Link>
+            <Link to="/about" onClick={() => setMobileMenu(false)}>
+              <Button variant="ghost" className="w-full justify-start">About</Button>
+            </Link>
+            <Link to="/help" onClick={() => setMobileMenu(false)}>
+              <Button variant="ghost" className="w-full justify-start">Help</Button>
+            </Link>
+            <Link to="/contact" onClick={() => setMobileMenu(false)}>
+              <Button variant="ghost" className="w-full justify-start">Contact Us</Button>
             </Link>
             {isAdmin && (
               <Link to="/admin" onClick={() => setMobileMenu(false)}>

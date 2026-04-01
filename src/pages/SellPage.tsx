@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, CONDITIONS, Category, Condition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -268,6 +269,7 @@ const SellPage = () => {
           </form>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 };

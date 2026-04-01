@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
+import { SiteFooter } from "@/components/SiteFooter";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cpu, Zap, Users } from "lucide-react";
@@ -200,12 +201,7 @@ const Index = () => {
         )}
       </section>
 
-      <footer className="border-t border-border mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-xs text-muted-foreground">
-          <p className="font-display font-semibold text-sm text-foreground mb-0.5">College Components</p>
-          <p>Trusted listings for serious student builders.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };
