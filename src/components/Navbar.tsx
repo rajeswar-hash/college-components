@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, User, LogOut, Menu, X, Cpu, Shield } from "lucide-react";
@@ -10,6 +10,18 @@ export function Navbar() {
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!mobileMenu) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenu]);
 
   const closeMobileMenuToHome = () => {
     setMobileMenu(false);
@@ -92,7 +104,7 @@ export function Navbar() {
             <button
               type="button"
               aria-label="Close mobile menu"
-              className="fixed inset-0 z-40 bg-background/45 backdrop-blur-md md:hidden"
+              className="fixed inset-0 z-40 bg-background/55 backdrop-blur-md md:hidden"
               onClick={closeMobileMenuToHome}
             />
             <div className="absolute inset-x-0 top-full z-50 md:hidden border-t border-border p-4 flex flex-col gap-2 glass shadow-glass">
