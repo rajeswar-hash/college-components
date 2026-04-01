@@ -31,6 +31,7 @@ interface ProfileAdminRow {
 
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
+const SUPABASE_BILLING_URL = "https://supabase.com/dashboard/org/ponqczgkbajoevlbqvny/billing";
 
 function byteSize(value: string) {
   return new TextEncoder().encode(value).length;
@@ -184,8 +185,8 @@ export default function AdminDashboard() {
             <Button variant="outline" onClick={() => openSupabasePage("editor")}>
               <Database className="mr-2 h-4 w-4" /> Open database
             </Button>
-            <Button className="gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => openExternalPage("https://supabase.com/pricing")}>
-              <Wallet className="mr-2 h-4 w-4" /> View upgrade options
+            <Button className="gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
+              <Wallet className="mr-2 h-4 w-4" /> Buy extra capacity
             </Button>
           </div>
         </div>
@@ -280,8 +281,8 @@ export default function AdminDashboard() {
               <CardTitle>Admin actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-between" variant="outline" onClick={() => openExternalPage("https://supabase.com/pricing")}>
-                Review pricing plans <ExternalLink className="h-4 w-4" />
+              <Button className="w-full justify-between" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
+                Open billing page <ExternalLink className="h-4 w-4" />
               </Button>
               <Button className="w-full justify-between" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
                 Open billing guide <ExternalLink className="h-4 w-4" />
@@ -295,7 +296,7 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-border/70 bg-background/70 p-4">
                 <p className="text-sm font-medium text-foreground">What this admin panel controls directly</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Marketplace summaries, listing moderation, and safe links into Supabase project tools. Billing lives at the organization level in Supabase, so this panel opens the pricing and billing guide instead of a broken project billing route.
+                  Marketplace summaries, listing moderation, and direct links into your Supabase project and organization billing pages.
                 </p>
               </div>
             </CardContent>
