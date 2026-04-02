@@ -85,8 +85,8 @@ export function ProductCard({ listing }: ProductCardProps) {
 
   return (
     <>
-    <Link to={`/product/${listing.id}`} className="group block">
-      <div className="glass rounded-xl overflow-hidden transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
+    <Link to={`/product/${listing.id}`} className="group block h-full">
+      <div className="glass h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated">
         <div className="aspect-[4/3] bg-muted relative overflow-hidden">
           {hasImage ? (
             <img
@@ -112,6 +112,7 @@ export function ProductCard({ listing }: ProductCardProps) {
           <button
             onClick={handleLike}
             disabled={liking}
+            aria-label={liked ? "Unlike listing" : "Like listing"}
             className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center transition-transform hover:scale-110"
           >
             <Heart
@@ -120,7 +121,7 @@ export function ProductCard({ listing }: ProductCardProps) {
           </button>
         </div>
 
-        <div className="p-4 space-y-2">
+        <div className="flex h-full flex-col p-4 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
               {listing.title}
@@ -139,9 +140,10 @@ export function ProductCard({ listing }: ProductCardProps) {
             </Badge>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> {listing.college}
+          <div className="mt-auto flex items-center justify-between gap-3 pt-1 text-xs text-muted-foreground">
+            <span className="flex min-w-0 items-center gap-1">
+              <MapPin className="w-3 h-3 shrink-0" />
+              <span className="truncate">{listing.college}</span>
             </span>
             <span className="flex items-center gap-1">
               <Heart className="w-3 h-3" /> {likeCount}

@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
 
 export function SiteFooter() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="border-t border-border mt-12 bg-background/80">
+    <footer className="mt-12 border-t border-border bg-background/80">
       <div className="container mx-auto grid gap-8 px-4 py-10 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <p className="font-display text-lg font-semibold text-foreground">College Components</p>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
             A professional marketplace for students to buy and sell electronics, tools, and project components inside their college network.
+          </p>
+          <p className="mt-3 max-w-md text-sm text-muted-foreground">
+            Built for campus communities that want faster discovery, cleaner listings, and direct student-to-student coordination.
           </p>
         </div>
 
@@ -31,7 +36,7 @@ export function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="container mx-auto flex flex-col gap-2 px-4 py-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>Trusted listings for serious student builders.</p>
+          <p>&copy; {currentYear} College Components. Trusted listings for serious student builders.</p>
           <p>Support: rajeswarbind39@gmail.com</p>
         </div>
       </div>

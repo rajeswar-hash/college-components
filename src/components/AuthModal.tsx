@@ -41,6 +41,14 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       nextRef?.current?.focus();
     };
 
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setName("");
+    setPhone("");
+    setCollege("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
@@ -68,11 +76,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         toast.success("Account created! You may need to verify your email.");
       }
       onClose();
-      setEmail("");
-      setPassword("");
-      setName("");
-      setPhone("");
-      setCollege("");
+      resetForm();
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
     } finally {
@@ -81,7 +85,16 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          resetForm();
+          setMode("login");
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-visible rounded-2xl p-0">
         <div className="max-h-[85vh] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
         <DialogHeader className="pr-8 text-center sm:text-center">

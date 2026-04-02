@@ -49,7 +49,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 glass border-b border-border relative">
+      <nav className="sticky top-0 z-50 relative border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg gradient-bg flex items-center justify-center">
@@ -62,7 +62,7 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             <Link to="/">
-              <Button variant="ghost" size="sm">Browse</Button>
+              <Button variant="ghost" size="sm">Home</Button>
             </Link>
             <Link to="/about">
               <Button variant="ghost" size="sm">About</Button>
@@ -103,7 +103,7 @@ export function Navbar() {
               <>
                 <Link to="/dashboard">
                   <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-1" /> {user?.name?.split(" ")[0] || "Profile"}
+                    <User className="w-4 h-4 mr-1" /> Dashboard
                   </Button>
                 </Link>
                 <Button variant="ghost" size="sm" onClick={handleLogout}>

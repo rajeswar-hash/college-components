@@ -156,6 +156,19 @@ const ProductDetail = () => {
   })();
 
   const handleShare = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: listing.title,
+          text: `Check out this listing on College Components: ${listing.title}`,
+          url: window.location.href,
+        })
+        .catch(() => {
+          // Ignore share sheet cancellation.
+        });
+      return;
+    }
+
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard!");
   };
@@ -232,11 +245,13 @@ const ProductDetail = () => {
 
             <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
 
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-border/70 bg-card/70 p-4 shadow-sm">
+              <div className="space-y-2 text-sm text-muted-foreground">
               <p className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {listing.college}</p>
               <p className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Listed {dateStr}</p>
               <p className="flex items-center gap-2"><Heart className="w-4 h-4" /> {listing.likes} likes</p>
               <p>Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
+            </div>
             </div>
 
             <div className="flex gap-3 pt-2">

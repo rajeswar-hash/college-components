@@ -177,6 +177,9 @@ export default function ContactPage() {
             <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
               Send a suggestion, report an issue, or share product ideas. Messages are sent directly to the College Components support inbox.
             </div>
+            <div className="rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+              Add the issue clearly, mention the page where it happened, and include your contact email so the team can reply faster.
+            </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">Name</Label>

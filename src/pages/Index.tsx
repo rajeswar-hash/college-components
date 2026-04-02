@@ -6,7 +6,9 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
-import { Cpu, Zap, Users } from "lucide-react";
+import { ArrowRight, Cpu, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { canonicalInstitutionName, normalizeInstitutionKey } from "@/lib/institutions";
 
 interface ListingRow {
@@ -27,6 +29,7 @@ interface ListingRow {
 }
 
 const Index = () => {
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -144,18 +147,29 @@ const Index = () => {
         <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
           <div className="container mx-auto px-4 py-8 md:py-12">
             <div className="max-w-xl mx-auto text-center">
+              <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary shadow-sm">
+                <Sparkles className="h-3.5 w-3.5" /> Student Marketplace
+              </p>
               <h1 className="font-display font-extrabold text-2xl md:text-3xl lg:text-4xl text-foreground leading-tight mb-2">
                 Buy & Sell <span className="gradient-text">Components</span> Across College
               </h1>
-              <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+              <p className="text-sm text-muted-foreground mb-5 max-w-lg mx-auto">
                 A cleaner, faster marketplace for engineering students to trade Arduino boards, sensors, tools, and project gear with confidence.
               </p>
+              <div className="mb-5 flex flex-wrap items-center justify-center gap-3">
+                <Button asChild className="gradient-bg border-0 text-primary-foreground hover:opacity-90">
+                  <a href="#listings">Browse Listings <ArrowRight className="ml-2 h-4 w-4" /></a>
+                </Button>
+                <Button asChild variant="outline" className="bg-background/80">
+                  <a href={isAuthenticated ? "#listings" : "#listings"}>{isAuthenticated ? "Explore Popular Picks" : "Start Exploring"}</a>
+                </Button>
+              </div>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Cpu className="w-3.5 h-3.5 text-primary" /> 100+ Parts
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-primary" /> Verified
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Verified
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-primary" /> WhatsApp
@@ -168,7 +182,7 @@ const Index = () => {
         </section>
       )}
 
-      <section className="container mx-auto px-4 py-6">
+      <section id="listings" className="container mx-auto px-4 py-6">
         <FilterBar
           search={search}
           onSearchChange={setSearch}
@@ -185,6 +199,18 @@ const Index = () => {
           <div className="flex items-center justify-between mt-4 mb-2">
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">{listings.length}</span> result{listings.length !== 1 ? "s" : ""} found
+            </p>
+          </div>
+        )}
+
+        {!hasActiveFilters && !loading && listings.length > 0 && (
+          <div className="mb-2 mt-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Fresh listings</p>
+              <h2 className="font-display text-2xl font-bold text-foreground">Popular components from real students</h2>
+            </div>
+            <p className="hidden text-sm text-muted-foreground md:block">
+              Ranked by likes first, then by newest listings.
             </p>
           </div>
         )}
