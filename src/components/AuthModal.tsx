@@ -70,14 +70,41 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md glass">
-        <DialogHeader>
+      <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-y-auto rounded-2xl p-4 sm:p-6">
+        <DialogHeader className="pr-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+            {mode === "login" ? "Account Access" : "New User Setup"}
+          </p>
           <DialogTitle className="font-display text-2xl">
             {mode === "login" ? "Welcome Back" : "Join College Components"}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            {mode === "login"
+              ? "Sign in to publish listings, like products, and manage your dashboard."
+              : "Create your account to start selling, liking, and managing your listings."}
+          </p>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/40 p-1">
+          <Button
+            type="button"
+            variant={mode === "login" ? "default" : "ghost"}
+            className={mode === "login" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
+            onClick={() => setMode("login")}
+          >
+            Sign In
+          </Button>
+          <Button
+            type="button"
+            variant={mode === "register" ? "default" : "ghost"}
+            className={mode === "register" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
+            onClick={() => setMode("register")}
+          >
+            Register
+          </Button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {mode === "register" && (
             <>
               <div>
@@ -116,7 +143,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             {submitting ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground pb-1">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
               type="button"
