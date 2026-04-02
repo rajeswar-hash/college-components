@@ -8,6 +8,8 @@ import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft,
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getLikedIds, toggleListingLike } from "@/lib/likes";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -34,12 +36,14 @@ interface ListingDetail {
 }
 
 const ProductDetail = () => {
+  const { isAuthenticated } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
@@ -101,6 +105,11 @@ const ProductDetail = () => {
 
   const handleLike = async () => {
     if (!listing || liking) return;
+
+    if (!isAuthenticated) {
+      setShowAuth(true);
+      return;
+    }
 
     setLiking(true);
     try {
@@ -226,6 +235,7 @@ const ProductDetail = () => {
         </div>
       </div>
       <SiteFooter />
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </div>
   );
 };

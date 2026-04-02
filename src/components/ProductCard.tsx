@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { getLikedIds, toggleListingLike } from "@/lib/likes";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 
 interface ProductCardProps {
   listing: Listing;
@@ -22,9 +24,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function ProductCard({ listing }: ProductCardProps) {
+  const { isAuthenticated } = useAuth();
   const [liked, setLiked] = useState(() => getLikedIds().includes(listing.id));
   const [likeCount, setLikeCount] = useState(listing.likes);
   const [liking, setLiking] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const hasImage = listing.images && listing.images.length > 0 && listing.images[0];
 
   useEffect(() => {
@@ -35,6 +39,12 @@ export function ProductCard({ listing }: ProductCardProps) {
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      setShowAuth(true);
+      return;
+    }
+
     if (liking) return;
 
     setLiking(true);
@@ -50,6 +60,7 @@ export function ProductCard({ listing }: ProductCardProps) {
   };
 
   return (
+    <>
     <Link to={`/product/${listing.id}`} className="group block">
       <div className="glass rounded-xl overflow-hidden transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
         <div className="aspect-[4/3] bg-muted relative overflow-hidden">
@@ -115,5 +126,7 @@ export function ProductCard({ listing }: ProductCardProps) {
         </div>
       </div>
     </Link>
+    <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
+    </>
   );
 }
