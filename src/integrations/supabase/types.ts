@@ -122,10 +122,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      has_user_liked_listing: {
+        Args: {
+          p_listing_id: string
+        }
+        Returns: boolean
+      }
       toggle_listing_like: {
         Args: {
           listing_id: string
           should_like: boolean
+        }
+        Returns: number
+      }
+      toggle_listing_like_v2: {
+        Args: {
+          p_listing_id: string
+          p_should_like: boolean
         }
         Returns: number
       }
