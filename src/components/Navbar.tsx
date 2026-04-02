@@ -9,10 +9,24 @@ export function Navbar() {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!mobileMenu) {
+    if (mobileMenu) {
+      setMobileMenuMounted(true);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setMobileMenuMounted(false);
+    }, 220);
+
+    return () => window.clearTimeout(timeout);
+  }, [mobileMenu]);
+
+  useEffect(() => {
+    if (!mobileMenuMounted) {
       document.body.style.overflow = "";
       return;
     }
@@ -21,7 +35,7 @@ export function Navbar() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileMenu]);
+  }, [mobileMenuMounted]);
 
   const closeMobileMenu = () => {
     setMobileMenu(false);
@@ -115,66 +129,79 @@ export function Navbar() {
           </Button>
         </div>
 
-        {mobileMenu && (
-          <div className="fixed inset-x-0 top-16 bottom-0 z-40 flex flex-col md:hidden">
-            <div className="relative z-50 shrink-0 border-t border-border bg-background p-4 flex flex-col gap-2 shadow-lg">
-              <Button
-                className="w-full gradient-bg text-primary-foreground border-0"
-                onClick={() => {
-                  setMobileMenu(false);
-                  if (isAuthenticated) {
-                    navigate("/sell");
-                  } else {
-                    setShowAuth(true);
-                  }
-                }}
-              >
-                <Plus className="w-4 h-4 mr-1" /> Sell Item
-              </Button>
-              {isAuthenticated && (
-                <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="w-4 h-4 mr-2" /> Dashboard
-                  </Button>
-                </Link>
-              )}
-              <Link to="/about" onClick={() => setMobileMenu(false)}>
-                <Button variant="ghost" className="w-full justify-start">About</Button>
-              </Link>
-              <Link to="/help" onClick={() => setMobileMenu(false)}>
-                <Button variant="ghost" className="w-full justify-start">Help</Button>
-              </Link>
-              <Link to="/terms" onClick={() => setMobileMenu(false)}>
-                <Button variant="ghost" className="w-full justify-start">Terms & Conditions</Button>
-              </Link>
-              <Link to="/contact" onClick={() => setMobileMenu(false)}>
-                <Button variant="ghost" className="w-full justify-start">Contact Us</Button>
-              </Link>
-              <Link to="/privacy" onClick={() => setMobileMenu(false)}>
-                <Button variant="ghost" className="w-full justify-start">Privacy Policy</Button>
-              </Link>
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Shield className="w-4 h-4 mr-2" /> Admin Panel
-                  </Button>
-                </Link>
-              )}
-              {isAuthenticated && (
-                <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
-                </Button>
-              )}
-            </div>
-            <button
-              type="button"
-              aria-label="Close mobile menu"
-              className="flex-1 bg-background/45 backdrop-blur-xl"
-              onClick={closeMobileMenu}
-            />
-          </div>
-        )}
       </nav>
+
+      {mobileMenuMounted && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <button
+            type="button"
+            aria-label="Close mobile menu"
+            onClick={closeMobileMenu}
+            className={`absolute inset-0 transition-opacity duration-300 ease-out ${mobileMenu ? "opacity-100" : "pointer-events-none opacity-0"}`}
+            style={{
+              background: "linear-gradient(135deg, rgba(0, 150, 136, 0.25), rgba(33, 150, 243, 0.25))",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
+          />
+
+          <div
+            className={`absolute inset-x-0 top-16 z-50 transition-all duration-300 ease-out ${mobileMenu ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0 pointer-events-none"}`}
+          >
+            <div className="border-t border-border bg-background/95 shadow-lg">
+              <div className="p-4 flex flex-col gap-2">
+                <Button
+                  className="w-full gradient-bg text-primary-foreground border-0"
+                  onClick={() => {
+                    setMobileMenu(false);
+                    if (isAuthenticated) {
+                      navigate("/sell");
+                    } else {
+                      setShowAuth(true);
+                    }
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Sell Item
+                </Button>
+                {isAuthenticated && (
+                  <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <User className="w-4 h-4 mr-2" /> Dashboard
+                    </Button>
+                  </Link>
+                )}
+                <Link to="/about" onClick={() => setMobileMenu(false)}>
+                  <Button variant="ghost" className="w-full justify-start">About</Button>
+                </Link>
+                <Link to="/help" onClick={() => setMobileMenu(false)}>
+                  <Button variant="ghost" className="w-full justify-start">Help</Button>
+                </Link>
+                <Link to="/terms" onClick={() => setMobileMenu(false)}>
+                  <Button variant="ghost" className="w-full justify-start">Terms & Conditions</Button>
+                </Link>
+                <Link to="/contact" onClick={() => setMobileMenu(false)}>
+                  <Button variant="ghost" className="w-full justify-start">Contact Us</Button>
+                </Link>
+                <Link to="/privacy" onClick={() => setMobileMenu(false)}>
+                  <Button variant="ghost" className="w-full justify-start">Privacy Policy</Button>
+                </Link>
+                {isAdmin && (
+                  <Link to="/admin" onClick={() => setMobileMenu(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <Shield className="w-4 h-4 mr-2" /> Admin Panel
+                    </Button>
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </>
