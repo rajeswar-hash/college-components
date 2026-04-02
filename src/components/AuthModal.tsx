@@ -70,22 +70,19 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-y-auto rounded-2xl p-4 sm:p-6">
-        <DialogHeader className="pr-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-            {mode === "login" ? "Account Access" : "New User Setup"}
-          </p>
-          <DialogTitle className="font-display text-2xl">
+      <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-y-auto rounded-2xl p-5 sm:p-6">
+        <DialogHeader className="pr-8 text-center sm:text-center">
+          <DialogTitle className="font-display text-2xl text-center">
             {mode === "login" ? "Welcome Back" : "Join College Components"}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground text-center">
             {mode === "login"
               ? "Sign in to publish listings, like products, and manage your dashboard."
               : "Create your account to start selling, liking, and managing your listings."}
           </p>
         </DialogHeader>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/40 p-1">
+        <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/40 p-1">
           <Button
             type="button"
             variant={mode === "login" ? "default" : "ghost"}
@@ -104,7 +101,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-5">
           {mode === "register" && (
             <>
               <div>
