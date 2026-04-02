@@ -12,6 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AboutPage from "./pages/AboutPage";
 import HelpPage from "./pages/HelpPage";
 import ContactPage from "./pages/ContactPage";
+import HelpBotPage from "./pages/HelpBotPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFound from "./pages/NotFound";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/about" element={<AboutPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/help-bot" element={<HelpBotPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
