@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -28,6 +28,18 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const collegeRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  const moveOnEnter =
+    (nextRef?: React.RefObject<HTMLInputElement>) =>
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      nextRef?.current?.focus();
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +82,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-y-auto rounded-2xl p-5 sm:p-6">
+      <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-visible rounded-2xl p-0">
+        <div className="max-h-[85vh] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
         <DialogHeader className="pr-8 text-center sm:text-center">
           <DialogTitle className="font-display text-2xl text-center">
             {mode === "login" ? "Welcome Back" : "Join College Components"}
@@ -106,12 +119,28 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             <>
               <div>
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rahul Sharma" />
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={moveOnEnter(collegeRef)}
+                  placeholder="Rahul Sharma"
+                  autoComplete="name"
+                />
               </div>
-              <CollegeAutocomplete value={college} onChange={setCollege} />
+              <CollegeAutocomplete value={college} onChange={setCollege} inputRef={collegeRef} onNextField={() => phoneRef.current?.focus()} />
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="919876543210" />
+                <Input
+                  id="phone"
+                  ref={phoneRef}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onKeyDown={moveOnEnter(emailRef)}
+                  placeholder="919876543210"
+                  autoComplete="tel"
+                  inputMode="tel"
+                />
               </div>
             </>
           )}
@@ -120,10 +149,13 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              ref={emailRef}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={moveOnEnter(passwordRef)}
               placeholder="you@example.com"
+              autoComplete={mode === "login" ? "email" : "username"}
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
@@ -151,6 +183,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             </button>
           </p>
         </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

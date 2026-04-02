@@ -7,9 +7,11 @@ import { loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions
 interface CollegeAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  inputRef?: React.RefObject<HTMLInputElement>;
+  onNextField?: () => void;
 }
 
-export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProps) {
+export function CollegeAutocomplete({ value, onChange, inputRef, onNextField }: CollegeAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<string[]>([]);
@@ -50,13 +52,15 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
   }, [query, value, onChange]);
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative overflow-visible">
       <Label htmlFor="college">College / University</Label>
       <Input
         id="college"
+        ref={inputRef}
         value={query}
         placeholder={dataReady ? "Start typing your college name..." : "Loading colleges..."}
         autoComplete="off"
+        autoCapitalize="words"
         onChange={(e) => {
           const val = e.target.value;
           setQuery(val);
@@ -74,9 +78,22 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
         onBlur={() => {
           if (query.trim()) onChange(query.trim());
         }}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+
+          const nextValue = results[0] || query.trim();
+          if (nextValue) {
+            onChange(nextValue);
+            setQuery(nextValue);
+          }
+
+          setOpen(false);
+          onNextField?.();
+        }}
       />
       {open && (loading || results.length > 0) && (
-        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-lg border border-border bg-popover shadow-lg">
+        <div className="absolute left-0 right-0 z-[80] mt-1 max-h-56 overflow-auto rounded-lg border border-border bg-popover shadow-lg">
           {loading && results.length === 0 && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching...
@@ -91,6 +108,7 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
                 onChange(c);
                 setQuery(c);
                 setOpen(false);
+                onNextField?.();
               }}
             >
               {value === c && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
@@ -100,7 +118,7 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
         </div>
       )}
       {open && !loading && query.length >= 2 && results.length === 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground">
+        <div className="absolute left-0 right-0 z-[80] mt-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground">
           No match found — your typed name will be used
         </div>
       )}
