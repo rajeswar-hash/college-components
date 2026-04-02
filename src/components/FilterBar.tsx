@@ -1,11 +1,18 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { CATEGORIES, COLLEGES, Category } from "@/lib/types";
+import { CATEGORIES, Category } from "@/lib/types";
 import { getListings } from "@/lib/store";
 import { Search, X, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import {
+  cleanInstitutionName,
+  dedupeInstitutionNames,
+  loadInstitutionNames,
+  normalizeInstitutionKey,
+  searchInstitutionNames,
+} from "@/lib/institutions";
 
 interface FilterBarProps {
   search: string;
@@ -19,45 +26,6 @@ interface FilterBarProps {
   maxPrice: number;
 }
 
-interface CollegeEntry { "College Name": string; }
-interface UniversityEntry { "University Name": string; }
-
-function cleanName(name: string): string {
-  return name.replace(/\s*\(Id:\s*[CU]-\d+\)\s*/g, "").trim();
-}
-
-let cachedColleges: string[] | null = null;
-let loadingPromise: Promise<string[]> | null = null;
-
-async function loadAllColleges(): Promise<string[]> {
-  if (cachedColleges) return cachedColleges;
-  if (loadingPromise) return loadingPromise;
-  loadingPromise = (async () => {
-    try {
-      const [cRes, uRes] = await Promise.all([
-        fetch("/data/indian_colleges.json"),
-        fetch("/data/indian_universities.json"),
-      ]);
-      const names = new Set<string>();
-      for (const c of COLLEGES) names.add(c);
-      if (cRes.ok) {
-        const colleges: CollegeEntry[] = await cRes.json();
-        for (const c of colleges) names.add(cleanName(c["College Name"]));
-      }
-      if (uRes.ok) {
-        const unis: UniversityEntry[] = await uRes.json();
-        for (const u of unis) names.add(cleanName(u["University Name"]));
-      }
-      cachedColleges = [...names].sort();
-      return cachedColleges;
-    } catch {
-      cachedColleges = [];
-      return [];
-    }
-  })();
-  return loadingPromise;
-}
-
 export function FilterBar({
   search, onSearchChange, selectedCategory, onCategoryChange,
   selectedCollege, onCollegeChange, priceRange, onPriceRangeChange, maxPrice
@@ -66,11 +34,15 @@ export function FilterBar({
   const [collegeQuery, setCollegeQuery] = useState(selectedCollege ?? "");
   const [collegeResults, setCollegeResults] = useState<string[]>([]);
   const [collegeDropdownOpen, setCollegeDropdownOpen] = useState(false);
-  const [dataReady, setDataReady] = useState(!!cachedColleges);
+  const [dataReady, setDataReady] = useState(false);
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  useEffect(() => { loadAllColleges().then(() => setDataReady(true)); }, []);
+  useEffect(() => { loadInstitutionNames().then(() => setDataReady(true)); }, []);
+
+  useEffect(() => {
+    setCollegeQuery(selectedCollege ?? "");
+  }, [selectedCollege]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -81,22 +53,21 @@ export function FilterBar({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const searchColleges = useCallback((q: string) => {
-    if (!cachedColleges || q.length < 2) { setCollegeResults([]); return; }
-    const words = q.toLowerCase().split(/\s+/).filter(w => w.length > 0);
-    setCollegeResults(
-      cachedColleges.filter(c => {
-        const lower = c.toLowerCase();
-        return words.every(w => lower.includes(w));
-      }).slice(0, 40)
-    );
+  const searchColleges = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
+      setCollegeResults([]);
+      return;
+    }
+
+    const matches = await searchInstitutionNames(q);
+    setCollegeResults(matches);
   }, []);
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (selectedCollege ? 1 : 0) + (priceRange[0] > 0 || priceRange[1] < maxPrice ? 1 : 0);
 
   const collegesWithListings = useMemo(() => {
     const listings = getListings();
-    return [...new Set(listings.map(l => l.college))].sort();
+    return dedupeInstitutionNames(listings.map((listing) => cleanInstitutionName(listing.college)));
   }, []);
 
   const clearAll = () => {
@@ -248,7 +219,7 @@ export function FilterBar({
                       <button key={c} type="button"
                         className="flex w-full items-center gap-2 px-3 py-2 text-xs text-left transition-colors hover:bg-accent"
                         onClick={() => { onCollegeChange(c); setCollegeQuery(c); setCollegeDropdownOpen(false); }}>
-                        <span className={selectedCollege === c ? "font-medium text-primary" : ""}>{c}</span>
+                        <span className={normalizeInstitutionKey(selectedCollege ?? "") === normalizeInstitutionKey(c) ? "font-medium text-primary" : ""}>{c}</span>
                       </button>
                     ))}
                   </div>

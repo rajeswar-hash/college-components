@@ -2,63 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Loader2 } from "lucide-react";
-
-interface CollegeEntry {
-  "College Name": string;
-  "State Name": string;
-  "University Name": string;
-}
-
-interface UniversityEntry {
-  "University Name": string;
-  "State Name": string;
-}
-
-let cachedColleges: string[] | null = null;
-let loadingPromise: Promise<string[]> | null = null;
-
-function cleanName(name: string): string {
-  // Remove "(Id: C-XXXXX)" or "(Id: U-XXXXX)" patterns
-  return name.replace(/\s*\(Id:\s*[CU]-\d+\)\s*/g, "").trim();
-}
-
-async function loadAllColleges(): Promise<string[]> {
-  if (cachedColleges) return cachedColleges;
-  if (loadingPromise) return loadingPromise;
-
-  loadingPromise = (async () => {
-    try {
-      const [collegesRes, universitiesRes] = await Promise.all([
-        fetch("/data/indian_colleges.json"),
-        fetch("/data/indian_universities.json"),
-      ]);
-
-      const names = new Set<string>();
-
-      if (collegesRes.ok) {
-        const colleges: CollegeEntry[] = await collegesRes.json();
-        for (const c of colleges) {
-          names.add(cleanName(c["College Name"]));
-        }
-      }
-
-      if (universitiesRes.ok) {
-        const universities: UniversityEntry[] = await universitiesRes.json();
-        for (const u of universities) {
-          names.add(cleanName(u["University Name"]));
-        }
-      }
-
-      cachedColleges = [...names].sort();
-      return cachedColleges;
-    } catch {
-      cachedColleges = [];
-      return [];
-    }
-  })();
-
-  return loadingPromise;
-}
+import { loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
 
 interface CollegeAutocompleteProps {
   value: string;
@@ -70,23 +14,26 @@ export function CollegeAutocomplete({ value, onChange }: CollegeAutocompleteProp
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dataReady, setDataReady] = useState(!!cachedColleges);
+  const [dataReady, setDataReady] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Preload data on mount
   useEffect(() => {
-    loadAllColleges().then(() => setDataReady(true));
+    loadInstitutionNames().then(() => setDataReady(true));
   }, []);
 
-  const searchColleges = useCallback((q: string) => {
-    if (!cachedColleges || q.length < 2) {
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  const searchColleges = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
       setResults([]);
       return;
     }
     setLoading(true);
-    const lower = q.toLowerCase();
-    const matches = cachedColleges.filter((c) => c.toLowerCase().includes(lower)).slice(0, 40);
+    const matches = await searchInstitutionNames(q);
     setResults(matches);
     setLoading(false);
   }, []);

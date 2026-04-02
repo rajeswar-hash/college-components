@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cpu, Zap, Users } from "lucide-react";
+import { normalizeInstitutionKey } from "@/lib/institutions";
 
 interface ListingRow {
   id: string;
@@ -94,7 +95,10 @@ const Index = () => {
   const listings = useMemo(() => {
     let items = allListings;
     if (selectedCategory) items = items.filter((l) => l.category === selectedCategory);
-    if (selectedCollege) items = items.filter((l) => l.college === selectedCollege);
+    if (selectedCollege) {
+      const selectedCollegeKey = normalizeInstitutionKey(selectedCollege);
+      items = items.filter((l) => normalizeInstitutionKey(l.college) === selectedCollegeKey);
+    }
     if (priceRange[0] > 0 || priceRange[1] < maxPrice) {
       items = items.filter((l) => l.price >= priceRange[0] && l.price <= priceRange[1]);
     }
