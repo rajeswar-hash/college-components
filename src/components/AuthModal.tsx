@@ -128,7 +128,13 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   autoComplete="name"
                 />
               </div>
-              <CollegeAutocomplete value={college} onChange={setCollege} inputRef={collegeRef} onNextField={() => phoneRef.current?.focus()} />
+              <CollegeAutocomplete
+                value={college}
+                onChange={setCollege}
+                inputRef={collegeRef}
+                onNextField={() => phoneRef.current?.focus()}
+                dropdownPosition="above"
+              />
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
                 <Input

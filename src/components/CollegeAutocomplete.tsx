@@ -9,9 +9,16 @@ interface CollegeAutocompleteProps {
   onChange: (value: string) => void;
   inputRef?: React.RefObject<HTMLInputElement>;
   onNextField?: () => void;
+  dropdownPosition?: "below" | "above";
 }
 
-export function CollegeAutocomplete({ value, onChange, inputRef, onNextField }: CollegeAutocompleteProps) {
+export function CollegeAutocomplete({
+  value,
+  onChange,
+  inputRef,
+  onNextField,
+  dropdownPosition = "below",
+}: CollegeAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<string[]>([]);
@@ -51,6 +58,16 @@ export function CollegeAutocomplete({ value, onChange, inputRef, onNextField }: 
     return () => document.removeEventListener("mousedown", handler);
   }, [query, value, onChange]);
 
+  const dropdownClass =
+    dropdownPosition === "above"
+      ? "absolute bottom-full left-0 right-0 z-[80] mb-1 max-h-56 overflow-auto rounded-lg border border-border bg-popover shadow-lg"
+      : "absolute left-0 right-0 z-[80] mt-1 max-h-56 overflow-auto rounded-lg border border-border bg-popover shadow-lg";
+
+  const emptyStateClass =
+    dropdownPosition === "above"
+      ? "absolute bottom-full left-0 right-0 z-[80] mb-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground"
+      : "absolute left-0 right-0 z-[80] mt-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground";
+
   return (
     <div ref={wrapperRef} className="relative overflow-visible">
       <Label htmlFor="college">College / University</Label>
@@ -70,6 +87,7 @@ export function CollegeAutocomplete({ value, onChange, inputRef, onNextField }: 
           debounceRef.current = setTimeout(() => searchColleges(val), 150);
         }}
         onFocus={() => {
+          inputRef?.current?.scrollIntoView({ block: "center", behavior: "smooth" });
           if (query.length >= 2) {
             setOpen(true);
             searchColleges(query);
@@ -93,7 +111,7 @@ export function CollegeAutocomplete({ value, onChange, inputRef, onNextField }: 
         }}
       />
       {open && (loading || results.length > 0) && (
-        <div className="absolute left-0 right-0 z-[80] mt-1 max-h-56 overflow-auto rounded-lg border border-border bg-popover shadow-lg">
+        <div className={dropdownClass}>
           {loading && results.length === 0 && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching...
@@ -118,7 +136,7 @@ export function CollegeAutocomplete({ value, onChange, inputRef, onNextField }: 
         </div>
       )}
       {open && !loading && query.length >= 2 && results.length === 0 && (
-        <div className="absolute left-0 right-0 z-[80] mt-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground">
+        <div className={emptyStateClass}>
           No match found — your typed name will be used
         </div>
       )}
