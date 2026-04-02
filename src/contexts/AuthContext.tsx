@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { cleanInstitutionName } from "@/lib/institutions";
+import { canonicalInstitutionName } from "@/lib/institutions";
 
 const ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const ADMIN_PASSWORD = "raj84217#*";
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
     const normalizedEmail = email.trim().toLowerCase();
-    const normalizedCollege = cleanInstitutionName(college);
+    const normalizedCollege = canonicalInstitutionName(college);
     const { error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,

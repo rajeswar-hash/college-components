@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cpu, Zap, Users } from "lucide-react";
-import { normalizeInstitutionKey } from "@/lib/institutions";
+import { canonicalInstitutionName, normalizeInstitutionKey } from "@/lib/institutions";
 
 interface ListingRow {
   id: string;
@@ -76,6 +76,7 @@ const Index = () => {
         const seller = sellers.get(listing.seller_id);
         return {
           ...listing,
+          college: canonicalInstitutionName(listing.college),
           seller_name: seller?.name || "Unknown",
           seller_phone: seller?.phone || "",
         };

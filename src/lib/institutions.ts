@@ -11,6 +11,12 @@ interface UniversityEntry {
 let cachedInstitutions: string[] | null = null;
 let loadingPromise: Promise<string[]> | null = null;
 
+const INSTITUTION_ALIASES: Record<string, string> = {
+  "goa college of engineering gec": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
+  "goa college of engineering": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
+  "govt of goa college of engineering goa farmagudi ponda": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
+};
+
 function collapseWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -23,8 +29,20 @@ export function cleanInstitutionName(name: string) {
   );
 }
 
+export function canonicalInstitutionName(name: string) {
+  const cleaned = cleanInstitutionName(name);
+  const normalized = cleaned
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return INSTITUTION_ALIASES[normalized] ?? cleaned;
+}
+
 export function normalizeInstitutionKey(name: string) {
-  return cleanInstitutionName(name)
+  return canonicalInstitutionName(name)
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/\bthe\b/g, " ")
@@ -59,7 +77,7 @@ export async function loadInstitutionNames(): Promise<string[]> {
       const institutionMap = new Map<string, string>();
 
       const addInstitution = (rawName: string) => {
-        const cleaned = cleanInstitutionName(rawName);
+        const cleaned = canonicalInstitutionName(rawName);
         const key = normalizeInstitutionKey(cleaned);
         if (!cleaned || !key) return;
 
@@ -87,7 +105,7 @@ export async function loadInstitutionNames(): Promise<string[]> {
       const fallback = new Map<string, string>();
 
       for (const college of COLLEGES) {
-        const cleaned = cleanInstitutionName(college);
+        const cleaned = canonicalInstitutionName(college);
         const key = normalizeInstitutionKey(cleaned);
         if (cleaned && key && !fallback.has(key)) {
           fallback.set(key, cleaned);
@@ -133,7 +151,7 @@ export function dedupeInstitutionNames(names: string[]) {
   const deduped = new Map<string, string>();
 
   for (const name of names) {
-    const cleaned = cleanInstitutionName(name);
+    const cleaned = canonicalInstitutionName(name);
     const key = normalizeInstitutionKey(cleaned);
     if (!cleaned || !key || deduped.has(key)) continue;
     deduped.set(key, cleaned);
