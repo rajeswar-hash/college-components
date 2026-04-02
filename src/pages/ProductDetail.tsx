@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { getLikedIds, toggleListingLike } from "@/lib/likes";
+import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
 
@@ -36,7 +36,7 @@ interface ListingDetail {
 }
 
 const ProductDetail = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, supabaseUser } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [listing, setListing] = useState<ListingDetail | null>(null);
@@ -72,11 +72,35 @@ const ProductDetail = () => {
         seller_name: profile?.name || "Unknown",
         seller_phone: profile?.phone || "",
       });
-      setLiked(getLikedIds().includes(data.id));
       setLoading(false);
     };
     fetchListing();
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!listing || !supabaseUser) {
+      setLiked(false);
+      return;
+    }
+
+    hasUserLikedListing(listing.id, supabaseUser.id)
+      .then((value) => {
+        if (!cancelled) {
+          setLiked(value);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLiked(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listing, supabaseUser]);
 
   if (loading) {
     return (
@@ -113,7 +137,7 @@ const ProductDetail = () => {
 
     setLiking(true);
     try {
-      const result = await toggleListingLike(listing.id, listing.likes);
+      const result = await toggleListingLike(listing.id, listing.likes, liked);
       setLiked(result.liked);
       setListing((current) => current ? { ...current, likes: result.likes } : current);
       toast.success(result.liked ? "Added to favorites" : "Removed from favorites");

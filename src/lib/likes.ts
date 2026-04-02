@@ -1,35 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const LIKES_KEY = "cc_likes";
+export async function hasUserLikedListing(listingId: string, userId: string) {
+  const { data, error } = await supabase
+    .from("listing_likes")
+    .select("listing_id")
+    .eq("listing_id", listingId)
+    .eq("user_id", userId)
+    .maybeSingle();
 
-export function getLikedIds(): string[] {
-  const stored = localStorage.getItem(LIKES_KEY);
-  return stored ? JSON.parse(stored) : [];
+  if (error) throw error;
+
+  return !!data;
 }
 
-export function isListingLiked(listingId: string) {
-  return getLikedIds().includes(listingId);
-}
-
-function saveLikedIds(ids: string[]) {
-  localStorage.setItem(LIKES_KEY, JSON.stringify(ids));
-}
-
-export function setListingLikedState(listingId: string, liked: boolean) {
-  const current = new Set(getLikedIds());
-
-  if (liked) {
-    current.add(listingId);
-  } else {
-    current.delete(listingId);
-  }
-
-  saveLikedIds([...current]);
-}
-
-export async function toggleListingLike(listingId: string, currentLikes: number) {
-  const liked = isListingLiked(listingId);
-  const nextLiked = !liked;
+export async function toggleListingLike(listingId: string, currentLikes: number, currentlyLiked: boolean) {
+  const nextLiked = !currentlyLiked;
 
   const { data, error } = await supabase.rpc("toggle_listing_like", {
     listing_id: listingId,
@@ -37,8 +22,6 @@ export async function toggleListingLike(listingId: string, currentLikes: number)
   });
 
   if (error) throw error;
-
-  setListingLikedState(listingId, nextLiked);
 
   return {
     liked: nextLiked,

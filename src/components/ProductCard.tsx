@@ -3,7 +3,7 @@ import { Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { getLikedIds, toggleListingLike } from "@/lib/likes";
+import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
@@ -24,8 +24,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function ProductCard({ listing }: ProductCardProps) {
-  const { isAuthenticated } = useAuth();
-  const [liked, setLiked] = useState(() => getLikedIds().includes(listing.id));
+  const { isAuthenticated, supabaseUser } = useAuth();
+  const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
   const [liking, setLiking] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -33,8 +33,32 @@ export function ProductCard({ listing }: ProductCardProps) {
 
   useEffect(() => {
     setLikeCount(listing.likes);
-    setLiked(getLikedIds().includes(listing.id));
-  }, [listing.id, listing.likes]);
+  }, [listing.likes]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!supabaseUser) {
+      setLiked(false);
+      return;
+    }
+
+    hasUserLikedListing(listing.id, supabaseUser.id)
+      .then((value) => {
+        if (!cancelled) {
+          setLiked(value);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLiked(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listing.id, supabaseUser]);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,7 +73,7 @@ export function ProductCard({ listing }: ProductCardProps) {
 
     setLiking(true);
     try {
-      const result = await toggleListingLike(listing.id, likeCount);
+      const result = await toggleListingLike(listing.id, likeCount, liked);
       setLiked(result.liked);
       setLikeCount(result.likes);
     } catch {
