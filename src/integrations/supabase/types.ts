@@ -104,6 +104,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      toggle_listing_like: {
+        Args: {
+          listing_id: string
+          should_like: boolean
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

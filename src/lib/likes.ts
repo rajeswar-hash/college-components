@@ -30,14 +30,11 @@ export function setListingLikedState(listingId: string, liked: boolean) {
 export async function toggleListingLike(listingId: string, currentLikes: number) {
   const liked = isListingLiked(listingId);
   const nextLiked = !liked;
-  const nextLikes = Math.max(0, currentLikes + (nextLiked ? 1 : -1));
 
-  const { data, error } = await supabase
-    .from("listings")
-    .update({ likes: nextLikes })
-    .eq("id", listingId)
-    .select("likes")
-    .single();
+  const { data, error } = await supabase.rpc("toggle_listing_like", {
+    listing_id: listingId,
+    should_like: nextLiked,
+  });
 
   if (error) throw error;
 
@@ -45,6 +42,6 @@ export async function toggleListingLike(listingId: string, currentLikes: number)
 
   return {
     liked: nextLiked,
-    likes: data?.likes ?? nextLikes,
+    likes: data ?? Math.max(0, currentLikes + (nextLiked ? 1 : -1)),
   };
 }
