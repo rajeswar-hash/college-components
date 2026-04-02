@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Send, Sparkles } from "lucide-react";
+import { Bot, MailCheck, MessageSquare, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 const supportEmail = "rajeswarbind39@gmail.com";
 const formSubmitEndpoint = `https://formsubmit.co/ajax/${supportEmail}`;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function getBotReply(question: string) {
   const normalized = question.toLowerCase();
@@ -32,7 +33,7 @@ function getBotReply(question: string) {
 
 export default function ContactPage() {
   const [question, setQuestion] = useState("");
-  const [botReply, setBotReply] = useState("Ask a simple question and the helper bot will give a quick platform answer.");
+  const [botReply, setBotReply] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -59,11 +60,16 @@ export default function ContactPage() {
       return;
     }
 
+    if (!emailPattern.test(email.trim().toLowerCase())) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
     setSending(true);
     try {
       const formData = new FormData();
       formData.append("name", name.trim());
-      formData.append("email", email.trim());
+      formData.append("email", email.trim().toLowerCase());
       formData.append("subject", `[College Components] ${subject.trim()}`);
       formData.append("message", message.trim());
       formData.append("_template", "table");
@@ -108,21 +114,40 @@ export default function ContactPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-xl border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground">
-              {botReply}
+            <div className="rounded-2xl border border-border/70 bg-background/75 p-4 shadow-sm">
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-foreground">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Assistant</p>
+                  Ask a simple question and the helper bot will give a quick platform answer.
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-card px-4 py-3">
+                  <Label htmlFor="bot-question" className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Ask a quick question
+                  </Label>
+                  <div className="mt-2 flex gap-2">
+                    <Input
+                      id="bot-question"
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
+                      placeholder="Example: How do I publish a listing?"
+                      className="bg-background/80"
+                    />
+                    <Button onClick={handleAskBot} className="shrink-0 gradient-bg border-0 text-primary-foreground hover:opacity-90">
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {botReply && (
+                  <div className="rounded-2xl border border-border/70 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+                    <div className="mb-2 flex items-center gap-2 text-foreground">
+                      <Bot className="h-4 w-4 text-primary" />
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Answer</span>
+                    </div>
+                    <p>{botReply}</p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="bot-question">Ask a quick question</Label>
-              <Input
-                id="bot-question"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Example: How do I publish a listing?"
-              />
-            </div>
-            <Button onClick={handleAskBot} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
-              <MessageSquare className="mr-2 h-4 w-4" /> Ask Bot
-            </Button>
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Suggested questions</p>
               <div className="flex flex-wrap gap-2">
@@ -149,6 +174,9 @@ export default function ContactPage() {
             <CardTitle>Feedback & Suggestions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+              Send a suggestion, report an issue, or share product ideas. Messages are sent directly to the College Components support inbox.
+            </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">Name</Label>
@@ -162,10 +190,17 @@ export default function ContactPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  inputMode="email"
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck={false}
+                  className={email && !emailPattern.test(email.trim().toLowerCase()) ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                {email && !emailPattern.test(email.trim().toLowerCase()) && (
+                  <p className="flex items-center gap-1 text-xs text-destructive">
+                    <MailCheck className="h-3.5 w-3.5" /> Enter a valid email address.
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
