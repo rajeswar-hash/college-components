@@ -170,6 +170,9 @@ export function Navbar() {
                     </Button>
                   </Link>
                 )}
+                <Link to="/" onClick={() => setMobileMenu(false)}>
+                  <Button variant="ghost" className="w-full justify-start">Home</Button>
+                </Link>
                 <Link to="/about" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className="w-full justify-start">About</Button>
                 </Link>
