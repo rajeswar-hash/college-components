@@ -2,8 +2,9 @@ import { Listing } from "@/lib/types";
 import { Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
-import { toggleLike, getLikedIds } from "@/lib/store";
+import { useEffect, useState } from "react";
+import { getLikedIds, toggleListingLike } from "@/lib/likes";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   listing: Listing;
@@ -23,14 +24,29 @@ const CATEGORY_COLORS: Record<string, string> = {
 export function ProductCard({ listing }: ProductCardProps) {
   const [liked, setLiked] = useState(() => getLikedIds().includes(listing.id));
   const [likeCount, setLikeCount] = useState(listing.likes);
+  const [liking, setLiking] = useState(false);
   const hasImage = listing.images && listing.images.length > 0 && listing.images[0];
 
-  const handleLike = (e: React.MouseEvent) => {
+  useEffect(() => {
+    setLikeCount(listing.likes);
+    setLiked(getLikedIds().includes(listing.id));
+  }, [listing.id, listing.likes]);
+
+  const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const isNowLiked = toggleLike(listing.id);
-    setLiked(isNowLiked);
-    setLikeCount((c) => (isNowLiked ? c + 1 : c - 1));
+    if (liking) return;
+
+    setLiking(true);
+    try {
+      const result = await toggleListingLike(listing.id, likeCount);
+      setLiked(result.liked);
+      setLikeCount(result.likes);
+    } catch {
+      toast.error("Could not update like right now");
+    } finally {
+      setLiking(false);
+    }
   };
 
   return (
@@ -60,6 +76,7 @@ export function ProductCard({ listing }: ProductCardProps) {
           )}
           <button
             onClick={handleLike}
+            disabled={liking}
             className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center transition-transform hover:scale-110"
           >
             <Heart

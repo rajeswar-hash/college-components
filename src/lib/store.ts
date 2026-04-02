@@ -3,7 +3,6 @@ import { MOCK_LISTINGS } from "./mock-data";
 
 const LISTINGS_KEY = "cc_listings";
 const USER_KEY = "cc_user";
-const LIKES_KEY = "cc_likes";
 
 function initListings(): Listing[] {
   const stored = localStorage.getItem(LISTINGS_KEY);
@@ -55,19 +54,3 @@ export function clearUser() {
   localStorage.removeItem(USER_KEY);
 }
 
-export function getLikedIds(): string[] {
-  const stored = localStorage.getItem(LIKES_KEY);
-  return stored ? JSON.parse(stored) : [];
-}
-
-export function toggleLike(listingId: string): boolean {
-  const likes = getLikedIds();
-  const idx = likes.indexOf(listingId);
-  if (idx >= 0) {
-    likes.splice(idx, 1);
-  } else {
-    likes.push(listingId);
-  }
-  localStorage.setItem(LIKES_KEY, JSON.stringify(likes));
-  return idx < 0; // returns true if now liked
-}

@@ -112,7 +112,10 @@ const Index = () => {
           l.category.toLowerCase().includes(q)
       );
     }
-    return items;
+    return [...items].sort((a, b) => {
+      if (b.likes !== a.likes) return b.likes - a.likes;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   }, [search, selectedCategory, selectedCollege, priceRange, allListings, maxPrice]);
 
   // Adapt to ProductCard expected format

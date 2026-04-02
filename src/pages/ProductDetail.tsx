@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { getLikedIds, toggleListingLike } from "@/lib/likes";
 
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -38,6 +39,7 @@ const ProductDetail = () => {
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [liking, setLiking] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
@@ -66,6 +68,7 @@ const ProductDetail = () => {
         seller_name: profile?.name || "Unknown",
         seller_phone: profile?.phone || "",
       });
+      setLiked(getLikedIds().includes(data.id));
       setLoading(false);
     };
     fetchListing();
@@ -96,9 +99,20 @@ const ProductDetail = () => {
 
   const hasImages = listing.images && listing.images.length > 0 && listing.images[0];
 
-  const handleLike = () => {
-    setLiked(!liked);
-    toast.success(!liked ? "Added to favorites" : "Removed from favorites");
+  const handleLike = async () => {
+    if (!listing || liking) return;
+
+    setLiking(true);
+    try {
+      const result = await toggleListingLike(listing.id, listing.likes);
+      setLiked(result.liked);
+      setListing((current) => current ? { ...current, likes: result.likes } : current);
+      toast.success(result.liked ? "Added to favorites" : "Removed from favorites");
+    } catch {
+      toast.error("Could not update like right now");
+    } finally {
+      setLiking(false);
+    }
   };
 
   const whatsappUrl = (() => {
@@ -188,6 +202,7 @@ const ProductDetail = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <p className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {listing.college}</p>
               <p className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Listed {dateStr}</p>
+              <p className="flex items-center gap-2"><Heart className="w-4 h-4" /> {listing.likes} likes</p>
               <p>Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
             </div>
 
@@ -199,7 +214,7 @@ const ProductDetail = () => {
                   </Button>
                 </a>
               )}
-              <Button variant="outline" size="lg" onClick={handleLike}>
+              <Button variant="outline" size="lg" onClick={handleLike} disabled={liking}>
                 <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />
                 {liked ? "Liked" : "Like"}
               </Button>
