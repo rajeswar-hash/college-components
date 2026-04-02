@@ -9,6 +9,7 @@ import { MessageSquare, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 const supportEmail = "rajeswarbind39@gmail.com";
+const formSubmitEndpoint = `https://formsubmit.co/ajax/${supportEmail}`;
 
 function getBotReply(question: string) {
   const normalized = question.toLowerCase();
@@ -36,6 +37,7 @@ export default function ContactPage() {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   const suggestedPrompts = useMemo(
     () => ["How do I publish a listing?", "Why is login failing?", "How can I delete my account?"],
@@ -51,18 +53,46 @@ export default function ContactPage() {
     setBotReply(getBotReply(question));
   };
 
-  const handleSendFeedback = () => {
+  const handleSendFeedback = async () => {
     if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
       toast.error("Please complete all contact form fields.");
       return;
     }
 
-    const mailto = `mailto:${supportEmail}?subject=${encodeURIComponent(`[College Components] ${subject.trim()}`)}&body=${encodeURIComponent(
-      `Name: ${name.trim()}\nEmail: ${email.trim()}\n\nMessage:\n${message.trim()}`
-    )}`;
+    setSending(true);
+    try {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("email", email.trim());
+      formData.append("subject", `[College Components] ${subject.trim()}`);
+      formData.append("message", message.trim());
+      formData.append("_template", "table");
+      formData.append("_captcha", "false");
 
-    window.location.href = mailto;
-    toast.success("Your email app is opening so you can send the message directly.");
+      const response = await fetch(formSubmitEndpoint, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result?.success === false) {
+        throw new Error(result?.message || "Could not send your message.");
+      }
+
+      toast.success("Message sent successfully.");
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (error: any) {
+      toast.error(error?.message || "Could not send your message right now.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -119,9 +149,6 @@ export default function ContactPage() {
             <CardTitle>Feedback & Suggestions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Write your message here. When you press send, your email app will open a draft addressed to {supportEmail}.
-            </p>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">Name</Label>
@@ -155,8 +182,8 @@ export default function ContactPage() {
                 placeholder="Write your feedback or suggestion here..."
               />
             </div>
-            <Button onClick={handleSendFeedback} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
-              <Send className="mr-2 h-4 w-4" /> Send Message
+            <Button onClick={handleSendFeedback} disabled={sending} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
+              <Send className="mr-2 h-4 w-4" /> {sending ? "Sending..." : "Send Message"}
             </Button>
           </CardContent>
         </Card>
