@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, MapPin, Search, Store, X } from "lucide-react";
+import { MapPin, Search, Store, X } from "lucide-react";
 import { canonicalInstitutionName, loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -429,17 +429,6 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
-
-                <div className="mt-5 flex items-center justify-center gap-4 text-[11px] font-medium text-foreground/75">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/70" />
-                    <span>verified users</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/70" />
-                    <span>verified items</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
