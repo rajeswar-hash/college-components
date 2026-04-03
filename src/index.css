@@ -117,6 +117,28 @@
 }
 
 @layer utilities {
+  @keyframes gallery-slide-left {
+    from {
+      opacity: 0;
+      transform: translateX(22px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  @keyframes gallery-slide-right {
+    from {
+      opacity: 0;
+      transform: translateX(-22px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
   .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(16px);
@@ -142,5 +164,15 @@
 
   .shadow-glass {
     box-shadow: var(--glass-shadow);
+  }
+
+  .gallery-slide-left {
+    animation: gallery-slide-left 280ms ease;
+    will-change: transform, opacity;
+  }
+
+  .gallery-slide-right {
+    animation: gallery-slide-right 280ms ease;
+    will-change: transform, opacity;
   }
 }

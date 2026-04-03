@@ -50,6 +50,7 @@ const ProductDetail = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [imageAnimationClass, setImageAnimationClass] = useState("gallery-slide-left");
 
   useEffect(() => {
     if (!id) return;
@@ -134,12 +135,19 @@ const ProductDetail = () => {
   const displayCondition = normalizeCondition(listing.condition);
   const hasMultipleImages = !!listing.images && listing.images.length > 1;
 
+  const changeImage = (direction: "left" | "right", nextIndex: number) => {
+    setImageAnimationClass(direction === "left" ? "gallery-slide-left" : "gallery-slide-right");
+    setCurrentImage(nextIndex);
+  };
+
   const showPreviousImage = () => {
-    setCurrentImage((p) => (p === 0 ? listing.images.length - 1 : p - 1));
+    const nextIndex = currentImage === 0 ? listing.images.length - 1 : currentImage - 1;
+    changeImage("right", nextIndex);
   };
 
   const showNextImage = () => {
-    setCurrentImage((p) => (p === listing.images.length - 1 ? 0 : p + 1));
+    const nextIndex = currentImage === listing.images.length - 1 ? 0 : currentImage + 1;
+    changeImage("left", nextIndex);
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -247,9 +255,10 @@ const ProductDetail = () => {
             {hasImages ? (
               <>
                 <img
+                  key={`${currentImage}-${imageAnimationClass}`}
                   src={listing.images[currentImage]}
                   alt={`${listing.title} - Image ${currentImage + 1}`}
-                  className="h-full w-full max-w-full object-cover"
+                  className={`h-full w-full max-w-full object-cover ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (
                   <>
@@ -269,7 +278,7 @@ const ProductDetail = () => {
                       {listing.images.map((_, i) => (
                         <button
                           key={i}
-                          onClick={() => setCurrentImage(i)}
+                          onClick={() => changeImage(i > currentImage ? "left" : "right", i)}
                           className={`w-2 h-2 rounded-full transition-colors ${i === currentImage ? "bg-primary" : "bg-background/60"}`}
                         />
                       ))}
