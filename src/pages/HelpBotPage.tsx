@@ -68,21 +68,20 @@ export default function HelpBotPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToLatest = () => {
+  const scrollToLatest = (behavior: ScrollBehavior = "auto") => {
     requestAnimationFrame(() => {
-      messagesEndRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ block: "end", behavior });
     });
   };
 
   useEffect(() => {
-    scrollToLatest();
+    scrollToLatest("smooth");
   }, [chatMessages]);
 
   useEffect(() => {
     const viewport = window.visualViewport;
     const handleViewportChange = () => {
       setViewportHeight(window.visualViewport?.height ?? window.innerHeight);
-      scrollToLatest();
     };
 
     window.addEventListener("resize", handleViewportChange);
@@ -114,6 +113,7 @@ export default function HelpBotPage() {
 
     requestAnimationFrame(() => {
       inputRef.current?.focus();
+      scrollToLatest("auto");
     });
   };
 
@@ -123,6 +123,7 @@ export default function HelpBotPage() {
 
     requestAnimationFrame(() => {
       inputRef.current?.focus();
+      scrollToLatest("auto");
     });
   };
 
@@ -181,7 +182,7 @@ export default function HelpBotPage() {
               ref={inputRef}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              onFocus={scrollToLatest}
+              onFocus={() => scrollToLatest("auto")}
               placeholder="Message"
               autoCapitalize="sentences"
               autoCorrect="on"
