@@ -16,7 +16,7 @@ interface ListingRow {
   price: number;
   category: string;
   condition: string;
-  images: string[];
+  images?: string[];
   seller_id: string;
   college: string;
   sold: boolean;
@@ -27,6 +27,7 @@ interface ListingRow {
 }
 
 const LISTINGS_CACHE_KEY = "campuskart-home-cache-v1";
+const INITIAL_VISIBLE_IMAGE_BATCH = 12;
 
 const Index = () => {
   const location = useLocation();
@@ -37,6 +38,32 @@ const Index = () => {
   const [allListings, setAllListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const writeListingsCache = useCallback((listings: ListingRow[]) => {
+    localStorage.setItem(LISTINGS_CACHE_KEY, JSON.stringify({ listings, updatedAt: Date.now() }));
+  }, []);
+
+  const fetchListingImages = useCallback(async (listingIds: string[]) => {
+    if (listingIds.length === 0) return;
+
+    const { data, error } = await supabase
+      .from("listings")
+      .select("id, images")
+      .in("id", listingIds);
+
+    if (error || !data) return;
+
+    setAllListings((prev) => {
+      const imageMap = new Map(data.map((row) => [row.id, row.images || []]));
+      const merged = prev.map((listing) =>
+        imageMap.has(listing.id)
+          ? { ...listing, images: imageMap.get(listing.id) }
+          : listing
+      );
+      writeListingsCache(merged);
+      return merged;
+    });
+  }, [writeListingsCache]);
 
   useEffect(() => {
     try {
@@ -63,7 +90,7 @@ const Index = () => {
 
     const { data: listingsData, error: listingsError } = await supabase
       .from("listings")
-      .select("id, title, description, price, category, condition, images, seller_id, college, sold, likes, created_at")
+      .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
       .order("created_at", { ascending: false });
 
     if (listingsError || !listingsData) {
@@ -75,6 +102,7 @@ const Index = () => {
     const nextListings = listingsData.map((listing) => {
         return {
           ...listing,
+          images: [],
           college: canonicalInstitutionName(listing.college),
           seller_name: "",
           seller_phone: "",
@@ -82,10 +110,11 @@ const Index = () => {
       });
 
     setAllListings(nextListings);
-    localStorage.setItem(LISTINGS_CACHE_KEY, JSON.stringify({ listings: nextListings, updatedAt: Date.now() }));
+    writeListingsCache(nextListings);
+    void fetchListingImages(nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id));
     setLoading(false);
     setRefreshing(false);
-  }, [allListings.length]);
+  }, [allListings.length, fetchListingImages, writeListingsCache]);
 
   useEffect(() => {
     fetchListings();
@@ -137,6 +166,17 @@ const Index = () => {
     sold: l.sold,
     likes: l.likes,
   }));
+
+  useEffect(() => {
+    const missingVisibleImages = listings
+      .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
+      .filter((listing) => !listing.images || listing.images.length === 0)
+      .map((listing) => listing.id);
+
+    if (missingVisibleImages.length > 0) {
+      void fetchListingImages(missingVisibleImages);
+    }
+  }, [fetchListingImages, listings]);
 
   return (
     <div className="min-h-screen bg-background">
