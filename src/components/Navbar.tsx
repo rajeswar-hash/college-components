@@ -1,15 +1,31 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, User, LogOut, Menu, X, Cpu, Shield } from "lucide-react";
+import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export function Navbar() {
-  const { user, isAuthenticated, logout, isAdmin } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, deleteAccount } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,6 +63,21 @@ export function Navbar() {
     navigate("/");
   };
 
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await deleteAccount(deletePassword);
+      setDeletePassword("");
+      setMobileMenu(false);
+      toast.success("Your account and all linked data have been permanently deleted.");
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete account");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   return (
     <>
       <nav className="sticky top-0 z-50 relative border-b border-border bg-background/85 backdrop-blur-xl">
@@ -76,6 +107,43 @@ export function Navbar() {
             <Link to="/contact">
               <Button variant="ghost" size="sm">Contact</Button>
             </Link>
+            {isAuthenticated && !isAdmin && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete your account permanently?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This removes your account, profile, and listings forever. Enter your password to confirm.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="space-y-2">
+                    <Label htmlFor="delete-account-password">Password</Label>
+                    <Input
+                      id="delete-account-password"
+                      type="password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      placeholder="Enter your password"
+                    />
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDeletePassword("")}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      disabled={deletingAccount}
+                    >
+                      {deletingAccount ? "Deleting..." : "Delete Permanently"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Link to="/privacy">
               <Button variant="ghost" size="sm">Privacy</Button>
             </Link>
@@ -185,6 +253,43 @@ export function Navbar() {
                 <Link to="/contact" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className="w-full justify-start">Contact Us</Button>
                 </Link>
+                {isAuthenticated && !isAdmin && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4 mr-2" /> Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete your account permanently?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This removes your account, profile, and listings forever. Enter your password to confirm.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="space-y-2">
+                        <Label htmlFor="delete-account-password-mobile">Password</Label>
+                        <Input
+                          id="delete-account-password-mobile"
+                          type="password"
+                          value={deletePassword}
+                          onChange={(e) => setDeletePassword(e.target.value)}
+                          placeholder="Enter your password"
+                        />
+                      </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setDeletePassword("")}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          disabled={deletingAccount}
+                        >
+                          {deletingAccount ? "Deleting..." : "Delete Permanently"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
                 <Link to="/privacy" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className="w-full justify-start">Privacy Policy</Button>
                 </Link>

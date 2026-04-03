@@ -22,7 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
   logout: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   loading: boolean;
@@ -152,10 +152,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSupabaseUser(null);
   }, [clearAdmin]);
 
-  const deleteAccount = useCallback(async () => {
+  const deleteAccount = useCallback(async (password: string) => {
     if (isAdmin) {
       throw new Error("The local admin account cannot be deleted from the user dashboard.");
     }
+
+    const email = supabaseUser?.email || profile?.email;
+    if (!email) {
+      throw new Error("Could not verify this account. Please sign in again.");
+    }
+
+    const normalizedPassword = password.trim();
+    if (!normalizedPassword) {
+      throw new Error("Please enter your password to delete the account.");
+    }
+
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email,
+      password: normalizedPassword,
+    });
+    if (verifyError) throw new Error("Incorrect password. Please try again.");
 
     const { error } = await supabase.rpc("delete_my_account");
     if (error) throw error;
@@ -163,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setSupabaseUser(null);
-  }, [isAdmin]);
+  }, [isAdmin, profile?.email, supabaseUser?.email]);
 
   return (
     <AuthContext.Provider value={{

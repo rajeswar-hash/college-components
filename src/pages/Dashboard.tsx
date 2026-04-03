@@ -6,17 +6,6 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Plus, Trash2, CheckCircle, Package } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,11 +18,10 @@ interface ListingRow {
 }
 
 const Dashboard = () => {
-  const { user, isAuthenticated, supabaseUser, isAdmin, deleteAccount } = useAuth();
+  const { user, isAuthenticated, supabaseUser, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -78,19 +66,6 @@ const Dashboard = () => {
     toast.success("Listing deleted");
   };
 
-  const handleDeleteAccount = async () => {
-    setDeletingAccount(true);
-    try {
-      await deleteAccount();
-      toast.success("Your account and data have been permanently deleted.");
-      navigate("/", { replace: true });
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete account");
-    } finally {
-      setDeletingAccount(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -114,31 +89,6 @@ const Dashboard = () => {
               <Button onClick={() => navigate("/sell")} className="gradient-bg text-primary-foreground border-0 hover:opacity-90" size="sm">
                 <Plus className="w-4 h-4 mr-1" /> New Listing
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete your account permanently?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete your account, your profile, and all of your listings. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteAccount}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      disabled={deletingAccount}
-                    >
-                      {deletingAccount ? "Deleting..." : "Delete Permanently"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </div>
 
