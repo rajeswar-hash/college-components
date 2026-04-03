@@ -154,6 +154,7 @@ const ProductDetail = () => {
   };
 
   const whatsappPhone = formatPhone(listing.seller_phone);
+  const isOwnListing = !!supabaseUser && supabaseUser.id === listing.seller_id;
   const whatsappUrl = (() => {
     const msg = encodeURIComponent(
       `Hi! I'm interested in your listing on CampusKart:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
@@ -162,6 +163,11 @@ const ProductDetail = () => {
   })();
 
   const handleWhatsappContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isOwnListing) {
+      e.preventDefault();
+      toast.error("This is your own listing.");
+      return;
+    }
     if (whatsappPhone) return;
     e.preventDefault();
     toast.error("This seller has not added a valid WhatsApp number yet.");
@@ -268,11 +274,17 @@ const ProductDetail = () => {
 
             <div className="space-y-3 pt-2">
               {!listing.sold && (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1" onClick={handleWhatsappContact}>
-                  <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg" disabled={!whatsappPhone}>
-                    <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
+                isOwnListing ? (
+                  <Button className="w-full bg-muted text-muted-foreground border-0" size="lg" disabled>
+                    <MessageCircle className="w-4 h-4 mr-2" /> Your Listing
                   </Button>
-                </a>
+                ) : (
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1" onClick={handleWhatsappContact}>
+                    <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg" disabled={!whatsappPhone}>
+                      <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
+                    </Button>
+                  </a>
+                )
               )}
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full">
