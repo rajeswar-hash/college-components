@@ -332,7 +332,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="container mx-auto px-4 py-6 md:py-8">
+      <section className="container mx-auto px-4 py-4 md:py-6">
         {!selectedCollege ? (
           <div className="animate-fade-in">
             <div className="relative overflow-hidden px-0 py-4">
@@ -347,7 +347,7 @@ const Index = () => {
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
-              <div className="relative min-h-[420px] sm:min-h-[520px]">
+              <div className="relative min-h-[360px] sm:min-h-[460px]">
                 <Card className="relative mx-auto mt-[88px] max-w-[262px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[310px]">
                   <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                     <div className="space-y-1.5">
