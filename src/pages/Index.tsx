@@ -28,13 +28,14 @@ interface ListingRow {
 
 const LISTINGS_CACHE_KEY = "campuskart-home-cache-v1";
 const INITIAL_VISIBLE_IMAGE_BATCH = 12;
+const MAX_FILTER_PRICE = 10000;
 
 const Index = () => {
   const location = useLocation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_FILTER_PRICE]);
   const [allListings, setAllListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -120,7 +121,7 @@ const Index = () => {
     fetchListings();
   }, [fetchListings, location.key]);
 
-  const maxPrice = useMemo(() => Math.max(...allListings.map((l) => l.price), 50000), [allListings]);
+  const maxPrice = MAX_FILTER_PRICE;
 
   const hasActiveFilters =
     !!search || !!selectedCategory || !!selectedCollege || priceRange[0] > 0 || priceRange[1] < maxPrice;

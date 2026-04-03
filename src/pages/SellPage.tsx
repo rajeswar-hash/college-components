@@ -26,6 +26,7 @@ import {
 
 const MAX_IMAGE_BYTES = 600 * 1024;
 const MAX_IMAGE_DIMENSION = 1280;
+const MAX_LISTING_PRICE = 10000;
 
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
   { value: "Components", label: "Components", icon: Cpu },
@@ -158,6 +159,10 @@ const SellPage = () => {
     }
     if (!supabaseUser?.id) {
       toast.error("Your session is not ready. Please sign out and sign back in.");
+      return;
+    }
+    if (Number(price) > MAX_LISTING_PRICE) {
+      toast.error("CampusKart currently supports listings up to ₹10,000. Please post items within this range.");
       return;
     }
 
@@ -358,13 +363,14 @@ const SellPage = () => {
                   id="price"
                   type="number"
                   min="0"
+                  max={MAX_LISTING_PRICE}
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="500"
                   className="h-12 rounded-2xl border-border/80 bg-background pl-9"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Set a fair price for faster sale</p>
+              <p className="text-xs text-muted-foreground">Set a fair price for faster sale. Items above ₹10,000 are not allowed on CampusKart.</p>
             </section>
             <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
