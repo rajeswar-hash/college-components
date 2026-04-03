@@ -430,15 +430,30 @@ export default function AdminDashboard() {
                   <CardTitle>Admin sections</CardTitle>
                   <p className="mt-1 text-xs text-muted-foreground">Open one section at a time so the panel stays compact as data grows.</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant={activeSection === "requests" ? "default" : "outline"} className="h-9 text-xs sm:text-sm" onClick={() => setActiveSection("requests")}>
-                    College Requests <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <Button
+                    variant={activeSection === "requests" ? "default" : "outline"}
+                    className="h-9 w-full justify-between text-xs sm:text-sm"
+                    onClick={() => setActiveSection("requests")}
+                  >
+                    <span>College Requests</span>
+                    <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
                   </Button>
-                  <Button variant={activeSection === "listings" ? "default" : "outline"} className="h-9 text-xs sm:text-sm" onClick={() => setActiveSection("listings")}>
-                    Listing Moderation <Badge variant="secondary" className="ml-2 text-[10px]">{listings.length}</Badge>
+                  <Button
+                    variant={activeSection === "listings" ? "default" : "outline"}
+                    className="h-9 w-full justify-between text-xs sm:text-sm"
+                    onClick={() => setActiveSection("listings")}
+                  >
+                    <span>Listing Moderation</span>
+                    <Badge variant="secondary" className="ml-2 text-[10px]">{listings.length}</Badge>
                   </Button>
-                  <Button variant={activeSection === "members" ? "default" : "outline"} className="h-9 text-xs sm:text-sm" onClick={() => setActiveSection("members")}>
-                    Member Snapshot <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
+                  <Button
+                    variant={activeSection === "members" ? "default" : "outline"}
+                    className="h-9 w-full justify-between text-xs sm:text-sm"
+                    onClick={() => setActiveSection("members")}
+                  >
+                    <span>Member Snapshot</span>
+                    <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
                   </Button>
                 </div>
               </div>
