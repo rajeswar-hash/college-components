@@ -19,7 +19,11 @@ export default function ResetPasswordPage() {
   const hasRecoveryHash = useMemo(
     () =>
       typeof window !== "undefined" &&
-      (window.location.hash.includes("type=recovery") || window.location.hash.includes("access_token=")),
+      (
+        window.location.hash.includes("type=recovery") ||
+        window.location.hash.includes("access_token=") ||
+        window.location.search.includes("code=")
+      ),
     []
   );
 
@@ -27,6 +31,15 @@ export default function ResetPasswordPage() {
     let mounted = true;
 
     const checkSession = async () => {
+      const search = new URLSearchParams(window.location.search);
+      const code = search.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          return;
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
       if (mounted && data.session) {
         setSessionReady(true);

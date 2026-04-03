@@ -64,7 +64,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     if (mode === "forgot") {
       setSubmitting(true);
       try {
-        const redirectTo = `${window.location.origin}${window.location.pathname}`;
+        const redirectTo = `${window.location.origin}${window.location.pathname}#/reset-password`;
         const normalizedEmail = email.trim().toLowerCase();
         const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
         if (error) throw error;

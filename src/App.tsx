@@ -30,35 +30,26 @@ const RouteLoader = () => (
   </div>
 );
 
-const App = () => {
-  const isRecoveryFlow =
-    typeof window !== "undefined" &&
-    (window.location.hash.includes("type=recovery") || window.location.hash.includes("access_token="));
-
-  if (isRecoveryFlow) {
-    return <ResetPasswordPage />;
-  }
-
-  return (
-    <HashRouter>
-      <Suspense fallback={<RouteLoader />}>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/help" element={<HelpPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/help-bot" element={<HelpBotPage />} />
-          <Route path="/sell" element={<SellPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </HashRouter>
-  );
-};
+const App = () => (
+  <HashRouter>
+    <Suspense fallback={<RouteLoader />}>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/help-bot" element={<HelpBotPage />} />
+        <Route path="/sell" element={<SellPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  </HashRouter>
+);
 
 export default App;
