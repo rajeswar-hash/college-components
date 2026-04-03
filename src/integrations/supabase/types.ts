@@ -129,6 +129,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      get_listing_contact: {
+        Args: {
+          p_listing_id: string
+        }
+        Returns: {
+          seller_name: string
+          seller_phone: string
+        }[]
+      }
       has_user_liked_listing: {
         Args: {
           p_listing_id: string

@@ -63,17 +63,16 @@ const ProductDetail = () => {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("name, phone")
-        .eq("id", data.seller_id)
-        .maybeSingle();
+      const { data: contactRows } = await supabase.rpc("get_listing_contact", {
+        p_listing_id: data.id,
+      });
+      const contact = contactRows?.[0];
 
       setListing({
         ...data,
         images: data.images || [],
-        seller_name: profile?.name || "Unknown",
-        seller_phone: profile?.phone || "",
+        seller_name: contact?.seller_name || "Unknown",
+        seller_phone: contact?.seller_phone || "",
       });
       setLoading(false);
     };
