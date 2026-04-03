@@ -402,7 +402,7 @@ const SellPage = () => {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground shadow-sm">
-              Buyers will contact you directly
+              Buyers will contact you directly through WhatsApp
             </div>
 
             <Button
