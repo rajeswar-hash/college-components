@@ -254,7 +254,7 @@ const ProductDetail = () => {
             </div>
             </div>
 
-            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <div className="space-y-3 pt-2">
               {!listing.sold && (
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1">
                   <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg">
@@ -262,13 +262,15 @@ const ProductDetail = () => {
                   </Button>
                 </a>
               )}
-              <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full sm:w-auto">
-                <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />
-                {liked ? "Liked" : "Like"}
-              </Button>
-              <Button variant="outline" size="lg" onClick={handleShare} className="w-full sm:w-auto">
-                <Share2 className="w-4 h-4" />
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full">
+                  <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />
+                  {liked ? "Liked" : "Like"}
+                </Button>
+                <Button variant="outline" size="lg" onClick={handleShare} className="w-full">
+                  <Share2 className="w-4 h-4 mr-1" /> Share
+                </Button>
+              </div>
             </div>
           </div>
         </div>
