@@ -1,20 +1,27 @@
 import { Link } from "react-router-dom";
 
-export function SiteFooter() {
+interface SiteFooterProps {
+  compact?: boolean;
+  hideTopBorder?: boolean;
+}
+
+export function SiteFooter({ compact = false, hideTopBorder = false }: SiteFooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-12 border-t border-border bg-background/80">
-      <div className="container mx-auto grid gap-8 px-4 py-10 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div>
-        <p className="font-display text-lg font-semibold text-foreground">CampusKart</p>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          A professional marketplace for students to buy and sell electronics, tools, and project gear inside their college network.
-          </p>
-          <p className="mt-3 max-w-md text-sm text-muted-foreground">
-            Built for campus communities that want faster discovery, cleaner listings, and direct student-to-student coordination.
-          </p>
-        </div>
+    <footer className={`mt-12 bg-background/80 ${hideTopBorder ? "" : "border-t border-border"}`}>
+      <div className={`container mx-auto grid gap-8 px-4 py-10 ${compact ? "md:grid-cols-[1fr_1fr]" : "md:grid-cols-[1.4fr_1fr_1fr]"}`}>
+        {!compact && (
+          <div>
+            <p className="font-display text-lg font-semibold text-foreground">CampusKart</p>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">
+              A professional marketplace for students to buy and sell electronics, tools, and project gear inside their college network.
+            </p>
+            <p className="mt-3 max-w-md text-sm text-muted-foreground">
+              Built for campus communities that want faster discovery, cleaner listings, and direct student-to-student coordination.
+            </p>
+          </div>
+        )}
 
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Company</p>

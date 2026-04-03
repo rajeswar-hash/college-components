@@ -347,7 +347,7 @@ const Index = () => {
               </div>
 
               <div className="relative min-h-[420px] sm:min-h-[520px]">
-                <Card className="relative mx-auto mt-16 max-w-md border-white/60 bg-white/88 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur sm:mt-20">
+                <Card className="relative mx-auto mt-12 max-w-md border-white/80 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.16)] sm:mt-16">
                   <CardContent className="space-y-4 px-4 py-5 text-center sm:px-6 sm:py-6">
                     <div className="space-y-1.5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/75">SELECT YOUR COLLEGE TO</p>
@@ -429,12 +429,12 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                <div className="mt-4 flex items-center justify-center gap-5 text-[11px] font-medium text-foreground/75">
-                  <div className="flex items-center gap-1.5">
+                <div className="mt-4 flex items-center justify-center gap-3 text-[11px] font-medium text-foreground/80">
+                  <div className="flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1.5 shadow-sm">
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary/80" />
                     <span>verified users</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1.5 shadow-sm">
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary/80" />
                     <span>verified items</span>
                   </div>
@@ -562,7 +562,7 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <SiteFooter />
+      <SiteFooter compact hideTopBorder />
     </div>
   );
 };
