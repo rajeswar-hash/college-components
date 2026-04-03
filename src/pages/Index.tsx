@@ -6,8 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
-import { ArrowRight, Cpu, ShieldCheck, Sparkles, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Cpu, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { canonicalInstitutionName, normalizeInstitutionKey } from "@/lib/institutions";
 
@@ -153,15 +152,8 @@ const Index = () => {
               <p className="mx-auto mb-5 max-w-lg text-sm text-muted-foreground">
                 A cleaner, faster marketplace for engineering students to trade Arduino boards, sensors, tools, and project gear with confidence.
               </p>
-              <div className="mb-5 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild className="gradient-bg border-0 text-primary-foreground hover:opacity-90">
-                  <a href="#listings">
-                    Browse Listings <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-                <Button asChild variant="outline" className="bg-background/80">
-                  <a href="#listings">{isAuthenticated ? "Explore Popular Picks" : "Start Exploring"}</a>
-                </Button>
+              <div className="mb-5 rounded-2xl border border-primary/15 bg-background/75 px-4 py-3 text-sm font-medium text-foreground shadow-sm">
+                Filter by your college to buy from your campus community.
               </div>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
