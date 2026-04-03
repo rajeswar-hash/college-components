@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,13 @@ export function Navbar() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+  const navButtonClass = (path: string) =>
+    isActive(path)
+      ? "bg-primary/10 text-primary hover:bg-primary/15"
+      : "";
 
   useEffect(() => {
     if (mobileMenu) {
@@ -93,19 +100,19 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             <Link to="/">
-              <Button variant="ghost" size="sm">Home</Button>
+              <Button variant="ghost" size="sm" className={navButtonClass("/")}>Home</Button>
             </Link>
             <Link to="/about">
-              <Button variant="ghost" size="sm">About</Button>
+              <Button variant="ghost" size="sm" className={navButtonClass("/about")}>About</Button>
             </Link>
             <Link to="/help">
-              <Button variant="ghost" size="sm">Help</Button>
+              <Button variant="ghost" size="sm" className={navButtonClass("/help")}>Help</Button>
             </Link>
             <Link to="/terms">
-              <Button variant="ghost" size="sm">Terms</Button>
+              <Button variant="ghost" size="sm" className={navButtonClass("/terms")}>Terms</Button>
             </Link>
             <Link to="/contact">
-              <Button variant="ghost" size="sm">Contact</Button>
+              <Button variant="ghost" size="sm" className={navButtonClass("/contact")}>Contact</Button>
             </Link>
             {isAuthenticated && !isAdmin && (
               <AlertDialog>
@@ -145,7 +152,7 @@ export function Navbar() {
               </AlertDialog>
             )}
             <Link to="/privacy">
-              <Button variant="ghost" size="sm">Privacy</Button>
+              <Button variant="ghost" size="sm" className={navButtonClass("/privacy")}>Privacy</Button>
             </Link>
             <Button
               size="sm"
@@ -163,7 +170,7 @@ export function Navbar() {
             {isAuthenticated && (
               <>
                 <Link to={isAdmin ? "/admin" : "/dashboard"}>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className={navButtonClass(isAdmin ? "/admin" : "/dashboard")}>
                     {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} {isAdmin ? "Admin Panel" : "Dashboard"}
                   </Button>
                 </Link>
@@ -226,25 +233,25 @@ export function Navbar() {
                 </Button>
                 {isAuthenticated && (
                   <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={() => setMobileMenu(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
+                    <Button variant="ghost" className={`w-full justify-start ${navButtonClass(isAdmin ? "/admin" : "/dashboard")}`}>
                       {isAdmin ? <Shield className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />} {isAdmin ? "Admin Panel" : "Dashboard"}
                     </Button>
                   </Link>
                 )}
                 <Link to="/" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Home</Button>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/")}`}>Home</Button>
                 </Link>
                 <Link to="/about" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">About</Button>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/about")}`}>About</Button>
                 </Link>
                 <Link to="/help" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Help</Button>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/help")}`}>Help</Button>
                 </Link>
                 <Link to="/terms" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Terms & Conditions</Button>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/terms")}`}>Terms & Conditions</Button>
                 </Link>
                 <Link to="/contact" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Contact Us</Button>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/contact")}`}>Contact Us</Button>
                 </Link>
                 {isAuthenticated && !isAdmin && (
                   <AlertDialog>
@@ -284,7 +291,7 @@ export function Navbar() {
                   </AlertDialog>
                 )}
                 <Link to="/privacy" onClick={() => setMobileMenu(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Privacy Policy</Button>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/privacy")}`}>Privacy Policy</Button>
                 </Link>
                 {isAuthenticated && (
                   <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
