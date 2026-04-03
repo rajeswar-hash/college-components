@@ -27,6 +27,8 @@ interface ListingRow {
   seller_phone?: string;
 }
 
+const LISTINGS_CACHE_KEY = "college-components-home-cache-v1";
+
 const Index = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -36,9 +38,30 @@ const Index = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
   const [allListings, setAllListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    try {
+      const rawCache = localStorage.getItem(LISTINGS_CACHE_KEY);
+      if (!rawCache) return;
+
+      const parsed = JSON.parse(rawCache) as { listings?: ListingRow[] };
+      if (parsed.listings && Array.isArray(parsed.listings)) {
+        setAllListings(parsed.listings);
+        setLoading(false);
+      }
+    } catch {
+      localStorage.removeItem(LISTINGS_CACHE_KEY);
+    }
+  }, []);
 
   const fetchListings = useCallback(async () => {
-    setLoading(true);
+    const hasCachedListings = allListings.length > 0;
+    if (!hasCachedListings) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
 
     const { data: listingsData, error: listingsError } = await supabase
       .from("listings")
@@ -46,8 +69,8 @@ const Index = () => {
       .order("created_at", { ascending: false });
 
     if (listingsError || !listingsData) {
-      setAllListings([]);
       setLoading(false);
+      setRefreshing(false);
       return;
     }
 
@@ -70,8 +93,7 @@ const Index = () => {
       ])
     );
 
-    setAllListings(
-      listingsData.map((listing) => {
+    const nextListings = listingsData.map((listing) => {
         const seller = sellers.get(listing.seller_id);
         return {
           ...listing,
@@ -79,10 +101,13 @@ const Index = () => {
           seller_name: seller?.name || "Unknown",
           seller_phone: seller?.phone || "",
         };
-      })
-    );
+      });
+
+    setAllListings(nextListings);
+    localStorage.setItem(LISTINGS_CACHE_KEY, JSON.stringify({ listings: nextListings, updatedAt: Date.now() }));
     setLoading(false);
-  }, []);
+    setRefreshing(false);
+  }, [allListings.length]);
 
   useEffect(() => {
     fetchListings();
@@ -194,9 +219,21 @@ const Index = () => {
           </div>
         )}
 
+        {refreshing && !loading && (
+          <div className="mb-2 mt-4 text-center">
+            <p className="text-xs text-muted-foreground">Refreshing latest listings...</p>
+          </div>
+        )}
+
         {loading ? (
           <div className="py-16 text-center">
-            <p className="text-lg text-muted-foreground">Loading listings...</p>
+            <div className="mx-auto max-w-md space-y-3">
+              <div className="h-4 w-40 mx-auto rounded-full bg-muted/80 animate-pulse" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-40 rounded-2xl bg-muted/70 animate-pulse" />
+                <div className="h-40 rounded-2xl bg-muted/70 animate-pulse" />
+              </div>
+            </div>
           </div>
         ) : listings.length === 0 ? (
           <div className="py-16 text-center">
