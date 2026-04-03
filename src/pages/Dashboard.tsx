@@ -154,21 +154,27 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="grid gap-3 mt-6 sm:grid-cols-3">
-              <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-primary font-semibold">Active Listings</p>
-                <p className="mt-2 font-display text-2xl font-bold text-foreground">{activeListings}</p>
-                <p className="text-xs text-muted-foreground">Currently visible on the marketplace</p>
+            <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
+              <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">Active</p>
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <p className="font-display text-2xl font-bold leading-none text-foreground">{activeListings}</p>
+                  <p className="text-right text-[11px] leading-4 text-muted-foreground">Live now</p>
+                </div>
               </div>
-              <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-emerald-600 font-semibold">Delete After Sale</p>
-                <p className="mt-2 font-display text-2xl font-bold text-foreground">{soldListings}</p>
-                <p className="text-xs text-muted-foreground">Remove sold listings so buyers only see available items</p>
+              <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/5 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-600">Delete After Sale</p>
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <p className="font-display text-2xl font-bold leading-none text-foreground">{soldListings}</p>
+                  <p className="text-right text-[11px] leading-4 text-muted-foreground">Remove sold items</p>
+                </div>
               </div>
-              <div className="rounded-2xl border border-sky-500/10 bg-sky-500/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-sky-600 font-semibold">Catalog Value</p>
-                <p className="mt-2 font-display text-2xl font-bold text-foreground">Rs. {listingValue.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Total value of your current listings</p>
+              <div className="rounded-2xl border border-sky-500/10 bg-sky-500/5 px-4 py-3 col-span-2 lg:col-span-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-600">Catalog Value</p>
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <p className="font-display text-xl font-bold leading-none text-foreground">Rs. {listingValue.toLocaleString()}</p>
+                  <p className="text-right text-[11px] leading-4 text-muted-foreground">Current total</p>
+                </div>
               </div>
             </div>
           </div>
