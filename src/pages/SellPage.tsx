@@ -28,6 +28,11 @@ const MAX_IMAGE_BYTES = 600 * 1024;
 const MAX_IMAGE_DIMENSION = 1280;
 const MAX_LISTING_PRICE = 10000;
 
+function hasValidWhatsappNumber(phone: string) {
+  const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
+  return digits.length >= 10;
+}
+
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
   { value: "Components", label: "Components", icon: Cpu },
   { value: "Gadgets", label: "Gadgets", icon: Smartphone },
@@ -100,6 +105,7 @@ const SellPage = () => {
   const [images, setImages] = useState<string[]>([]);  const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
 
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -165,6 +171,11 @@ const SellPage = () => {
       toast.error("CampusKart currently supports listings up to ₹10,000. Please post items within this range.");
       return;
     }
+    if (!hasValidSellerPhone) {
+      toast.error("Add a valid WhatsApp number in Edit Profile before posting an item.");
+      navigate("/dashboard");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -206,6 +217,12 @@ const SellPage = () => {
               Post faster with clear details, honest condition, and sharp photos so buyers can trust your listing instantly.
             </p>
           </div>
+
+          {!hasValidSellerPhone && (
+            <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 shadow-sm">
+              Add a valid WhatsApp number in your dashboard profile before posting. Buyers contact sellers directly through WhatsApp.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5 rounded-[28px] border border-primary/10 bg-background/95 p-4 shadow-[0_20px_60px_rgba(15,118,110,0.10)] backdrop-blur-sm sm:p-6">
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
@@ -408,7 +425,7 @@ const SellPage = () => {
             <Button
               type="submit"
               size="lg"
-              disabled={submitting || processingImages > 0}
+              disabled={submitting || processingImages > 0 || !hasValidSellerPhone}
               className="h-12 w-full rounded-2xl border-0 bg-[linear-gradient(135deg,rgb(20,184,166),rgb(59,130,246))] text-base font-semibold text-primary-foreground shadow-[0_16px_40px_rgba(34,197,194,0.22)] hover:opacity-90"
             >
               {processingImages > 0 ? "Preparing Images..." : submitting ? "Posting..." : "Post Item 🚀"}
