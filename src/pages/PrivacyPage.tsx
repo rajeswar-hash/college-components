@@ -3,20 +3,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const privacySections = [
   {
-    title: "Information collected",
-    body: "The platform may collect account details such as name, email, phone number, college, and listing information submitted by users.",
+    title: "Information you provide",
+    body: "CampusKart may collect account details such as your name, email address, phone number, college, and the listing content you choose to publish, including photos, item details, and pricing.",
   },
   {
-    title: "How information is used",
-    body: "Information is used to operate accounts, connect buyers and sellers, support listings, and improve the reliability of the platform.",
+    title: "How your information is used",
+    body: "Your information is used to operate your account, show your listings, support buyer-seller contact, improve browsing and filtering, and keep the platform functional and reliable.",
   },
   {
-    title: "Data control",
-    body: "Users can manage their listings and may permanently delete their own account. Account deletion removes linked profile and listing data from the platform database.",
+    title: "Account and listing visibility",
+    body: "CampusKart is designed around college-based discovery. Listing information is shown within the product experience so other students can browse and evaluate items more easily.",
   },
   {
-    title: "Support communication",
-    body: "When users contact support, the details they provide may be used to respond to questions, suggestions, or issue reports.",
+    title: "Support and feedback messages",
+    body: "When you use the Contact Us page or support tools, the information you submit may be used to respond to your message, review feedback, and investigate platform issues.",
+  },
+  {
+    title: "Account deletion and control",
+    body: "Users can permanently delete their own account from the platform. When account deletion is completed, linked profile and listing data are removed from the platform database according to the current product flow.",
+  },
+  {
+    title: "Authentication and platform services",
+    body: "CampusKart currently relies on connected platform services for authentication, database storage, and app hosting. Those services may process technical data needed to keep sign-in, listings, and platform access working.",
   },
 ];
 
@@ -24,11 +32,11 @@ export default function PrivacyPage() {
   return (
     <PublicPageLayout
       title="Privacy Policy"
-      subtitle="A straightforward summary of how user data is stored and handled on CampusKart."
+      subtitle="A clearer summary of what data CampusKart handles, why it is used, and how users stay in control."
     >
       <div className="grid gap-4">
         {privacySections.map((section) => (
-          <Card key={section.title} className="glass border-border/70">
+          <Card key={section.title} className="glass border-border/70 shadow-[0_16px_40px_rgba(20,184,166,0.06)]">
             <CardHeader>
               <CardTitle>{section.title}</CardTitle>
             </CardHeader>
