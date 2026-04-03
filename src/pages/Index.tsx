@@ -335,98 +335,100 @@ const Index = () => {
       <section className="container mx-auto px-4 py-8 md:py-10">
         {!selectedCollege ? (
           <div className="animate-fade-in">
-            <div className="relative overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(180deg,rgba(236,254,255,0.30),rgba(255,255,255,0.78))] px-3 py-10 shadow-[0_24px_60px_rgba(20,184,166,0.10)] sm:px-6 sm:py-14">
+            <div className="relative overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(180deg,rgba(236,254,255,0.12),rgba(255,255,255,0.70))] px-3 py-8 shadow-[0_24px_60px_rgba(20,184,166,0.10)] sm:px-6 sm:py-12">
               <div
-                className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-50"
+                className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-80"
                 style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(236,254,255,0.28),rgba(255,255,255,0.88)_55%,rgba(255,255,255,0.96))]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(236,254,255,0.08),rgba(255,255,255,0.18)_32%,rgba(255,255,255,0.72)_68%,rgba(255,255,255,0.92))]" />
               <div className="pointer-events-none absolute inset-0 opacity-80">
                 <div className="absolute -left-10 bottom-14 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
                 <div className="absolute -right-8 top-12 h-32 w-32 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
-              <Card className="relative mx-auto max-w-md border-white/70 bg-white/88 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur">
-                <CardContent className="space-y-4 px-4 py-5 text-center sm:px-6 sm:py-6">
-                  <div className="space-y-1.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/75">SELECT YOUR COLLEGE TO</p>
-                    <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">Buy &amp; Sell Within Your Campus</h1>
-                  </div>
+              <div className="relative min-h-[420px] sm:min-h-[520px]">
+                <Card className="relative mx-auto mt-16 max-w-md border-white/70 bg-white/90 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur sm:mt-20">
+                  <CardContent className="space-y-4 px-4 py-5 text-center sm:px-6 sm:py-6">
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/75">SELECT YOUR COLLEGE TO</p>
+                      <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">Buy &amp; Sell Within Your Campus</h1>
+                    </div>
 
-                  <div ref={collegeWrapperRef} className="mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        ref={collegeInputRef}
-                        value={collegeQuery}
-                        placeholder="Search your college..."
-                        className="h-12 rounded-full border-border/70 bg-white pl-10 pr-14 text-sm shadow-[0_10px_24px_rgba(20,184,166,0.10)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/45"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setCollegeQuery(value);
-                          setCollegeDropdownOpen(true);
-                          clearTimeout(debounceRef.current);
-                          debounceRef.current = setTimeout(() => runCollegeSearch(value), 80);
-                        }}
-                        onFocus={handleCollegeInputFocus}
-                        autoComplete="off"
-                      />
-                      {collegeQuery ? (
-                        <button
-                          onClick={() => {
-                            setCollegeQuery("");
-                            setCollegeResults([]);
+                    <div ref={collegeWrapperRef} className="mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          ref={collegeInputRef}
+                          value={collegeQuery}
+                          placeholder="Search your college..."
+                          className="h-12 rounded-full border-border/70 bg-white pl-10 pr-14 text-sm shadow-[0_10px_24px_rgba(20,184,166,0.10)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/45"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCollegeQuery(value);
+                            setCollegeDropdownOpen(true);
+                            clearTimeout(debounceRef.current);
+                            debounceRef.current = setTimeout(() => runCollegeSearch(value), 80);
                           }}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-primary/10 p-1.5"
-                        >
-                          <X className="h-3.5 w-3.5 text-primary hover:text-primary" />
-                        </button>
-                      ) : (
-                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-primary/10 p-1.5">
-                          <Search className="h-3.5 w-3.5 text-primary" />
+                          onFocus={handleCollegeInputFocus}
+                          autoComplete="off"
+                        />
+                        {collegeQuery ? (
+                          <button
+                            onClick={() => {
+                              setCollegeQuery("");
+                              setCollegeResults([]);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-primary/10 p-1.5"
+                          >
+                            <X className="h-3.5 w-3.5 text-primary hover:text-primary" />
+                          </button>
+                        ) : (
+                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-primary/10 p-1.5">
+                            <Search className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                        )}
+                      </div>
+
+                      {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
+                        <div className="mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
+                          <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
+                            {searchingCollege ? (
+                              <div className="px-4 py-3 text-sm text-muted-foreground">Searching colleges...</div>
+                            ) : (
+                              collegeResults.map((college) => (
+                                <button
+                                  key={college}
+                                  type="button"
+                                  className="block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-accent"
+                                  onClick={() => handleCollegeSelect(college)}
+                                >
+                                  {college}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {showRequestCollegeButton && (
+                        <div className="mt-2 text-center">
+                          <Button
+                            variant="ghost"
+                            className="h-auto rounded-full px-4 py-2 text-xs font-medium text-primary hover:bg-primary/5 hover:text-primary"
+                            disabled={requestCooldownUntil > Date.now()}
+                            onClick={() => {
+                              setRequestCollegeName(collegeQuery.trim());
+                              setRequestModalOpen(true);
+                            }}
+                          >
+                            Can't find it? Request your college
+                          </Button>
                         </div>
                       )}
                     </div>
-
-                    {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
-                      <div className="mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
-                        <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
-                          {searchingCollege ? (
-                            <div className="px-4 py-3 text-sm text-muted-foreground">Searching colleges...</div>
-                          ) : (
-                            collegeResults.map((college) => (
-                              <button
-                                key={college}
-                                type="button"
-                                className="block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-accent"
-                                onClick={() => handleCollegeSelect(college)}
-                              >
-                                {college}
-                              </button>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {showRequestCollegeButton && (
-                      <div className="mt-2 text-center">
-                        <Button
-                          variant="ghost"
-                          className="h-auto rounded-full px-4 py-2 text-xs font-medium text-primary hover:bg-primary/5 hover:text-primary"
-                          disabled={requestCooldownUntil > Date.now()}
-                          onClick={() => {
-                            setRequestCollegeName(collegeQuery.trim());
-                            setRequestModalOpen(true);
-                          }}
-                        >
-                          Can't find it? Request your college
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         ) : (
