@@ -178,21 +178,21 @@ const ProductDetail = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto max-w-4xl overflow-x-hidden px-4 py-8">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 
-        <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
-          <div className="aspect-square rounded-xl bg-muted glass overflow-hidden relative">
+        <div className="grid animate-fade-in gap-8 md:grid-cols-2">
+          <div className="relative aspect-square max-w-full overflow-hidden rounded-xl bg-muted glass">
             {hasImages ? (
               <>
                 <img
                   src={listing.images[currentImage]}
                   alt={`${listing.title} - Image ${currentImage + 1}`}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full max-w-full object-cover"
                 />
                 {listing.images.length > 1 && (
                   <>
@@ -233,40 +233,40 @@ const ProductDetail = () => {
             )}
           </div>
 
-          <div className="space-y-5">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
+          <div className="min-w-0 space-y-5">
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{listing.category}</Badge>
                 <Badge variant="outline">{listing.condition}</Badge>
               </div>
-              <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground">{listing.title}</h1>
+              <h1 className="break-words font-display font-bold text-2xl text-foreground md:text-3xl">{listing.title}</h1>
               <p className="font-display font-extrabold text-3xl gradient-text mt-2">₹{listing.price}</p>
             </div>
 
-            <p className="text-muted-foreground leading-relaxed">{listing.description}</p>
+            <p className="break-words text-muted-foreground leading-relaxed">{listing.description}</p>
 
             <div className="rounded-2xl border border-border/70 bg-card/70 p-4 shadow-sm">
-              <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {listing.college}</p>
+              <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" /> <span className="break-words">{listing.college}</span></div>
               <p className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Listed {dateStr}</p>
               <p className="flex items-center gap-2"><Heart className="w-4 h-4" /> {listing.likes} likes</p>
-              <p>Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
+              <p className="break-words">Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
             </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
               {!listing.sold && (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1">
                   <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg">
                     <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
                   </Button>
                 </a>
               )}
-              <Button variant="outline" size="lg" onClick={handleLike} disabled={liking}>
+              <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full sm:w-auto">
                 <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />
                 {liked ? "Liked" : "Like"}
               </Button>
-              <Button variant="outline" size="lg" onClick={handleShare}>
+              <Button variant="outline" size="lg" onClick={handleShare} className="w-full sm:w-auto">
                 <Share2 className="w-4 h-4" />
               </Button>
             </div>
