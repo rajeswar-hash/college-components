@@ -332,26 +332,27 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="container mx-auto px-4 py-8 md:py-10">
+      <section className="container mx-auto px-4 py-6 md:py-8">
         {!selectedCollege ? (
           <div className="animate-fade-in">
-            <div className="relative overflow-hidden bg-[linear-gradient(180deg,rgba(236,254,255,0.10),rgba(255,255,255,0.52)_62%,rgba(255,255,255,0.92))] px-3 py-8 sm:px-6 sm:py-12">
+            <div className="relative overflow-hidden px-0 py-4">
               <div
-                className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-90"
+                className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-cover bg-center opacity-95 sm:h-[520px]"
                 style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(232,250,250,0.04),rgba(255,255,255,0.08)_24%,rgba(255,255,255,0.56)_64%,rgba(255,255,255,0.98))]" />
-              <div className="pointer-events-none absolute inset-0 opacity-75">
-                <div className="absolute -left-10 bottom-10 h-32 w-32 rounded-full bg-primary/8 blur-2xl" />
-                <div className="absolute -right-8 top-10 h-32 w-32 rounded-full bg-sky-400/8 blur-2xl" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[linear-gradient(180deg,rgba(240,253,255,0.14),rgba(255,255,255,0.12)_34%,rgba(255,255,255,0.68)_74%,rgba(255,255,255,0.98))] sm:h-[520px]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_28%)] sm:h-[520px]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-70 sm:h-[520px]">
+                <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
+                <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
               <div className="relative min-h-[420px] sm:min-h-[520px]">
-                <Card className="relative mx-auto mt-12 max-w-md border-white/80 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.16)] sm:mt-16">
-                  <CardContent className="space-y-4 px-4 py-5 text-center sm:px-6 sm:py-6">
+                <Card className="relative mx-auto mt-[88px] max-w-[262px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[310px]">
+                  <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                     <div className="space-y-1.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/75">SELECT YOUR COLLEGE TO</p>
-                      <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">Buy &amp; Sell Within Your Campus</h1>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary/75">SELECT YOUR COLLEGE</p>
+                      <h1 className="font-display text-[1.02rem] font-bold leading-tight text-foreground sm:text-[1.2rem]">Buy &amp; Sell Within Your Campus</h1>
                     </div>
 
                     <div ref={collegeWrapperRef} className="mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
@@ -361,7 +362,7 @@ const Index = () => {
                           ref={collegeInputRef}
                           value={collegeQuery}
                           placeholder="Search your college..."
-                          className="h-12 rounded-full border-border/70 bg-white pl-10 pr-14 text-sm shadow-[0_10px_24px_rgba(20,184,166,0.10)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/45"
+                          className="h-11 rounded-full border-border/60 bg-white pl-10 pr-14 text-sm shadow-[0_8px_20px_rgba(20,184,166,0.10)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/45"
                           onChange={(e) => {
                             const value = e.target.value;
                             setCollegeQuery(value);
@@ -376,14 +377,14 @@ const Index = () => {
                           <button
                             onClick={() => {
                               setCollegeQuery("");
-                              setCollegeResults([]);
-                            }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-primary/10 p-1.5"
+                            setCollegeResults([]);
+                          }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full border border-primary/20 bg-primary/10 p-1.5"
                           >
                             <X className="h-3.5 w-3.5 text-primary hover:text-primary" />
                           </button>
                         ) : (
-                          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-primary/10 p-1.5">
+                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full border border-primary/20 bg-primary/10 p-1.5">
                             <Search className="h-3.5 w-3.5 text-primary" />
                           </div>
                         )}
@@ -429,13 +430,13 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                <div className="mt-4 flex items-center justify-center gap-3 text-[11px] font-medium text-foreground/80">
-                  <div className="flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1.5 shadow-sm">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary/80" />
+                <div className="mt-5 flex items-center justify-center gap-4 text-[11px] font-medium text-foreground/75">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/70" />
                     <span>verified users</span>
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1.5 shadow-sm">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary/80" />
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/70" />
                     <span>verified items</span>
                   </div>
                 </div>
@@ -562,7 +563,7 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <SiteFooter compact hideTopBorder />
+      <SiteFooter hideTopBorder />
     </div>
   );
 };
