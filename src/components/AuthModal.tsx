@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CollegeAutocomplete } from "@/components/CollegeAutocomplete";
 import { Eye, EyeOff } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 interface AuthModalProps {
@@ -30,6 +31,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [resetLinkSent, setResetLinkSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const collegeRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -50,6 +52,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setName("");
     setPhone("");
     setCollege("");
+    setResetLinkSent(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,8 +72,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
         if (error) throw error;
 
-        toast.success("Password reset email sent. Open the email link to create a new password.");
-        setMode("login");
+        setResetLinkSent(true);
+        toast.success("Password reset email sent. Open the newest email link to create a new password.");
       } catch (err: any) {
         toast.error(err.message || "Could not send reset email.");
       } finally {
@@ -201,7 +204,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 ref={emailRef}
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (resetLinkSent) setResetLinkSent(false);
+                }}
                 onKeyDown={mode === "forgot" ? undefined : moveOnEnter(passwordRef)}
                 placeholder="you@example.com"
                 autoComplete={mode === "login" ? "email" : "username"}
@@ -210,6 +216,14 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 spellCheck={false}
               />
             </div>
+
+            {mode === "forgot" && resetLinkSent && (
+              <Alert className="border-primary/20 bg-primary/5 text-left">
+                <AlertDescription>
+                  A fresh reset link was sent to this email. If needed, you can request another one and use the newest email only.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {mode !== "forgot" && (
               <div>
@@ -253,7 +267,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             )}
 
             <Button type="submit" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
-              {submitting ? "Please wait..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send Reset Link"}
+              {submitting ? "Please wait..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : resetLinkSent ? "Resend Reset Link" : "Send Reset Link"}
             </Button>
 
             <p className="pb-1 text-center text-sm text-muted-foreground">
