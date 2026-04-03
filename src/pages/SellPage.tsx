@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
+import { canonicalInstitutionName } from "@/lib/institutions";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -106,6 +107,7 @@ const SellPage = () => {
   const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
+  const postingCollege = canonicalInstitutionName(user?.college || "");
 
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -176,6 +178,11 @@ const SellPage = () => {
       navigate("/dashboard");
       return;
     }
+    if (!postingCollege) {
+      toast.error("Add your college in Edit Profile before posting an item.");
+      navigate("/dashboard");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -187,7 +194,7 @@ const SellPage = () => {
         condition,
         images,
         seller_id: supabaseUser.id,
-        college: user?.college || "",
+        college: postingCollege,
         sold: false,
         likes: 0,
       });
@@ -223,6 +230,10 @@ const SellPage = () => {
               Add a valid WhatsApp number in your dashboard profile before posting. Buyers contact sellers directly through WhatsApp.
             </div>
           )}
+
+          <div className="mb-5 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-foreground shadow-sm">
+            This item will be listed only in: <span className="font-semibold">{postingCollege || "Add your college in profile"}</span>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 rounded-[28px] border border-primary/10 bg-background/95 p-4 shadow-[0_20px_60px_rgba(15,118,110,0.10)] backdrop-blur-sm sm:p-6">
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
