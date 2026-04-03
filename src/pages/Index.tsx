@@ -26,8 +26,8 @@ interface ListingRow {
   seller_phone?: string;
 }
 
-const LISTINGS_CACHE_KEY = "campuskart-home-cache-v1";
-const INITIAL_VISIBLE_IMAGE_BATCH = 12;
+const LISTINGS_CACHE_KEY = "campuskart-home-cache-v2";
+const INITIAL_VISIBLE_IMAGE_BATCH = 8;
 const MAX_FILTER_PRICE = 10000;
 
 const Index = () => {
@@ -40,9 +40,17 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const stripImagesForCache = useCallback(
+    (listings: ListingRow[]) => listings.map(({ images, ...listing }) => ({ ...listing, images: [] })),
+    []
+  );
+
   const writeListingsCache = useCallback((listings: ListingRow[]) => {
-    localStorage.setItem(LISTINGS_CACHE_KEY, JSON.stringify({ listings, updatedAt: Date.now() }));
-  }, []);
+    localStorage.setItem(
+      LISTINGS_CACHE_KEY,
+      JSON.stringify({ listings: stripImagesForCache(listings), updatedAt: Date.now() })
+    );
+  }, [stripImagesForCache]);
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
