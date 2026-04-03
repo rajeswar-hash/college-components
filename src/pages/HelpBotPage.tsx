@@ -63,11 +63,20 @@ export default function HelpBotPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
   const inputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToLatest = (behavior: ScrollBehavior = "auto") => {
     requestAnimationFrame(() => {
-      messagesEndRef.current?.scrollIntoView({ block: "end", behavior });
+      const chatScroll = chatScrollRef.current;
+
+      if (!chatScroll) {
+        return;
+      }
+
+      chatScroll.scrollTo({
+        top: chatScroll.scrollHeight,
+        behavior,
+      });
     });
   };
 
@@ -130,7 +139,7 @@ export default function HelpBotPage() {
       </header>
 
       <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden px-4">
-        <div className="min-h-0 flex-1 overflow-y-auto py-4">
+        <div ref={chatScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 pb-6">
           <div className="space-y-3">
             {chatMessages.map((chat) => (
               <div key={chat.id} className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -145,7 +154,6 @@ export default function HelpBotPage() {
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
           </div>
         </div>
         <div className="shrink-0 border-t border-border bg-background py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
@@ -162,8 +170,10 @@ export default function HelpBotPage() {
               onChange={(e) => setChatInput(e.target.value)}
               onFocus={() => scrollToLatest("auto")}
               placeholder="Message"
-              autoCapitalize="sentences"
-              autoCorrect="on"
+              autoCapitalize="none"
+              autoCorrect="off"
+              autoComplete="off"
+              spellCheck={false}
               enterKeyHint="send"
               className="h-12 bg-background"
             />
