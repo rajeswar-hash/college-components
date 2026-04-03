@@ -31,6 +31,10 @@ jobs:
         run: npm ci
 
       - name: Build site
+        env:
+          VITE_SUPABASE_PROJECT_ID: vhdrmhnsnngfnnsfbrln
+          VITE_SUPABASE_URL: https://vhdrmhnsnngfnnsfbrln.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoZHJtaG5zbm5nZm5uc2ZicmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDcxMTUsImV4cCI6MjA5MDYyMzExNX0.OwmJBgvT49jbKZKVyIQ0j-q_S_F58Y1YhAyJGS4J9nw
         run: npm run build
 
       - name: Setup Pages
