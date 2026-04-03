@@ -258,7 +258,7 @@ const ProductDetail = () => {
                 <Badge variant="outline">{displayCondition}</Badge>
               </div>
               <h1 className="break-words font-display font-bold text-2xl text-foreground md:text-3xl">{listing.title}</h1>
-              <p className="font-display font-extrabold text-3xl gradient-text mt-2">â‚¹{listing.price}</p>
+              <p className="font-display font-extrabold text-3xl gradient-text mt-2">₹{listing.price}</p>
             </div>
 
             <p className="break-words text-muted-foreground leading-relaxed">{listing.description}</p>
