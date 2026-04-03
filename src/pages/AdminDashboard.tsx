@@ -30,6 +30,7 @@ interface ProfileAdminRow {
   name: string;
   email: string;
   college: string;
+  created_at: string;
 }
 
 interface CollegeRequestRow {
@@ -63,6 +64,7 @@ function formatBytes(bytes: number) {
 export default function AdminDashboard() {
   const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members">("requests");
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<ListingAdminRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileAdminRow[]>([]);
@@ -86,8 +88,8 @@ export default function AdminDashboard() {
           .order("created_at", { ascending: false }),
         supabase
           .from("profiles")
-          .select("id, name, email, college")
-          .order("name", { ascending: true }),
+          .select("id, name, email, college, created_at")
+          .order("created_at", { ascending: false }),
         supabase
           .from("college_requests")
           .select("id, college_name, city, state, note, requester_name, requester_email, status, created_at, reviewed_at")
@@ -159,9 +161,6 @@ export default function AdminDashboard() {
   const remainingBytes = Math.max(DATABASE_LIMIT_BYTES - databaseUsageBytes, 0);
   const activeListings = listings.filter((listing) => !listing.sold).length;
   const soldListings = listings.filter((listing) => listing.sold).length;
-  const latestListings = listings.slice(0, 8);
-  const recentMembers = profiles.slice(0, 8);
-  const recentCollegeRequests = collegeRequests.slice(0, 8);
   const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
   const usageTone =
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
@@ -423,8 +422,30 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm xl:col-span-2">
+        <div className="mt-4 space-y-4">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle>Admin sections</CardTitle>
+                  <p className="mt-1 text-xs text-muted-foreground">Open one section at a time so the panel stays compact as data grows.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant={activeSection === "requests" ? "default" : "outline"} className="h-9 text-xs sm:text-sm" onClick={() => setActiveSection("requests")}>
+                    College Requests <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
+                  </Button>
+                  <Button variant={activeSection === "listings" ? "default" : "outline"} className="h-9 text-xs sm:text-sm" onClick={() => setActiveSection("listings")}>
+                    Listing Moderation <Badge variant="secondary" className="ml-2 text-[10px]">{listings.length}</Badge>
+                  </Button>
+                  <Button variant={activeSection === "members" ? "default" : "outline"} className="h-9 text-xs sm:text-sm" onClick={() => setActiveSection("members")}>
+                    Member Snapshot <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+          {activeSection === "requests" && (
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -439,11 +460,11 @@ export default function AdminDashboard() {
             <CardContent>
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading college requests...</p>
-              ) : recentCollegeRequests.length === 0 ? (
+              ) : collegeRequests.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No college requests yet.</p>
               ) : (
                 <div className="space-y-2">
-                  {recentCollegeRequests.map((request) => (
+                  {collegeRequests.map((request) => (
                     <div key={request.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -474,9 +495,6 @@ export default function AdminDashboard() {
                             Requested by {request.requester_name || "Unknown"} {request.requester_email ? `(${request.requester_email})` : ""}
                           </p>
                         )}
-                        {request.note && (
-                          <p className="text-xs text-muted-foreground">{request.note}</p>
-                        )}
                       </div>
                       <div className="flex gap-2">
                         {request.status !== "approved" && (
@@ -496,7 +514,9 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+          )}
 
+          {activeSection === "listings" && (
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
@@ -504,19 +524,19 @@ export default function AdminDashboard() {
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5 text-primary" /> Listing moderation
                   </CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Compact moderation view built for larger listing volume.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Newest listings first, with compact moderation controls.</p>
                 </div>
-                <Badge variant="secondary">{latestListings.length} recent</Badge>
+                <Badge variant="secondary">{listings.length} total</Badge>
               </div>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading admin data...</p>
-              ) : latestListings.length === 0 ? (
+              ) : listings.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No listings found yet.</p>
               ) : (
                 <div className="space-y-2">
-                  {latestListings.map((listing) => (
+                  {listings.map((listing) => (
                     <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -544,7 +564,9 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+          )}
 
+          {activeSection === "members" && (
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
@@ -552,7 +574,7 @@ export default function AdminDashboard() {
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" /> Member snapshot
                   </CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Compact member list for faster scanning.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Newest registered users first.</p>
                 </div>
                 <Badge variant="secondary">{profiles.length} members</Badge>
               </div>
@@ -563,8 +585,8 @@ export default function AdminDashboard() {
               ) : profiles.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No user profiles available to show.</p>
               ) : (
-                <div className="max-h-[480px] space-y-2 overflow-y-auto pr-1">
-                  {recentMembers.map((profile) => (
+                <div className="max-h-[560px] space-y-2 overflow-y-auto pr-1">
+                  {profiles.map((profile) => (
                     <div key={profile.id} className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm">
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-xs font-bold text-primary">
@@ -582,6 +604,7 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
       <SiteFooter />
