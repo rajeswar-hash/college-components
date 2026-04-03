@@ -28,6 +28,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function hasValidWhatsappNumber(phone: string) {
+  const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
+  return digits.length >= 10;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
@@ -85,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedCollege = canonicalInstitutionName(college);
+    if (!hasValidWhatsappNumber(phone)) {
+      throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
+    }
     const { error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
@@ -152,6 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(async (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => {
     if (!supabaseUser?.id) {
       throw new Error("Please sign in again to update your profile.");
+    }
+    if (typeof updates.phone === "string" && updates.phone.trim() && !hasValidWhatsappNumber(updates.phone)) {
+      throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
     }
 
     const nextCollege = updates.college ? canonicalInstitutionName(updates.college) : undefined;

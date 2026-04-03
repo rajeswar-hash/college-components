@@ -193,6 +193,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     autoComplete="tel"
                     inputMode="tel"
                   />
+                  <p className="mt-1 text-xs text-muted-foreground">Enter a valid 10-digit WhatsApp number so buyers can reach you.</p>
                 </div>
               </>
             )}

@@ -205,6 +205,7 @@ const Dashboard = () => {
                     className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
                     placeholder="Enter your WhatsApp number"
                   />
+                  <p className="text-xs text-muted-foreground">Use a valid 10-digit WhatsApp number so buyers can contact you.</p>
                 </label>
               </div>
 
