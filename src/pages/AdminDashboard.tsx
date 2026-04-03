@@ -206,57 +206,57 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+              <CardContent className="p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="rounded-xl bg-primary/10 p-2 text-primary">
                     <Layers3 className="h-4 w-4" />
                   </div>
                   <Badge variant="secondary" className="text-[10px]">Marketplace</Badge>
                 </div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Total listings</p>
-                <p className="mt-1 font-display text-2xl font-bold text-foreground">{listings.length}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Published marketplace items</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Total listings</p>
+                <p className="mt-1 font-display text-xl font-bold text-foreground">{listings.length}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Published marketplace items</p>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="rounded-xl bg-sky-500/10 p-2.5 text-sky-600">
+              <CardContent className="p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="rounded-xl bg-sky-500/10 p-2 text-sky-600">
                     <Users className="h-4 w-4" />
                   </div>
                   <Badge variant="secondary" className="text-[10px]">Accounts</Badge>
                 </div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Registered users</p>
-                <p className="mt-1 font-display text-2xl font-bold text-foreground">{profiles.length}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Profiles inside the platform</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Registered users</p>
+                <p className="mt-1 font-display text-xl font-bold text-foreground">{profiles.length}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Profiles inside the platform</p>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-600">
+              <CardContent className="p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600">
                     <Activity className="h-4 w-4" />
                   </div>
                   <Badge variant="secondary" className="text-[10px]">Inventory</Badge>
                 </div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Active vs sold</p>
-                <p className="mt-1 font-display text-2xl font-bold text-foreground">{activeListings}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{soldListings} sold items archived</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Active vs sold</p>
+                <p className="mt-1 font-display text-xl font-bold text-foreground">{activeListings}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{soldListings} sold items archived</p>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600">
+              <CardContent className="p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
                     <IndianRupee className="h-4 w-4" />
                   </div>
                   <Badge variant="secondary" className="text-[10px]">Value</Badge>
                 </div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Catalog value</p>
-                <p className="mt-1 font-display text-2xl font-bold text-foreground">Rs. {totalListingValue.toLocaleString("en-IN")}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Avg Rs. {averageListingValue.toLocaleString("en-IN")} per listing</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Catalog value</p>
+                <p className="mt-1 font-display text-base font-bold text-foreground sm:text-xl">Rs. {totalListingValue.toLocaleString("en-IN")}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Avg Rs. {averageListingValue.toLocaleString("en-IN")} per listing</p>
               </CardContent>
             </Card>
           </div>
