@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+﻿import { useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,7 @@ interface AuthModalProps {
 export function AuthModal({ open, onClose }: AuthModalProps) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -53,7 +54,30 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     e.preventDefault();
     if (submitting) return;
 
-    if (!email || !password || password.length < 6) {
+    if (!email.trim()) {
+      toast.error("Please enter your email.");
+      return;
+    }
+
+    if (mode === "forgot") {
+      setSubmitting(true);
+      try {
+        const redirectTo = `${window.location.origin}${window.location.pathname}`;
+        const normalizedEmail = email.trim().toLowerCase();
+        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+        if (error) throw error;
+
+        toast.success("Password reset email sent. Open the email link to create a new password.");
+        setMode("login");
+      } catch (err: any) {
+        toast.error(err.message || "Could not send reset email.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    if (!password || password.length < 6) {
       toast.error("Please enter email and password (min 6 chars)");
       return;
     }
@@ -97,111 +121,154 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     >
       <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-visible rounded-2xl p-0">
         <div className="max-h-[85vh] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
-        <DialogHeader className="pr-8 text-center sm:text-center">
-          <DialogTitle className="font-display text-2xl text-center">
-              {mode === "login" ? "Welcome Back" : "Join CampusKart"}
-          </DialogTitle>
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground text-center">
-            {mode === "login"
-              ? "Sign in to publish listings, like products, and manage your dashboard."
-              : "Create your account to start selling, liking, and managing your listings."}
-          </p>
-        </DialogHeader>
+          <DialogHeader className="pr-8 text-center sm:text-center">
+            <DialogTitle className="font-display text-2xl text-center">
+              {mode === "login" ? "Welcome Back" : mode === "register" ? "Join CampusKart" : "Reset Password"}
+            </DialogTitle>
+            <p className="mx-auto max-w-sm text-sm text-muted-foreground text-center">
+              {mode === "login"
+                ? "Sign in to publish listings, like products, and manage your dashboard."
+                : mode === "register"
+                  ? "Create your account to start selling, liking, and managing your listings."
+                  : "Enter your account email and we will send you a secure password reset link."}
+            </p>
+          </DialogHeader>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/40 p-1">
-          <Button
-            type="button"
-            variant={mode === "login" ? "default" : "ghost"}
-            className={mode === "login" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
-            onClick={() => setMode("login")}
-          >
-            Sign In
-          </Button>
-          <Button
-            type="button"
-            variant={mode === "register" ? "default" : "ghost"}
-            className={mode === "register" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
-            onClick={() => setMode("register")}
-          >
-            Register
-          </Button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 mt-5">
-          {mode === "register" && (
-            <>
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={moveOnEnter(collegeRef)}
-                  placeholder="Rahul Sharma"
-                  autoComplete="name"
-                />
-              </div>
-              <CollegeAutocomplete
-                value={college}
-                onChange={setCollege}
-                inputRef={collegeRef}
-                onNextField={() => phoneRef.current?.focus()}
-                dropdownPosition="above"
-              />
-              <div>
-                <Label htmlFor="phone">WhatsApp Number</Label>
-                <Input
-                  id="phone"
-                  ref={phoneRef}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  onKeyDown={moveOnEnter(emailRef)}
-                  placeholder="919876543210"
-                  autoComplete="tel"
-                  inputMode="tel"
-                />
-              </div>
-            </>
+          {mode !== "forgot" && (
+            <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/40 p-1">
+              <Button
+                type="button"
+                variant={mode === "login" ? "default" : "ghost"}
+                className={mode === "login" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
+                onClick={() => setMode("login")}
+              >
+                Sign In
+              </Button>
+              <Button
+                type="button"
+                variant={mode === "register" ? "default" : "ghost"}
+                className={mode === "register" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
+                onClick={() => setMode("register")}
+              >
+                Register
+              </Button>
+            </div>
           )}
 
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              ref={emailRef}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={moveOnEnter(passwordRef)}
-              placeholder="you@example.com"
-              autoComplete={mode === "login" ? "email" : "username"}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            {mode === "register" && (
+              <>
+                <div>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={moveOnEnter(collegeRef)}
+                    placeholder="Rahul Sharma"
+                    autoComplete="name"
+                  />
+                </div>
+                <CollegeAutocomplete
+                  value={college}
+                  onChange={setCollege}
+                  inputRef={collegeRef}
+                  onNextField={() => phoneRef.current?.focus()}
+                  dropdownPosition="above"
+                />
+                <div>
+                  <Label htmlFor="phone">WhatsApp Number</Label>
+                  <Input
+                    id="phone"
+                    ref={phoneRef}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    onKeyDown={moveOnEnter(emailRef)}
+                    placeholder="919876543210"
+                    autoComplete="tel"
+                    inputMode="tel"
+                  />
+                </div>
+              </>
+            )}
 
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-            {mode === "register" && <p className="text-xs text-muted-foreground mt-1">At least 6 characters</p>}
-          </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                ref={emailRef}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={mode === "forgot" ? undefined : moveOnEnter(passwordRef)}
+                placeholder="you@example.com"
+                autoComplete={mode === "login" ? "email" : "username"}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            </div>
 
-          <Button type="submit" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
-            {submitting ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
-          </Button>
+            {mode !== "forgot" && (
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  ref={passwordRef}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  {mode === "register" ? (
+                    <p className="text-xs text-muted-foreground">At least 6 characters</p>
+                  ) : (
+                    <span />
+                  )}
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => setMode("forgot")}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
-          <p className="text-center text-sm text-muted-foreground pb-1">
-            {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "login" ? "register" : "login")}
-              className="text-primary font-medium hover:underline"
-            >
-              {mode === "login" ? "Register" : "Sign In"}
-            </button>
-          </p>
-        </form>
+            <Button type="submit" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
+              {submitting ? "Please wait..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Send Reset Link"}
+            </Button>
+
+            <p className="pb-1 text-center text-sm text-muted-foreground">
+              {mode === "forgot" ? (
+                <>
+                  Remembered your password?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setMode("login")}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    Sign In
+                  </button>
+                </>
+              ) : (
+                <>
+                  {mode === "login" ? "Don't have an account? " : "Already have an account? "}
+                  <button
+                    type="button"
+                    onClick={() => setMode(mode === "login" ? "register" : "login")}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    {mode === "login" ? "Register" : "Sign In"}
+                  </button>
+                </>
+              )}
+            </p>
+          </form>
         </div>
       </DialogContent>
     </Dialog>
