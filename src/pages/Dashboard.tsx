@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, CheckCircle, Package } from "lucide-react";
+import { CheckCircle, Pencil, Package, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ListingRow {
@@ -17,11 +17,44 @@ interface ListingRow {
   sold: boolean;
 }
 
+const avatarChoices = [
+  { id: "avatar:robot", character: "??", label: "Robot", ring: "from-cyan-400 to-blue-500" },
+  { id: "avatar:ninja", character: "??", label: "Ninja", ring: "from-violet-500 to-fuchsia-500" },
+  { id: "avatar:fox", character: "??", label: "Fox", ring: "from-orange-400 to-rose-500" },
+  { id: "avatar:owl", character: "??", label: "Owl", ring: "from-emerald-400 to-teal-500" },
+  { id: "avatar:cat", character: "??", label: "Cat", ring: "from-pink-400 to-purple-500" },
+  { id: "avatar:astronaut", character: "?????", label: "Astro", ring: "from-sky-400 to-indigo-500" },
+];
+
+const defaultAvatar = avatarChoices[0];
+
+const getAvatar = (avatarUrl?: string) =>
+  avatarChoices.find((avatar) => avatar.id === avatarUrl) ?? defaultAvatar;
+
 const Dashboard = () => {
-  const { user, isAuthenticated, supabaseUser, isAdmin } = useAuth();
+  const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: "",
+    phone: "",
+    college: "",
+    avatar_url: defaultAvatar.id,
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || "",
+        phone: user.phone || "",
+        college: user.college || "",
+        avatar_url: user.avatar_url || defaultAvatar.id,
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -52,44 +85,201 @@ const Dashboard = () => {
     );
   }
 
+  const activeListings = myListings.filter((listing) => !listing.sold).length;
+  const soldListings = myListings.filter((listing) => listing.sold).length;
+  const selectedAvatar = getAvatar(profileForm.avatar_url || user?.avatar_url);
+  const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
+
   const handleMarkSold = async (id: string) => {
     const { error } = await supabase.from("listings").update({ sold: true }).eq("id", id);
-    if (error) { toast.error("Failed to update"); return; }
+    if (error) {
+      toast.error("Failed to update");
+      return;
+    }
     setMyListings((prev) => prev.map((l) => (l.id === id ? { ...l, sold: true } : l)));
     toast.success("Item marked as sold!");
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("listings").delete().eq("id", id);
-    if (error) { toast.error("Failed to delete"); return; }
+    if (error) {
+      toast.error("Failed to delete");
+      return;
+    }
     setMyListings((prev) => prev.filter((l) => l.id !== id));
     toast.success("Listing deleted");
+  };
+
+  const handleSaveProfile = async () => {
+    if (!profileForm.name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (!profileForm.college.trim()) {
+      toast.error("Please enter your college");
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      await updateProfile({
+        name: profileForm.name.trim(),
+        phone: profileForm.phone.trim(),
+        college: profileForm.college.trim(),
+        avatar_url: profileForm.avatar_url,
+      });
+      setIsEditingProfile(false);
+      toast.success("Profile updated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const resetProfileForm = () => {
+    setProfileForm({
+      name: user?.name || "",
+      phone: user?.phone || "",
+      college: user?.college || "",
+      avatar_url: user?.avatar_url || defaultAvatar.id,
+    });
+    setIsEditingProfile(false);
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="animate-fade-in">
-          <div className="glass rounded-xl p-6 mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-display font-bold text-xl">
-                {user?.name?.charAt(0) || "?"}
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="animate-fade-in space-y-8">
+          <div className="glass rounded-2xl p-6 border border-primary/10 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center rounded-[24px] bg-gradient-to-br ${selectedAvatar.ring} text-3xl shadow-lg animate-pulse`}>
+                  <span>{selectedAvatar.character}</span>
+                  <span className="absolute inset-0 rounded-[24px] border border-white/40" />
+                </div>
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <Badge className="bg-primary/10 text-primary border-0">My Profile</Badge>
+                    <Badge variant="outline">{selectedAvatar.label} Avatar</Badge>
+                  </div>
+                  <h1 className="font-display font-bold text-2xl text-foreground">{user?.name || "Loading..."}</h1>
+                  <p className="text-sm text-muted-foreground break-words">{user?.email}</p>
+                  <p className="text-sm text-muted-foreground break-words">{user?.college}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-display font-bold text-2xl text-foreground">{user?.name || "Loading..."}</h1>
-                <p className="text-sm text-muted-foreground">{user?.email} • {user?.college}</p>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditingProfile((prev) => !prev)}
+                  className="rounded-full"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  {isEditingProfile ? "Close Edit" : "Edit Profile"}
+                </Button>
+                <Button onClick={() => navigate("/sell")} className="gradient-bg text-primary-foreground border-0 hover:opacity-90 rounded-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Listing
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 mt-6 sm:grid-cols-3">
+              <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-primary font-semibold">Active Listings</p>
+                <p className="mt-2 font-display text-2xl font-bold text-foreground">{activeListings}</p>
+                <p className="text-xs text-muted-foreground">Currently visible on the marketplace</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-emerald-600 font-semibold">Sold Items</p>
+                <p className="mt-2 font-display text-2xl font-bold text-foreground">{soldListings}</p>
+                <p className="text-xs text-muted-foreground">Deals you have already completed</p>
+              </div>
+              <div className="rounded-2xl border border-sky-500/10 bg-sky-500/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-sky-600 font-semibold">Catalog Value</p>
+                <p className="mt-2 font-display text-2xl font-bold text-foreground">Rs. {listingValue.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Total value of your current listings</p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
-            <div className="flex gap-3">
-              <Button onClick={() => navigate("/sell")} className="gradient-bg text-primary-foreground border-0 hover:opacity-90" size="sm">
-                <Plus className="w-4 h-4 mr-1" /> New Listing
-              </Button>
+          {isEditingProfile && (
+            <div className="glass rounded-2xl p-6 border border-primary/10">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <h2 className="font-display font-semibold text-xl text-foreground">Edit Profile</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">Choose your profile details and pick an animated character avatar for your dashboard.</p>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-medium text-foreground">Full Name</span>
+                  <input
+                    value={profileForm.name}
+                    onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
+                    placeholder="Enter your full name"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-medium text-foreground">WhatsApp Number</span>
+                  <input
+                    value={profileForm.phone}
+                    onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
+                    placeholder="Enter your WhatsApp number"
+                  />
+                </label>
+              </div>
+
+              <label className="space-y-2 mt-4 block">
+                <span className="text-sm font-medium text-foreground">College / University</span>
+                <input
+                  value={profileForm.college}
+                  onChange={(event) => setProfileForm((prev) => ({ ...prev, college: event.target.value }))}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
+                  placeholder="Enter your college or university"
+                />
+              </label>
+
+              <div className="mt-6">
+                <p className="text-sm font-medium text-foreground mb-3">Choose Animated Avatar Character</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+                  {avatarChoices.map((avatar) => {
+                    const selected = profileForm.avatar_url === avatar.id;
+                    return (
+                      <button
+                        key={avatar.id}
+                        type="button"
+                        onClick={() => setProfileForm((prev) => ({ ...prev, avatar_url: avatar.id }))}
+                        className={`rounded-2xl border p-3 text-center transition-all ${selected ? "border-primary bg-primary/5 shadow-[0_12px_30px_rgba(34,197,194,0.12)]" : "border-border bg-background hover:border-primary/50"}`}
+                      >
+                        <div className={`mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-[20px] bg-gradient-to-br ${avatar.ring} text-3xl shadow-md ${selected ? "animate-pulse" : ""}`}>
+                          <span>{avatar.character}</span>
+                        </div>
+                        <p className="text-xs font-medium text-foreground">{avatar.label}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button onClick={handleSaveProfile} disabled={savingProfile} className="gradient-bg text-primary-foreground border-0 hover:opacity-90 rounded-full">
+                  <Save className="w-4 h-4 mr-2" />
+                  {savingProfile ? "Saving..." : "Save Profile"}
+                </Button>
+                <Button variant="outline" onClick={resetProfileForm} className="rounded-full">
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
             </div>
+          )}
+
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
           </div>
 
           {loading ? (
