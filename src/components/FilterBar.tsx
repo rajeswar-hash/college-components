@@ -146,7 +146,7 @@ export function FilterBar({
 
       {/* Expandable Filter Panel */}
       {filtersOpen && (
-        <div className="glass border border-border rounded-lg p-3 space-y-3 animate-fade-in relative z-40">
+        <div className="glass border border-border rounded-lg p-3 space-y-3 animate-fade-in relative z-0">
           {/* Category */}
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Category</p>
@@ -218,7 +218,7 @@ export function FilterBar({
                 )}
               </div>
               {collegeDropdownOpen && collegeResults.length > 0 && (
-                <div className="overflow-hidden rounded-lg border border-border bg-popover shadow-md">
+                <div className="relative z-10 overflow-hidden rounded-lg border border-border bg-popover shadow-md">
                   <div className="max-h-48 overflow-auto py-1">
                     {collegeResults.map((c) => (
                       <button key={c} type="button"
