@@ -337,18 +337,18 @@ const Index = () => {
           <div className="animate-fade-in">
             <div className="relative -mx-4 overflow-hidden px-0 py-4 sm:mx-0">
               <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-[470px] bg-cover bg-center opacity-95 sm:h-[560px]"
+                className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-cover bg-center opacity-95"
                 style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
               />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] bg-[linear-gradient(180deg,rgba(240,253,255,0.14),rgba(255,255,255,0.10)_34%,rgba(255,255,255,0.60)_76%,rgba(255,255,255,0.98))] sm:h-[560px]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_28%)] sm:h-[560px]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] opacity-70 sm:h-[560px]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.14),rgba(255,255,255,0.10)_34%,rgba(255,255,255,0.52)_76%,rgba(255,255,255,0.90))]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_28%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-70">
                 <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
-              <div className="relative min-h-[210px] sm:min-h-[320px]">
-                <Card className="relative mx-auto mt-[88px] max-w-[285px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[360px]">
+              <div className="relative min-h-[420px] sm:min-h-[500px]">
+                <Card className="relative mx-auto mt-[88px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
                   <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary/75">SELECT YOUR COLLEGE</p>
