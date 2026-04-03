@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CollegeAutocomplete } from "@/components/CollegeAutocomplete";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 interface AuthModalProps {
@@ -28,6 +29,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const collegeRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -212,14 +214,25 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             {mode !== "forgot" && (
               <div>
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  ref={passwordRef}
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    ref={passwordRef}
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 <div className="mt-1 flex items-center justify-between gap-3">
                   {mode === "register" ? (
                     <p className="text-xs text-muted-foreground">At least 6 characters</p>

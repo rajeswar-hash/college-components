@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2 } from "lucide-react";
+import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,8 @@ export function Navbar() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [showDeletePasswordMobile, setShowDeletePasswordMobile] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -130,13 +132,24 @@ export function Navbar() {
                   </AlertDialogHeader>
                   <div className="space-y-2">
                     <Label htmlFor="delete-account-password">Password</Label>
-                    <Input
-                      id="delete-account-password"
-                      type="password"
-                      value={deletePassword}
-                      onChange={(e) => setDeletePassword(e.target.value)}
-                      placeholder="Enter your password"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="delete-account-password"
+                        type={showDeletePassword ? "text" : "password"}
+                        value={deletePassword}
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                        placeholder="Enter your password"
+                        className="pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowDeletePassword((value) => !value)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                        aria-label={showDeletePassword ? "Hide password" : "Show password"}
+                      >
+                        {showDeletePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <AlertDialogFooter>
                     <AlertDialogCancel onClick={() => setDeletePassword("")}>Cancel</AlertDialogCancel>
@@ -269,13 +282,24 @@ export function Navbar() {
                       </AlertDialogHeader>
                       <div className="space-y-2">
                         <Label htmlFor="delete-account-password-mobile">Password</Label>
-                        <Input
-                          id="delete-account-password-mobile"
-                          type="password"
-                          value={deletePassword}
-                          onChange={(e) => setDeletePassword(e.target.value)}
-                          placeholder="Enter your password"
-                        />
+                        <div className="relative">
+                          <Input
+                            id="delete-account-password-mobile"
+                            type={showDeletePasswordMobile ? "text" : "password"}
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            placeholder="Enter your password"
+                            className="pr-11"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowDeletePasswordMobile((value) => !value)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                            aria-label={showDeletePasswordMobile ? "Hide password" : "Show password"}
+                          >
+                            {showDeletePasswordMobile ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </div>
                       <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setDeletePassword("")}>Cancel</AlertDialogCancel>
