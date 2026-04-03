@@ -9,6 +9,7 @@ type ChatMessage = {
   id: string;
   role: "bot" | "user";
   text: string;
+  pending?: boolean;
 };
 
 const initialMessages: ChatMessage[] = [
@@ -69,6 +70,7 @@ function getBotReply(question: string) {
 export default function HelpBotPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
+  const replyTimeoutRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const showQuickPrompts = chatMessages.length <= 1;
@@ -92,6 +94,14 @@ export default function HelpBotPage() {
     scrollToLatest("auto");
   }, [chatMessages]);
 
+  useEffect(() => {
+    return () => {
+      if (replyTimeoutRef.current) {
+        window.clearTimeout(replyTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const sendChatMessage = (rawMessage?: string) => {
     const nextMessage = (rawMessage ?? chatInput).trim();
 
@@ -100,12 +110,30 @@ export default function HelpBotPage() {
       return;
     }
 
+    const userMessageId = `${Date.now()}-user`;
+    const pendingBotId = `${Date.now()}-bot-pending`;
+
     setChatMessages((current) => [
       ...current,
-      { id: `${Date.now()}-user`, role: "user", text: nextMessage },
-      { id: `${Date.now()}-bot`, role: "bot", text: getBotReply(nextMessage) },
+      { id: userMessageId, role: "user", text: nextMessage },
+      { id: pendingBotId, role: "bot", text: "...", pending: true },
     ]);
     setChatInput("");
+
+    if (replyTimeoutRef.current) {
+      window.clearTimeout(replyTimeoutRef.current);
+    }
+
+    replyTimeoutRef.current = window.setTimeout(() => {
+      setChatMessages((current) =>
+        current.map((message) =>
+          message.id === pendingBotId
+            ? { ...message, text: getBotReply(nextMessage), pending: false }
+            : message
+        )
+      );
+      replyTimeoutRef.current = null;
+    }, 850);
 
     requestAnimationFrame(() => {
       scrollToLatest("auto");
@@ -113,6 +141,10 @@ export default function HelpBotPage() {
   };
 
   const resetChat = () => {
+    if (replyTimeoutRef.current) {
+      window.clearTimeout(replyTimeoutRef.current);
+      replyTimeoutRef.current = null;
+    }
     setChatMessages(initialMessages);
     setChatInput("");
 
@@ -184,7 +216,15 @@ export default function HelpBotPage() {
                       : "rounded-bl-md border border-border/70 bg-card/95 text-foreground backdrop-blur-sm"
                   }`}
                 >
-                  {chat.text}
+                  {chat.pending ? (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-primary/60" />
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-primary/60 [animation-delay:150ms]" />
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-primary/60 [animation-delay:300ms]" />
+                    </span>
+                  ) : (
+                    chat.text
+                  )}
                 </div>
               </div>
             ))}
