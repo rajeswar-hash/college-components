@@ -90,11 +90,29 @@
 }
 
 @layer base {
+  html {
+    width: 100%;
+    min-width: 100%;
+    background: hsl(var(--background));
+    overflow-x: hidden;
+  }
+
   * {
     @apply border-border;
   }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    margin: 0;
+    overflow-x: hidden;
   }
 }
 
