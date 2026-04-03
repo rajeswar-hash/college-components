@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PublicPageLayout } from "@/components/PublicPageLayout";
-import { ArrowRight, MessageCircle, ShieldCheck, Sparkles, Store, Users } from "lucide-react";
+import { ArrowRight, MessageCircle, Recycle, ShieldCheck, Sparkles, Store, Users, Wallet, Zap } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -115,6 +115,83 @@ export default function AboutPage() {
             </CardContent>
           </Card>
         </div>
+
+        <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
+          <CardHeader>
+            <CardTitle>Why CampusKart is better for students</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Only for students</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                CampusKart is built around student communities, not random public traffic. That gives users a more trusted environment than a general marketplace.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Zap className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Faster same-campus deals</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Buyers and sellers are usually in the same campus environment, so there is no shipping delay and exchanges can happen much faster.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Better student pricing</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Many students sell items simply to recover some cost, not to maximize profit. That often means cheaper prices than online stores.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Store className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Made for engineering needs</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                CampusKart is a better fit for engineering students because it naturally supports notes, lab materials, components, gadgets, tools, and project kits.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Users className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Helps juniors and seniors</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Seniors can pass on useful books, notes, and components, while juniors get what they need faster and at lower cost. That builds a real student ecosystem.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Recycle className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Smarter reuse, less waste</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Items used once for a project do not need to sit unused or get wasted. Reusing them saves money and makes the platform more sustainable.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4 md:col-span-2 xl:col-span-3">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <p className="font-semibold text-foreground">Direct communication, no middleman</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Buyers and sellers connect directly, which makes questions, negotiation, and final decisions quicker and clearer without unnecessary middle steps.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </PublicPageLayout>
   );
