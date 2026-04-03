@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { CATEGORIES, Category } from "@/lib/types";
-import { getListings } from "@/lib/store";
 import { Search, X, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,10 +34,16 @@ export function FilterBar({
   const [collegeResults, setCollegeResults] = useState<string[]>([]);
   const [collegeDropdownOpen, setCollegeDropdownOpen] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [suggestedColleges, setSuggestedColleges] = useState<string[]>([]);
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  useEffect(() => { loadInstitutionNames().then(() => setDataReady(true)); }, []);
+  useEffect(() => {
+    loadInstitutionNames().then((names) => {
+      setSuggestedColleges(names.slice(0, 6));
+      setDataReady(true);
+    });
+  }, []);
 
   useEffect(() => {
     setCollegeQuery(selectedCollege ?? "");
@@ -65,10 +70,10 @@ export function FilterBar({
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (selectedCollege ? 1 : 0) + (priceRange[0] > 0 || priceRange[1] < maxPrice ? 1 : 0);
 
-  const collegesWithListings = useMemo(() => {
-    const listings = getListings();
-    return dedupeInstitutionNames(listings.map((listing) => cleanInstitutionName(listing.college)));
-  }, []);
+  const collegesWithListings = useMemo(
+    () => dedupeInstitutionNames(suggestedColleges.map((name) => cleanInstitutionName(name))),
+    [suggestedColleges]
+  );
 
   const clearAll = () => {
     onCategoryChange(null);
