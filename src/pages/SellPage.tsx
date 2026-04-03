@@ -10,15 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   Cpu,
   FileText,
-  ImagePlus,
-  MapPin,
-  MoreHorizontal,
+  ImagePlus,  MoreHorizontal,
   Rocket,
   Smartphone,
   Sparkles,
@@ -99,10 +96,7 @@ const SellPage = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<Category | "">("");
   const [condition, setCondition] = useState<Condition | "">("");
-  const [images, setImages] = useState<string[]>([]);
-  const [locationHint, setLocationHint] = useState("");
-  const [negotiable, setNegotiable] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [images, setImages] = useState<string[]>([]);  const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -169,15 +163,9 @@ const SellPage = () => {
 
     setSubmitting(true);
     try {
-      const detailLines = [
-        description.trim(),
-        locationHint.trim() ? `Location: ${locationHint.trim()}` : "",
-        negotiable ? "Price: Negotiable" : "",
-      ].filter(Boolean);
-
       const { error } = await supabase.from("listings").insert({
         title,
-        description: detailLines.join("\n\n"),
+        description: description.trim(),
         price: Number(price),
         category,
         condition,
@@ -362,47 +350,22 @@ const SellPage = () => {
               </div>
             </section>
 
-            <section className="grid gap-4 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm md:grid-cols-[1fr_auto] md:items-end">
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-base font-semibold">Price</Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">₹</span>
-                  <Input
-                    id="price"
-                    type="number"
-                    min="0"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="500"
-                    className="h-12 rounded-2xl border-border/80 bg-background pl-9"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">Set a fair price for faster sale</p>
-              </div>
-
-              <div className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3 md:min-w-[220px]">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Negotiable</p>
-                  <p className="text-xs text-muted-foreground">Buyers can discuss price</p>
-                </div>
-                <Switch checked={negotiable} onCheckedChange={setNegotiable} />
-              </div>
-            </section>
-
-            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
-              <Label htmlFor="locationHint" className="text-base font-semibold">Location (Hostel / Department)</Label>
+                        <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+              <Label htmlFor="price" className="text-base font-semibold">Price</Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">₹</span>
                 <Input
-                  id="locationHint"
-                  value={locationHint}
-                  onChange={(e) => setLocationHint(e.target.value)}
-                  placeholder="e.g. Hostel B, ECE Department"
+                  id="price"
+                  type="number"
+                  min="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="500"
                   className="h-12 rounded-2xl border-border/80 bg-background pl-9"
                 />
               </div>
+              <p className="text-xs text-muted-foreground">Set a fair price for faster sale</p>
             </section>
-
             <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
@@ -423,10 +386,8 @@ const SellPage = () => {
                   </div>
                   <p className="line-clamp-2 text-sm font-semibold text-foreground">{title || "Your item title will appear here"}</p>
                   <p className="mt-1 text-sm font-bold gradient-text">
-                    {price ? `₹${price}${negotiable ? " • Negotiable" : ""}` : "Add a price"}
-                  </p>
-                  {locationHint && <p className="mt-1 text-xs text-muted-foreground">{locationHint}</p>}
-                </div>
+                    {price ? `₹${price}` : "Add a price"}
+                  </p>                </div>
               </div>
             </section>
 
@@ -455,4 +416,5 @@ const SellPage = () => {
 };
 
 export default SellPage;
+
 
