@@ -125,7 +125,8 @@ export default function AdminDashboard() {
   const activeListings = listings.filter((listing) => !listing.sold).length;
   const soldListings = listings.filter((listing) => listing.sold).length;
   const latestListings = listings.slice(0, 8);
-  const recentMembers = profiles.slice(0, 6);
+  const recentMembers = profiles.slice(0, 8);
+  const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
   const usageTone =
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
   const usageLabel =
@@ -177,26 +178,26 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.76),rgba(255,255,255,0.92))]">
-        <div className="container mx-auto max-w-7xl px-4 py-8 md:py-10">
-          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.80),rgba(255,255,255,0.92))]">
+        <div className="container mx-auto max-w-7xl px-4 py-6 md:py-8">
+          <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary shadow-sm">
                 <Shield className="h-3.5 w-3.5" /> Admin control room
               </div>
-              <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl">Platform Command Center</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                Review marketplace health, monitor growth, estimate database pressure, and jump into Supabase operations from one premium admin surface.
+              <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">Platform Command Center</h1>
+              <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                Compact, high-signal control for listings, users, storage pressure, and direct Supabase operations.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button variant="outline" className="justify-between bg-background/80" onClick={() => openSupabasePage("editor")}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button variant="outline" className="h-10 justify-between bg-background/80 text-xs sm:text-sm" onClick={() => openSupabasePage("editor")}>
                 <span className="flex items-center">
                   <Database className="mr-2 h-4 w-4" /> Open database
                 </span>
                 <ArrowUpRight className="h-4 w-4" />
               </Button>
-              <Button className="gradient-bg justify-between border-0 text-primary-foreground hover:opacity-90" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
+              <Button className="gradient-bg h-10 justify-between border-0 text-xs text-primary-foreground hover:opacity-90 sm:text-sm" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
                 <span className="flex items-center">
                   <Wallet className="mr-2 h-4 w-4" /> Buy extra capacity
                 </span>
@@ -205,110 +206,110 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-                    <Layers3 className="h-5 w-5" />
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                    <Layers3 className="h-4 w-4" />
                   </div>
-                  <Badge variant="secondary">Marketplace</Badge>
+                  <Badge variant="secondary" className="text-[10px]">Marketplace</Badge>
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Total listings</p>
-                <p className="mt-2 font-display text-3xl font-bold text-foreground">{listings.length}</p>
-                <p className="mt-1 text-sm text-muted-foreground">All published marketplace items</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Total listings</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground">{listings.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Published marketplace items</p>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-600">
-                    <Users className="h-5 w-5" />
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="rounded-xl bg-sky-500/10 p-2.5 text-sky-600">
+                    <Users className="h-4 w-4" />
                   </div>
-                  <Badge variant="secondary">Accounts</Badge>
+                  <Badge variant="secondary" className="text-[10px]">Accounts</Badge>
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Registered users</p>
-                <p className="mt-2 font-display text-3xl font-bold text-foreground">{profiles.length}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Profiles active inside the platform</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Registered users</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground">{profiles.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Profiles inside the platform</p>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl bg-amber-500/10 p-3 text-amber-600">
-                    <Activity className="h-5 w-5" />
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="rounded-xl bg-amber-500/10 p-2.5 text-amber-600">
+                    <Activity className="h-4 w-4" />
                   </div>
-                  <Badge variant="secondary">Inventory</Badge>
+                  <Badge variant="secondary" className="text-[10px]">Inventory</Badge>
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Active vs sold</p>
-                <p className="mt-2 font-display text-3xl font-bold text-foreground">{activeListings}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{soldListings} sold items archived</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Active vs sold</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground">{activeListings}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{soldListings} sold items archived</p>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-              <CardContent className="p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl bg-emerald-500/10 p-3 text-emerald-600">
-                    <IndianRupee className="h-5 w-5" />
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="rounded-xl bg-emerald-500/10 p-2.5 text-emerald-600">
+                    <IndianRupee className="h-4 w-4" />
                   </div>
-                  <Badge variant="secondary">Value</Badge>
+                  <Badge variant="secondary" className="text-[10px]">Value</Badge>
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Catalog value</p>
-                <p className="mt-2 font-display text-3xl font-bold text-foreground">Rs. {totalListingValue.toLocaleString("en-IN")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Combined value of listed inventory</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Catalog value</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground">Rs. {totalListingValue.toLocaleString("en-IN")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Avg Rs. {averageListingValue.toLocaleString("en-IN")} per listing</p>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 py-8">
-        <Alert className="mb-6 border-primary/20 bg-primary/5">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <Alert className="mb-4 border-primary/20 bg-primary/5 py-3">
           <Wrench className="h-4 w-4" />
-          <AlertTitle>How space monitoring works here</AlertTitle>
+          <AlertTitle>Space monitoring note</AlertTitle>
           <AlertDescription>
-            This dashboard shows an estimated database footprint from data the frontend can read. Real quota, billing, and add-on purchases still happen in Supabase.
+            This dashboard estimates database footprint from frontend-readable data. Real quota and upgrades still happen in Supabase.
           </AlertDescription>
         </Alert>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-            <CardHeader>
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <HardDrive className="h-5 w-5 text-primary" /> Database usage monitor
                   </CardTitle>
-                  <p className="mt-2 text-sm text-muted-foreground">A clearer overview of current storage pressure and available room for growth.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Compact storage overview for current platform growth.</p>
                 </div>
                 <Badge variant="secondary" className={usageTone}>{usageLabel}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-3">
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Estimated used</p>
-                  <p className="mt-1 font-display text-2xl font-bold text-foreground">{formatBytes(databaseUsageBytes)}</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Estimated used</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(databaseUsageBytes)}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Estimated remaining</p>
-                  <p className="mt-1 font-display text-2xl font-bold text-foreground">{formatBytes(remainingBytes)}</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Estimated remaining</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(remainingBytes)}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Assumed plan limit</p>
-                  <p className="mt-1 font-display text-2xl font-bold text-foreground">{formatBytes(DATABASE_LIMIT_BYTES)}</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Assumed plan limit</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(DATABASE_LIMIT_BYTES)}</p>
                 </div>
               </div>
 
               <div>
-                <div className="mb-2 flex items-center justify-between text-sm">
+                <div className="mb-2 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Quota pressure</span>
                   <span className={`font-semibold ${usageTone}`}>{usagePercent.toFixed(1)}%</span>
                 </div>
                 <Progress value={usagePercent} className="h-3" />
               </div>
 
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground shadow-sm">
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 text-xs text-muted-foreground shadow-sm">
                 {usagePercent >= 85
                   ? "Capacity is getting tight. Open billing and review add-ons before uploads start failing."
                   : usagePercent >= 60
@@ -319,41 +320,45 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle>Admin actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-between bg-background/70" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
                 Open billing page <ExternalLink className="h-4 w-4" />
               </Button>
-              <Button className="w-full justify-between bg-background/70" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
                 Open billing guide <ExternalLink className="h-4 w-4" />
               </Button>
-              <Button className="w-full justify-between bg-background/70" variant="outline" onClick={() => openSupabasePage("storage/buckets")}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openSupabasePage("storage/buckets")}>
                 Open storage settings <ExternalLink className="h-4 w-4" />
               </Button>
-              <Button className="w-full justify-between bg-background/70" variant="outline" onClick={() => openSupabasePage("auth/users")}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openSupabasePage("auth/users")}>
                 Open auth users <ExternalLink className="h-4 w-4" />
               </Button>
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm">
-                <p className="text-sm font-medium text-foreground">What this admin panel controls directly</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Marketplace summaries, listing moderation, and direct links into your Supabase project and organization billing pages.
-                </p>
+              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Live now</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{activeListings} active listings</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Accounts</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{profiles.length} registered users</p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5 text-primary" /> Listing moderation
                   </CardTitle>
-                  <p className="mt-2 text-sm text-muted-foreground">Review recent listings and take moderation actions without leaving the control room.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Compact moderation view built for larger listing volume.</p>
                 </div>
                 <Badge variant="secondary">{latestListings.length} recent</Badge>
               </div>
@@ -364,26 +369,27 @@ export default function AdminDashboard() {
               ) : latestListings.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No listings found yet.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {latestListings.map((listing) => (
-                    <div key={listing.id} className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-                      <div className="min-w-0">
+                    <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
+                      <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate font-medium text-foreground">{listing.title}</p>
-                          <Badge variant={listing.sold ? "secondary" : "outline"}>{listing.sold ? "Sold" : "Active"}</Badge>
+                          <p className="truncate text-sm font-medium text-foreground">{listing.title}</p>
+                          <Badge variant={listing.sold ? "secondary" : "outline"} className="text-[10px]">{listing.sold ? "Sold" : "Active"}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{listing.category}</Badge>
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="truncate text-xs text-muted-foreground">
                           {listing.category} • {listing.college} • Rs. {Number(listing.price).toLocaleString("en-IN")}
                         </p>
                       </div>
                       <div className="flex gap-2">
                         {!listing.sold && (
-                          <Button size="sm" variant="outline" onClick={() => handleMarkSold(listing.id)}>
+                          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleMarkSold(listing.id)}>
                             Mark sold
                           </Button>
                         )}
-                        <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
-                          <Trash2 className="mr-1 h-4 w-4" /> Remove
+                        <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
+                          <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -394,13 +400,13 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" /> Member snapshot
                   </CardTitle>
-                  <p className="mt-2 text-sm text-muted-foreground">A quick view of registered members and their colleges.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Compact member list for faster scanning.</p>
                 </div>
                 <Badge variant="secondary">{profiles.length} members</Badge>
               </div>
@@ -411,16 +417,16 @@ export default function AdminDashboard() {
               ) : profiles.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No user profiles available to show.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="max-h-[480px] space-y-2 overflow-y-auto pr-1">
                   {recentMembers.map((profile) => (
                     <div key={profile.id} className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm">
                       <div className="flex items-start gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-sm font-bold text-primary">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-xs font-bold text-primary">
                           {profile.name?.charAt(0) || "U"}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground">{profile.name}</p>
-                          <p className="truncate text-sm text-muted-foreground">{profile.email}</p>
+                          <p className="truncate text-sm font-medium text-foreground">{profile.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
                           <p className="text-xs text-muted-foreground">{profile.college}</p>
                         </div>
                       </div>
