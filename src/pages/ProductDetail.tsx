@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+﻿import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -12,11 +12,13 @@ import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
 
-function formatPhone(phone: string): string {
+function formatPhone(phone: string): string | null {
   const digits = phone.replace(/\D/g, "");
-  if (digits.length > 10) return digits;
   const cleaned = digits.replace(/^0+/, "");
-  return "91" + cleaned;
+
+  if (cleaned.length < 10) return null;
+  if (cleaned.length === 10) return `91${cleaned}`;
+  return cleaned;
 }
 
 interface ListingDetail {
@@ -151,12 +153,19 @@ const ProductDetail = () => {
     }
   };
 
+  const whatsappPhone = formatPhone(listing.seller_phone);
   const whatsappUrl = (() => {
     const msg = encodeURIComponent(
       `Hi! I'm interested in your listing on CampusKart:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
     );
-    return `https://wa.me/${formatPhone(listing.seller_phone)}?text=${msg}`;
+    return whatsappPhone ? `https://wa.me/${whatsappPhone}?text=${msg}` : "#";
   })();
+
+  const handleWhatsappContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (whatsappPhone) return;
+    e.preventDefault();
+    toast.error("This seller has not added a valid WhatsApp number yet.");
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -243,7 +252,7 @@ const ProductDetail = () => {
                 <Badge variant="outline">{displayCondition}</Badge>
               </div>
               <h1 className="break-words font-display font-bold text-2xl text-foreground md:text-3xl">{listing.title}</h1>
-              <p className="font-display font-extrabold text-3xl gradient-text mt-2">₹{listing.price}</p>
+              <p className="font-display font-extrabold text-3xl gradient-text mt-2">â‚¹{listing.price}</p>
             </div>
 
             <p className="break-words text-muted-foreground leading-relaxed">{listing.description}</p>
@@ -259,8 +268,8 @@ const ProductDetail = () => {
 
             <div className="space-y-3 pt-2">
               {!listing.sold && (
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1">
-                  <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg">
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1" onClick={handleWhatsappContact}>
+                  <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg" disabled={!whatsappPhone}>
                     <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
                   </Button>
                 </a>
@@ -285,3 +294,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+
