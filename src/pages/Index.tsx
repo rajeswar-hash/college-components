@@ -7,7 +7,6 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
 import { Cpu, ShieldCheck, Sparkles, Zap } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { canonicalInstitutionName, normalizeInstitutionKey } from "@/lib/institutions";
 
 interface ListingRow {
@@ -30,7 +29,6 @@ interface ListingRow {
 const LISTINGS_CACHE_KEY = "college-components-home-cache-v1";
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();
   const location = useLocation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -65,7 +63,7 @@ const Index = () => {
 
     const { data: listingsData, error: listingsError } = await supabase
       .from("listings")
-      .select("*")
+      .select("id, title, description, price, category, condition, images, seller_id, college, sold, likes, created_at")
       .order("created_at", { ascending: false });
 
     if (listingsError || !listingsData) {
@@ -74,32 +72,12 @@ const Index = () => {
       return;
     }
 
-    const sellerIds = Array.from(new Set(listingsData.map((listing) => listing.seller_id)));
-    let profilesData: { id: string; name: string; phone: string }[] = [];
-
-    if (sellerIds.length > 0) {
-      const { data } = await supabase.from("profiles").select("id, name, phone").in("id", sellerIds);
-
-      profilesData = data ?? [];
-    }
-
-    const sellers = new Map(
-      profilesData.map((profile) => [
-        profile.id,
-        {
-          name: profile.name,
-          phone: profile.phone || "",
-        },
-      ])
-    );
-
     const nextListings = listingsData.map((listing) => {
-        const seller = sellers.get(listing.seller_id);
         return {
           ...listing,
           college: canonicalInstitutionName(listing.college),
-          seller_name: seller?.name || "Unknown",
-          seller_phone: seller?.phone || "",
+          seller_name: "",
+          seller_phone: "",
         };
       });
 
