@@ -23,7 +23,9 @@ export type Database = {
           note: string
           requester_email: string
           requester_name: string
+          reviewed_at: string | null
           state: string
+          status: string
         }
         Insert: {
           city?: string
@@ -33,7 +35,9 @@ export type Database = {
           note?: string
           requester_email?: string
           requester_name?: string
+          reviewed_at?: string | null
           state?: string
+          status?: string
         }
         Update: {
           city?: string
@@ -43,7 +47,9 @@ export type Database = {
           note?: string
           requester_email?: string
           requester_name?: string
+          reviewed_at?: string | null
           state?: string
+          status?: string
         }
         Relationships: []
       }

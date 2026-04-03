@@ -30,6 +30,19 @@ interface ProfileAdminRow {
   college: string;
 }
 
+interface CollegeRequestRow {
+  id: string;
+  college_name: string;
+  city: string;
+  state: string;
+  note: string;
+  requester_name: string;
+  requester_email: string;
+  status: string;
+  created_at: string;
+  reviewed_at: string | null;
+}
+
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const SUPABASE_BILLING_URL = "https://supabase.com/dashboard/org/ponqczgkbajoevlbqvny/billing";
@@ -51,6 +64,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<ListingAdminRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileAdminRow[]>([]);
+  const [collegeRequests, setCollegeRequests] = useState<CollegeRequestRow[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) return;
@@ -58,7 +72,11 @@ export default function AdminDashboard() {
     const fetchAdminData = async () => {
       setLoading(true);
 
-      const [{ data: listingData, error: listingError }, { data: profileData, error: profileError }] = await Promise.all([
+      const [
+        { data: listingData, error: listingError },
+        { data: profileData, error: profileError },
+        { data: collegeRequestData, error: collegeRequestError },
+      ] = await Promise.all([
         supabase
           .from("listings")
           .select("id, title, price, category, college, sold, created_at, images")
@@ -67,6 +85,10 @@ export default function AdminDashboard() {
           .from("profiles")
           .select("id, name, email, college")
           .order("name", { ascending: true }),
+        supabase
+          .from("college_requests")
+          .select("id, college_name, city, state, note, requester_name, requester_email, status, created_at, reviewed_at")
+          .order("created_at", { ascending: false }),
       ]);
 
       if (listingError) {
@@ -79,6 +101,12 @@ export default function AdminDashboard() {
         toast.error("Could not load profile data for the admin dashboard.");
       } else {
         setProfiles((profileData as ProfileAdminRow[]) || []);
+      }
+
+      if (collegeRequestError) {
+        toast.error("Could not load college requests.");
+      } else {
+        setCollegeRequests((collegeRequestData as CollegeRequestRow[]) || []);
       }
 
       setLoading(false);
@@ -126,6 +154,7 @@ export default function AdminDashboard() {
   const soldListings = listings.filter((listing) => listing.sold).length;
   const latestListings = listings.slice(0, 8);
   const recentMembers = profiles.slice(0, 8);
+  const recentCollegeRequests = collegeRequests.slice(0, 8);
   const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
   const usageTone =
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
@@ -160,6 +189,25 @@ export default function AdminDashboard() {
 
     setListings((current) => current.map((listing) => (listing.id === id ? { ...listing, sold: true } : listing)));
     toast.success("Listing marked as sold.");
+  };
+
+  const handleCollegeRequestStatus = async (id: string, status: "approved" | "rejected") => {
+    const { error } = await supabase
+      .from("college_requests")
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Could not update this college request.");
+      return;
+    }
+
+    setCollegeRequests((current) =>
+      current.map((request) =>
+        request.id === id ? { ...request, status, reviewed_at: new Date().toISOString() } : request
+      )
+    );
+    toast.success(status === "approved" ? "College request approved." : "College request rejected.");
   };
 
   if (!isAuthenticated || !isAdmin) {
@@ -351,6 +399,65 @@ export default function AdminDashboard() {
         </div>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm xl:col-span-2">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" /> College requests
+                  </CardTitle>
+                  <p className="mt-1 text-xs text-muted-foreground">Review requested colleges and verify them before they appear in search.</p>
+                </div>
+                <Badge variant="secondary">{collegeRequests.length} total</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <p className="text-sm text-muted-foreground">Loading college requests...</p>
+              ) : recentCollegeRequests.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No college requests yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {recentCollegeRequests.map((request) => (
+                    <div key={request.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-medium text-foreground">{request.college_name}</p>
+                          <Badge variant={request.status === "approved" ? "default" : request.status === "rejected" ? "destructive" : "secondary"} className="text-[10px] capitalize">
+                            {request.status}
+                          </Badge>
+                        </div>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {request.city}, {request.state}
+                        </p>
+                        {(request.requester_name || request.requester_email) && (
+                          <p className="truncate text-xs text-muted-foreground">
+                            Requested by {request.requester_name || "Unknown"} {request.requester_email ? `(${request.requester_email})` : ""}
+                          </p>
+                        )}
+                        {request.note && (
+                          <p className="text-xs text-muted-foreground">{request.note}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {request.status !== "approved" && (
+                          <Button size="sm" className="h-8 text-xs" onClick={() => handleCollegeRequestStatus(request.id, "approved")}>
+                            Approve
+                          </Button>
+                        )}
+                        {request.status !== "rejected" && (
+                          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleCollegeRequestStatus(request.id, "rejected")}>
+                            Reject
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">

@@ -8,6 +8,13 @@ interface UniversityEntry {
   "University Name": string;
 }
 
+interface ApprovedCollegeRequestEntry {
+  college_name: string;
+  city: string;
+  state: string;
+  status: string;
+}
+
 let cachedInstitutions: string[] | null = null;
 let loadingPromise: Promise<string[]> | null = null;
 
@@ -73,6 +80,12 @@ export async function loadInstitutionNames(): Promise<string[]> {
         loadJson<CollegeEntry>("data/indian_colleges.json"),
         loadJson<UniversityEntry>("data/indian_universities.json"),
       ]);
+      const { data: approvedRequests } = await import("@/integrations/supabase/client").then(({ supabase }) =>
+        supabase
+          .from("college_requests")
+          .select("college_name, city, state, status")
+          .eq("status", "approved")
+      );
 
       const institutionMap = new Map<string, string>();
 
@@ -97,6 +110,11 @@ export async function loadInstitutionNames(): Promise<string[]> {
 
       for (const college of COLLEGES) {
         addInstitution(college);
+      }
+
+      for (const request of (approvedRequests as ApprovedCollegeRequestEntry[] | null) || []) {
+        const withLocation = [request.college_name, request.city, request.state].filter(Boolean).join(", ");
+        addInstitution(withLocation || request.college_name);
       }
 
       cachedInstitutions = sortInstitutions([...institutionMap.values()]);
