@@ -17,20 +17,6 @@ interface ListingRow {
   sold: boolean;
 }
 
-const avatarChoices = [
-  { id: "avatar:robot", character: "??", label: "Robot", ring: "from-cyan-400 to-blue-500" },
-  { id: "avatar:ninja", character: "??", label: "Ninja", ring: "from-violet-500 to-fuchsia-500" },
-  { id: "avatar:fox", character: "??", label: "Fox", ring: "from-orange-400 to-rose-500" },
-  { id: "avatar:owl", character: "??", label: "Owl", ring: "from-emerald-400 to-teal-500" },
-  { id: "avatar:cat", character: "??", label: "Cat", ring: "from-pink-400 to-purple-500" },
-  { id: "avatar:astronaut", character: "?????", label: "Astro", ring: "from-sky-400 to-indigo-500" },
-];
-
-const defaultAvatar = avatarChoices[0];
-
-const getAvatar = (avatarUrl?: string) =>
-  avatarChoices.find((avatar) => avatar.id === avatarUrl) ?? defaultAvatar;
-
 const Dashboard = () => {
   const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -42,7 +28,6 @@ const Dashboard = () => {
     name: "",
     phone: "",
     college: "",
-    avatar_url: defaultAvatar.id,
   });
 
   useEffect(() => {
@@ -51,7 +36,6 @@ const Dashboard = () => {
         name: user.name || "",
         phone: user.phone || "",
         college: user.college || "",
-        avatar_url: user.avatar_url || defaultAvatar.id,
       });
     }
   }, [user]);
@@ -87,7 +71,6 @@ const Dashboard = () => {
 
   const activeListings = myListings.filter((listing) => !listing.sold).length;
   const soldListings = myListings.filter((listing) => listing.sold).length;
-  const selectedAvatar = getAvatar(profileForm.avatar_url || user?.avatar_url);
   const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
 
   const handleMarkSold = async (id: string) => {
@@ -126,7 +109,6 @@ const Dashboard = () => {
         name: profileForm.name.trim(),
         phone: profileForm.phone.trim(),
         college: profileForm.college.trim(),
-        avatar_url: profileForm.avatar_url,
       });
       setIsEditingProfile(false);
       toast.success("Profile updated");
@@ -142,7 +124,6 @@ const Dashboard = () => {
       name: user?.name || "",
       phone: user?.phone || "",
       college: user?.college || "",
-      avatar_url: user?.avatar_url || defaultAvatar.id,
     });
     setIsEditingProfile(false);
   };
@@ -155,14 +136,12 @@ const Dashboard = () => {
           <div className="glass rounded-2xl p-6 border border-primary/10 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4 min-w-0">
-                <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center rounded-[24px] bg-gradient-to-br ${selectedAvatar.ring} text-3xl shadow-lg animate-pulse`}>
-                  <span>{selectedAvatar.character}</span>
-                  <span className="absolute inset-0 rounded-[24px] border border-white/40" />
+                <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-display font-bold text-xl shadow-lg">
+                  {user?.name?.charAt(0) || "?"}
                 </div>
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <Badge className="bg-primary/10 text-primary border-0">My Profile</Badge>
-                    <Badge variant="outline">{selectedAvatar.label} Avatar</Badge>
                   </div>
                   <h1 className="font-display font-bold text-2xl text-foreground">{user?.name || "Loading..."}</h1>
                   <p className="text-sm text-muted-foreground break-words">{user?.email}</p>
@@ -210,7 +189,7 @@ const Dashboard = () => {
                 <Sparkles className="w-4 h-4 text-primary" />
                 <h2 className="font-display font-semibold text-xl text-foreground">Edit Profile</h2>
               </div>
-              <p className="text-sm text-muted-foreground mb-5">Choose your profile details and pick an animated character avatar for your dashboard.</p>
+              <p className="text-sm text-muted-foreground mb-5">Update your profile details so buyers can trust you faster.</p>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
@@ -242,28 +221,6 @@ const Dashboard = () => {
                   placeholder="Enter your college or university"
                 />
               </label>
-
-              <div className="mt-6">
-                <p className="text-sm font-medium text-foreground mb-3">Choose Animated Avatar Character</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-                  {avatarChoices.map((avatar) => {
-                    const selected = profileForm.avatar_url === avatar.id;
-                    return (
-                      <button
-                        key={avatar.id}
-                        type="button"
-                        onClick={() => setProfileForm((prev) => ({ ...prev, avatar_url: avatar.id }))}
-                        className={`rounded-2xl border p-3 text-center transition-all ${selected ? "border-primary bg-primary/5 shadow-[0_12px_30px_rgba(34,197,194,0.12)]" : "border-border bg-background hover:border-primary/50"}`}
-                      >
-                        <div className={`mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-[20px] bg-gradient-to-br ${avatar.ring} text-3xl shadow-md ${selected ? "animate-pulse" : ""}`}>
-                          <span>{avatar.character}</span>
-                        </div>
-                        <p className="text-xs font-medium text-foreground">{avatar.label}</p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button onClick={handleSaveProfile} disabled={savingProfile} className="gradient-bg text-primary-foreground border-0 hover:opacity-90 rounded-full">
