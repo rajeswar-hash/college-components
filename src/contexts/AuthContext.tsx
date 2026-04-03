@@ -23,6 +23,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
   logout: () => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
+  updateProfile: (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   loading: boolean;
@@ -181,6 +182,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSupabaseUser(null);
   }, [isAdmin, profile?.email, supabaseUser?.email]);
 
+  const updateProfile = useCallback(async (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => {
+    if (!supabaseUser?.id) {
+      throw new Error("Please sign in again to update your profile.");
+    }
+
+    const nextCollege = updates.college ? canonicalInstitutionName(updates.college) : undefined;
+    const payload = {
+      ...updates,
+      ...(nextCollege ? { college: nextCollege } : {}),
+    };
+
+    const { error } = await supabase.from("profiles").update(payload).eq("id", supabaseUser.id);
+    if (error) throw error;
+
+    setProfile((current) =>
+      current
+        ? {
+            ...current,
+            ...updates,
+            ...(nextCollege ? { college: nextCollege } : {}),
+          }
+        : current
+    );
+  }, [supabaseUser?.id]);
+
   return (
     <AuthContext.Provider value={{
       user: profile,
@@ -189,6 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       deleteAccount,
+      updateProfile,
       isAuthenticated: isAdmin || !!supabaseUser,
       isAdmin,
       loading,
