@@ -1,11 +1,8 @@
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bot, RotateCcw, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, RotateCcw, Send } from "lucide-react";
 import { toast } from "sonner";
-import { Navbar } from "@/components/Navbar";
-import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 type ChatMessage = {
@@ -18,7 +15,7 @@ const initialMessages: ChatMessage[] = [
   {
     id: "welcome",
     role: "bot",
-    text: "Hi, how can I help? Ask me anything about login, registration, listings, likes, filters, publishing, or contacting sellers.",
+    text: "Hi, how can I help?",
   },
 ];
 
@@ -44,7 +41,7 @@ function getBotReply(question: string) {
     return "You must be logged in to like a listing. Each account can like a product once, and the total count updates for all users.";
   }
   if (normalized.includes("delete") || normalized.includes("remove account")) {
-    return "Go to your dashboard and use Delete Account. That permanently removes your account data and linked listings.";
+    return "Use Delete Account from the navigation and enter your password to confirm permanent deletion.";
   }
   if (normalized.includes("college") || normalized.includes("university") || normalized.includes("filter")) {
     return "Start typing your college name and choose the best suggestion. The same cleaned list is used in registration and filters.";
@@ -65,11 +62,7 @@ function getBotReply(question: string) {
 export default function HelpBotPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
-
-  const suggestedPrompts = useMemo(
-    () => ["How do I publish a listing?", "Why is login failing?", "How can I delete my account?"],
-    []
-  );
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const sendChatMessage = (rawMessage?: string) => {
     const nextMessage = (rawMessage ?? chatInput).trim();
@@ -85,97 +78,91 @@ export default function HelpBotPage() {
       { id: `${Date.now()}-bot`, role: "bot", text: getBotReply(nextMessage) },
     ]);
     setChatInput("");
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   };
 
   const resetChat = () => {
     setChatMessages(initialMessages);
     setChatInput("");
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="container mx-auto px-4 py-6 md:py-8">
-        <div className="mx-auto max-w-4xl">
-          <Card className="glass overflow-hidden border-border/70 shadow-lg">
-            <CardHeader className="border-b border-border/60 bg-background/90 px-4 py-4 md:px-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full gradient-bg text-primary-foreground shadow-sm">
-                    <Bot className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                      <Sparkles className="h-4 w-4 text-primary" /> College Components Assistant
-                    </CardTitle>
-                    <p className="truncate text-xs text-muted-foreground">Fresh chat every time you open this page</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                    <Link to="/contact">Contact</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={resetChat}>
-                    <RotateCcw className="mr-2 h-4 w-4" /> New Chat
-                  </Button>
+    <div className="flex min-h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-background">
+      <header className="border-b border-border bg-background/95 px-4 py-3 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button asChild variant="ghost" size="icon" className="shrink-0">
+              <Link to="/contact" aria-label="Back to contact">
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-bg text-primary-foreground shadow-sm">
+              <Bot className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-foreground">College Components Assistant</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={resetChat}>
+            <RotateCcw className="mr-2 h-4 w-4" /> New Chat
+          </Button>
+        </div>
+      </header>
+
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="space-y-3">
+            {chatMessages.map((chat) => (
+              <div key={chat.id} className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                    chat.role === "user"
+                      ? "rounded-br-md bg-gradient-to-r from-teal-500 to-sky-500 text-white"
+                      : "rounded-bl-md border border-border/70 bg-card text-foreground"
+                  }`}
+                >
+                  {chat.text}
                 </div>
               </div>
-            </CardHeader>
+            ))}
+          </div>
+        </div>
 
-            <CardContent className="p-0">
-              <div className="space-y-3 bg-[linear-gradient(180deg,rgba(15,118,110,0.04),rgba(14,165,233,0.03))] px-4 py-5 md:px-5 md:py-6">
-                {chatMessages.map((chat) => (
-                  <div key={chat.id} className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-                        chat.role === "user"
-                          ? "rounded-br-md bg-gradient-to-r from-teal-500 to-sky-500 text-white"
-                          : "rounded-bl-md border border-border/70 bg-background text-foreground"
-                      }`}
-                    >
-                      {chat.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-border/60 bg-background p-4 md:p-5">
-                <div className="mb-3 flex flex-wrap gap-2">
-                  {suggestedPrompts.map((prompt) => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      onClick={() => sendChatMessage(prompt)}
-                      className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-2">
-                  <Input
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        sendChatMessage();
-                      }
-                    }}
-                    placeholder="Message College Components Assistant..."
-                    className="bg-background/90"
-                  />
-                  <Button onClick={() => sendChatMessage()} className="shrink-0 gradient-bg border-0 text-primary-foreground hover:opacity-90">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="border-t border-border bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+          <form
+            className="flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendChatMessage();
+            }}
+          >
+            <Input
+              ref={inputRef}
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Message"
+              autoCapitalize="sentences"
+              autoCorrect="on"
+              enterKeyHint="send"
+              className="h-12 bg-background"
+            />
+            <Button
+              type="submit"
+              onPointerDown={(e) => e.preventDefault()}
+              className="h-12 shrink-0 gradient-bg border-0 px-4 text-primary-foreground hover:opacity-90"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
         </div>
       </main>
-      <SiteFooter />
     </div>
   );
 }
