@@ -177,6 +177,14 @@ export type Database = {
           seller_phone: string
         }[]
       }
+      get_approved_college_requests: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          city: string
+          college_name: string
+          state: string
+        }[]
+      }
       has_user_liked_listing: {
         Args: {
           p_listing_id: string

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { COLLEGES } from "@/lib/types";
 
 interface CollegeEntry {
@@ -12,11 +13,11 @@ interface ApprovedCollegeRequestEntry {
   college_name: string;
   city: string;
   state: string;
-  status: string;
 }
 
 let cachedInstitutions: string[] | null = null;
 let loadingPromise: Promise<string[]> | null = null;
+let baseInstitutionsPromise: Promise<string[]> | null = null;
 
 const INSTITUTION_ALIASES: Record<string, string> = {
   "goa college of engineering gec": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
@@ -70,22 +71,15 @@ async function loadJson<T>(path: string): Promise<T[]> {
   return response.json();
 }
 
-export async function loadInstitutionNames(): Promise<string[]> {
-  if (cachedInstitutions) return cachedInstitutions;
-  if (loadingPromise) return loadingPromise;
+async function loadBaseInstitutions(): Promise<string[]> {
+  if (baseInstitutionsPromise) return baseInstitutionsPromise;
 
-  loadingPromise = (async () => {
+  baseInstitutionsPromise = (async () => {
     try {
       const [collegeRows, universityRows] = await Promise.all([
         loadJson<CollegeEntry>("data/indian_colleges.json"),
         loadJson<UniversityEntry>("data/indian_universities.json"),
       ]);
-      const { data: approvedRequests } = await import("@/integrations/supabase/client").then(({ supabase }) =>
-        supabase
-          .from("college_requests")
-          .select("college_name, city, state, status")
-          .eq("status", "approved")
-      );
 
       const institutionMap = new Map<string, string>();
 
@@ -112,13 +106,7 @@ export async function loadInstitutionNames(): Promise<string[]> {
         addInstitution(college);
       }
 
-      for (const request of (approvedRequests as ApprovedCollegeRequestEntry[] | null) || []) {
-        const withLocation = [request.college_name, request.city, request.state].filter(Boolean).join(", ");
-        addInstitution(withLocation || request.college_name);
-      }
-
-      cachedInstitutions = sortInstitutions([...institutionMap.values()]);
-      return cachedInstitutions;
+      return sortInstitutions([...institutionMap.values()]);
     } catch {
       const fallback = new Map<string, string>();
 
@@ -130,12 +118,55 @@ export async function loadInstitutionNames(): Promise<string[]> {
         }
       }
 
-      cachedInstitutions = sortInstitutions([...fallback.values()]);
-      return cachedInstitutions;
+      return sortInstitutions([...fallback.values()]);
     }
   })();
 
+  return baseInstitutionsPromise;
+}
+
+export async function loadInstitutionNames(): Promise<string[]> {
+  if (cachedInstitutions) return cachedInstitutions;
+  if (loadingPromise) return loadingPromise;
+
+  loadingPromise = (async () => {
+    const baseInstitutions = await loadBaseInstitutions();
+    const institutionMap = new Map<string, string>();
+
+    const addInstitution = (rawName: string) => {
+      const cleaned = canonicalInstitutionName(rawName);
+      const key = normalizeInstitutionKey(cleaned);
+      if (!cleaned || !key) return;
+
+      const existing = institutionMap.get(key);
+      if (!existing || cleaned.length < existing.length) {
+        institutionMap.set(key, cleaned);
+      }
+    };
+
+    for (const college of baseInstitutions) {
+      addInstitution(college);
+    }
+
+    const { data: approvedRequests, error } = await supabase.rpc("get_approved_college_requests");
+
+    if (!error) {
+      for (const request of (approvedRequests as ApprovedCollegeRequestEntry[] | null) || []) {
+        const withLocation = [request.college_name, request.city, request.state].filter(Boolean).join(", ");
+        addInstitution(withLocation || request.college_name);
+      }
+    }
+
+    cachedInstitutions = sortInstitutions([...institutionMap.values()]);
+    return cachedInstitutions;
+  })();
+
   return loadingPromise;
+}
+
+export function invalidateInstitutionNamesCache() {
+  cachedInstitutions = null;
+  loadingPromise = null;
 }
 
 export async function searchInstitutionNames(query: string, limit = 40): Promise<string[]> {

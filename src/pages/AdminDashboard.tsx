@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { invalidateInstitutionNamesCache } from "@/lib/institutions";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
@@ -207,6 +208,7 @@ export default function AdminDashboard() {
         request.id === id ? { ...request, status, reviewed_at: new Date().toISOString() } : request
       )
     );
+    invalidateInstitutionNamesCache();
     toast.success(status === "approved" ? "College request approved." : "College request rejected.");
   };
 
