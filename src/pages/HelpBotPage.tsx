@@ -139,8 +139,12 @@ export default function HelpBotPage() {
       </header>
 
       <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden px-4">
-        <div ref={chatScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 pb-6">
-          <div className="space-y-3">
+        <div
+          ref={chatScrollRef}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-0 py-4 pb-6 pt-6"
+          style={{ scrollPaddingTop: "24px", scrollPaddingBottom: "24px" }}
+        >
+          <div className="space-y-3 pb-2">
             {chatMessages.map((chat) => (
               <div key={chat.id} className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
