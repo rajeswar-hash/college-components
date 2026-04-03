@@ -3,16 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { canonicalInstitutionName } from "@/lib/institutions";
 
-const ADMIN_EMAIL = "rajeswarbind39@gmail.com";
-const ADMIN_PASSWORD = "raj84217#*";
-const ADMIN_SESSION_KEY = "campuskart-admin-session";
-
 interface Profile {
   id: string;
   name: string;
   email: string;
   phone: string;
   college: string;
+  is_admin?: boolean;
   avatar_url?: string;
 }
 
@@ -30,14 +27,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const adminProfile: Profile = {
-  id: "admin-local",
-  name: "Admin Control",
-  email: ADMIN_EMAIL,
-  phone: "Private",
-  college: "CampusKart HQ",
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -58,37 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.email,
         phone: data.phone,
         college: data.college,
+        is_admin: data.is_admin ?? false,
         avatar_url: data.avatar_url ?? undefined,
       });
     }
   }, []);
 
-  const activateAdmin = useCallback(() => {
-    localStorage.setItem(ADMIN_SESSION_KEY, ADMIN_EMAIL);
-    setIsAdmin(true);
-    setSupabaseUser(null);
-    setProfile(adminProfile);
-  }, []);
-
-  const clearAdmin = useCallback(() => {
-    localStorage.removeItem(ADMIN_SESSION_KEY);
-    setIsAdmin(false);
-    setProfile((current) => (current?.id === adminProfile.id ? null : current));
-  }, []);
-
   useEffect(() => {
-    const storedAdmin = localStorage.getItem(ADMIN_SESSION_KEY);
-    if (storedAdmin === ADMIN_EMAIL) {
-      activateAdmin();
-      setLoading(false);
-    }
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        if (localStorage.getItem(ADMIN_SESSION_KEY) === ADMIN_EMAIL) {
-          setLoading(false);
-          return;
-        }
         if (session?.user) {
           setSupabaseUser(session.user);
           setTimeout(() => fetchProfile(session.user.id), 0);
@@ -101,10 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (localStorage.getItem(ADMIN_SESSION_KEY) === ADMIN_EMAIL) {
-        setLoading(false);
-        return;
-      }
       if (session?.user) {
         setSupabaseUser(session.user);
         fetchProfile(session.user.id);
@@ -113,7 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [activateAdmin, fetchProfile]);
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    setIsAdmin(!!profile?.is_admin);
+  }, [profile?.is_admin]);
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -130,29 +97,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
-
-    if (normalizedEmail === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      await supabase.auth.signOut();
-      activateAdmin();
-      return { isAdmin: true };
-    }
-
-    clearAdmin();
     const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     if (error) throw error;
-    return { isAdmin: false };
-  }, [activateAdmin, clearAdmin]);
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      return { isAdmin: false };
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", userData.user.id)
+      .single();
+
+    return { isAdmin: !!profileData?.is_admin };
+  }, []);
 
   const logout = useCallback(async () => {
-    clearAdmin();
     await supabase.auth.signOut();
     setProfile(null);
     setSupabaseUser(null);
-  }, [clearAdmin]);
+    setIsAdmin(false);
+  }, []);
 
   const deleteAccount = useCallback(async (password: string) => {
     if (isAdmin) {
-      throw new Error("The local admin account cannot be deleted from the user dashboard.");
+      throw new Error("Admin accounts cannot be deleted from the user dashboard.");
     }
 
     const email = supabaseUser?.email || profile?.email;

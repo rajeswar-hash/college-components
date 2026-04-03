@@ -87,6 +87,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_admin: boolean
           name: string
           phone: string
           updated_at: string
@@ -97,6 +98,7 @@ export type Database = {
           created_at?: string
           email: string
           id: string
+          is_admin?: boolean
           name: string
           phone?: string
           updated_at?: string
@@ -107,6 +109,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          is_admin?: boolean
           name?: string
           phone?: string
           updated_at?: string
@@ -121,6 +124,10 @@ export type Database = {
       delete_my_account: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       has_user_liked_listing: {
         Args: {
