@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Bot, RotateCcw, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -63,6 +63,34 @@ export default function HelpBotPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToLatest = () => {
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    });
+  };
+
+  useEffect(() => {
+    scrollToLatest();
+  }, [chatMessages]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleViewportChange = () => {
+      scrollToLatest();
+    };
+
+    viewport.addEventListener("resize", handleViewportChange);
+    viewport.addEventListener("scroll", handleViewportChange);
+
+    return () => {
+      viewport.removeEventListener("resize", handleViewportChange);
+      viewport.removeEventListener("scroll", handleViewportChange);
+    };
+  }, []);
 
   const sendChatMessage = (rawMessage?: string) => {
     const nextMessage = (rawMessage ?? chatInput).trim();
@@ -107,7 +135,7 @@ export default function HelpBotPage() {
               <Bot className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="truncate font-semibold text-foreground">College Components Assistant</p>
+              <p className="truncate font-semibold text-foreground">Help Bot</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={resetChat}>
@@ -132,6 +160,7 @@ export default function HelpBotPage() {
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
@@ -147,6 +176,7 @@ export default function HelpBotPage() {
               ref={inputRef}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
+              onFocus={scrollToLatest}
               placeholder="Message"
               autoCapitalize="sentences"
               autoCorrect="on"
