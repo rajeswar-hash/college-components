@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Sparkles, Store, X } from "lucide-react";
-import { canonicalInstitutionName, searchInstitutionNames } from "@/lib/institutions";
+import { canonicalInstitutionName, loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -107,6 +107,14 @@ const Index = () => {
     if (savedCooldown > Date.now()) {
       setRequestCooldownUntil(savedCooldown);
     }
+  }, []);
+
+  useEffect(() => {
+    const idleLoader = window.setTimeout(() => {
+      void loadInstitutionNames();
+    }, 200);
+
+    return () => window.clearTimeout(idleLoader);
   }, []);
 
   useEffect(() => {
@@ -266,6 +274,8 @@ const Index = () => {
       });
     }, 180);
 
+    void loadInstitutionNames();
+
     if (collegeQuery.trim().length >= 2) {
       setCollegeDropdownOpen(true);
       void runCollegeSearch(collegeQuery);
@@ -345,7 +355,7 @@ const Index = () => {
                         setCollegeQuery(value);
                         setCollegeDropdownOpen(true);
                         clearTimeout(debounceRef.current);
-                        debounceRef.current = setTimeout(() => runCollegeSearch(value), 150);
+                        debounceRef.current = setTimeout(() => runCollegeSearch(value), 80);
                       }}
                       onFocus={handleCollegeInputFocus}
                       autoComplete="off"
