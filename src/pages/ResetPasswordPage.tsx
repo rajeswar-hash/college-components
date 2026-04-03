@@ -40,6 +40,28 @@ export default function ResetPasswordPage() {
         }
       }
 
+      const hash = window.location.hash || "";
+      const tokenFragment = hash.includes("access_token=")
+        ? hash.slice(hash.indexOf("access_token="))
+        : "";
+
+      if (tokenFragment) {
+        const tokenParams = new URLSearchParams(tokenFragment);
+        const accessToken = tokenParams.get("access_token");
+        const refreshToken = tokenParams.get("refresh_token");
+
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            return;
+          }
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
       if (mounted && data.session) {
         setSessionReady(true);
