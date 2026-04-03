@@ -335,14 +335,14 @@ const Index = () => {
       <section className="container mx-auto px-4 py-0">
         {!selectedCollege ? (
           <div className="animate-fade-in">
-            <div className="relative overflow-hidden px-0 py-4">
+            <div className="relative -mx-4 overflow-hidden px-0 py-4 sm:mx-0">
               <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-cover bg-center opacity-95 sm:h-[520px]"
+                className="pointer-events-none absolute inset-x-0 top-0 h-[470px] bg-cover bg-center opacity-95 sm:h-[560px]"
                 style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
               />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[linear-gradient(180deg,rgba(240,253,255,0.14),rgba(255,255,255,0.12)_34%,rgba(255,255,255,0.68)_74%,rgba(255,255,255,0.98))] sm:h-[520px]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_28%)] sm:h-[520px]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-70 sm:h-[520px]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] bg-[linear-gradient(180deg,rgba(240,253,255,0.14),rgba(255,255,255,0.10)_34%,rgba(255,255,255,0.60)_76%,rgba(255,255,255,0.98))] sm:h-[560px]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_28%)] sm:h-[560px]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[470px] opacity-70 sm:h-[560px]">
                 <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
