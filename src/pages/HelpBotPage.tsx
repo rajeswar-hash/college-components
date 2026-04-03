@@ -108,7 +108,6 @@ export default function HelpBotPage() {
     setChatInput("");
 
     requestAnimationFrame(() => {
-      inputRef.current?.focus();
       scrollToLatest("auto");
     });
   };
@@ -216,6 +215,7 @@ export default function HelpBotPage() {
               />
               <Button
                 type="submit"
+                onPointerDown={(e) => e.preventDefault()}
                 className="h-12 w-12 shrink-0 rounded-2xl gradient-bg border-0 p-0 text-primary-foreground shadow-sm hover:opacity-90"
               >
                 <Send className="h-4 w-4" />
