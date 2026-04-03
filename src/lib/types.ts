@@ -185,7 +185,6 @@ export const COLLEGES: string[] = [
   "NIT Silchar", "NIT Meghalaya", "Manipur Institute of Technology",
 
   // Goa
-  "Don Bosco College of Engineering Fatorda",
   "Padre Conceicao College of Engineering Verna", "Agnel Institute of Technology and Design Assagao",
   "Shree Rayeshwar Institute of Engineering and Information Technology Shiroda",
   "Goa Engineering College", "NIT Goa",

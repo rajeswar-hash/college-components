@@ -23,6 +23,9 @@ const INSTITUTION_ALIASES: Record<string, string> = {
   "goa college of engineering gec": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
   "goa college of engineering": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
   "govt of goa college of engineering goa farmagudi ponda": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
+  "don bosco college of engineering fatorda": "Don Bosco College of Engineering, Fatorda, Margao",
+  "don bosco college of engineering fatora margao": "Don Bosco College of Engineering, Fatorda, Margao",
+  "don bosco college of engineering fatorda margao": "Don Bosco College of Engineering, Fatorda, Margao",
 };
 
 function collapseWhitespace(value: string) {
