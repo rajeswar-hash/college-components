@@ -147,13 +147,6 @@ export function Navbar() {
             <Link to="/privacy">
               <Button variant="ghost" size="sm">Privacy</Button>
             </Link>
-            {isAdmin && (
-              <Link to="/admin">
-                <Button variant="ghost" size="sm">
-                  <Shield className="w-4 h-4 mr-1" /> Admin
-                </Button>
-              </Link>
-            )}
             <Button
               size="sm"
               className="gradient-bg text-primary-foreground border-0 hover:opacity-90"
@@ -169,9 +162,9 @@ export function Navbar() {
             </Button>
             {isAuthenticated && (
               <>
-                <Link to="/dashboard">
+                <Link to={isAdmin ? "/admin" : "/dashboard"}>
                   <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-1" /> Dashboard
+                    {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} {isAdmin ? "Admin Panel" : "Dashboard"}
                   </Button>
                 </Link>
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -232,9 +225,9 @@ export function Navbar() {
                   <Plus className="w-4 h-4 mr-1" /> Sell Item
                 </Button>
                 {isAuthenticated && (
-                  <Link to="/dashboard" onClick={() => setMobileMenu(false)}>
+                  <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={() => setMobileMenu(false)}>
                     <Button variant="ghost" className="w-full justify-start">
-                      <User className="w-4 h-4 mr-2" /> Dashboard
+                      {isAdmin ? <Shield className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />} {isAdmin ? "Admin Panel" : "Dashboard"}
                     </Button>
                   </Link>
                 )}
@@ -293,13 +286,6 @@ export function Navbar() {
                 <Link to="/privacy" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className="w-full justify-start">Privacy Policy</Button>
                 </Link>
-                {isAdmin && (
-                  <Link to="/admin" onClick={() => setMobileMenu(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Shield className="w-4 h-4 mr-2" /> Admin Panel
-                    </Button>
-                  </Link>
-                )}
                 {isAuthenticated && (
                   <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
