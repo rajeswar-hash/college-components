@@ -150,10 +150,10 @@ const Index = () => {
                 <Sparkles className="h-3.5 w-3.5" /> Student Marketplace
               </p>
               <h1 className="mb-2 font-display text-2xl font-extrabold leading-tight text-foreground md:text-3xl lg:text-4xl">
-                Buy & Sell <span className="gradient-text">Components</span> Across College
+                Buy & Sell <span className="gradient-text">Within Your Campus</span>
               </h1>
               <p className="mx-auto mb-5 max-w-lg text-sm text-muted-foreground">
-                A cleaner, faster marketplace for engineering students to trade Arduino boards, sensors, tools, and project gear with confidence.
+                A fast, trusted marketplace where engineering students buy and sell notes, components, gadgets, tools, project kits, and much more.
               </p>
               <div className="mb-5 rounded-2xl border border-primary/20 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.12))] px-4 py-3 text-sm font-semibold text-foreground shadow-[0_12px_30px_rgba(20,184,166,0.10)]">
                 <span className="gradient-text">Filter by your college</span> for faster campus deals.
