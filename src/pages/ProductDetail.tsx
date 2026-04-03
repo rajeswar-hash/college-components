@@ -48,6 +48,8 @@ const ProductDetail = () => {
   const [liking, setLiking] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -130,6 +132,39 @@ const ProductDetail = () => {
   const hasImages = listing.images && listing.images.length > 0 && listing.images[0];
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
+  const hasMultipleImages = !!listing.images && listing.images.length > 1;
+
+  const showPreviousImage = () => {
+    setCurrentImage((p) => (p === 0 ? listing.images.length - 1 : p - 1));
+  };
+
+  const showNextImage = () => {
+    setCurrentImage((p) => (p === listing.images.length - 1 ? 0 : p + 1));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!hasMultipleImages || touchStartX === null || touchEndX === null) return;
+    const distance = touchStartX - touchEndX;
+    const minSwipeDistance = 40;
+
+    if (distance > minSwipeDistance) {
+      showNextImage();
+    } else if (distance < -minSwipeDistance) {
+      showPreviousImage();
+    }
+
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
 
   const handleLike = async () => {
     if (!listing || liking) return;
@@ -203,7 +238,12 @@ const ProductDetail = () => {
         </Button>
 
         <div className="grid animate-fade-in gap-8 md:grid-cols-2">
-          <div className="relative aspect-square max-w-full overflow-hidden rounded-xl bg-muted glass">
+          <div
+            className="relative aspect-square max-w-full overflow-hidden rounded-xl bg-muted glass"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             {hasImages ? (
               <>
                 <img
@@ -211,16 +251,16 @@ const ProductDetail = () => {
                   alt={`${listing.title} - Image ${currentImage + 1}`}
                   className="h-full w-full max-w-full object-cover"
                 />
-                {listing.images.length > 1 && (
+                {hasMultipleImages && (
                   <>
                     <button
-                      onClick={() => setCurrentImage((p) => (p === 0 ? listing.images.length - 1 : p - 1))}
+                      onClick={showPreviousImage}
                       className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setCurrentImage((p) => (p === listing.images.length - 1 ? 0 : p + 1))}
+                      onClick={showNextImage}
                       className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform"
                     >
                       <ChevronRight className="w-4 h-4" />
