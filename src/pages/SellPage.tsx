@@ -298,16 +298,11 @@ const SellPage = () => {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Condition, usage time, included items, reason for selling..."
+                placeholder="Product details and reason for selling..."
                 rows={5}
                 className="rounded-2xl border-border/80 bg-background"
               />
-              <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-xs leading-6 text-muted-foreground">
-                <p>Condition:</p>
-                <p>Used for:</p>
-                <p>Includes:</p>
-                <p>Reason:</p>
-              </div>
+              <p className="text-xs leading-5 text-muted-foreground">Share product details and why you are selling it.</p>
             </section>
 
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
@@ -460,3 +455,4 @@ const SellPage = () => {
 };
 
 export default SellPage;
+
