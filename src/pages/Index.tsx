@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Search, Store, X } from "lucide-react";
+import { CheckCircle2, MapPin, Search, Store, X } from "lucide-react";
 import { canonicalInstitutionName, loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -335,19 +335,19 @@ const Index = () => {
       <section className="container mx-auto px-4 py-8 md:py-10">
         {!selectedCollege ? (
           <div className="animate-fade-in">
-            <div className="relative overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(180deg,rgba(236,254,255,0.12),rgba(255,255,255,0.70))] px-3 py-8 shadow-[0_24px_60px_rgba(20,184,166,0.10)] sm:px-6 sm:py-12">
+            <div className="relative overflow-hidden bg-[linear-gradient(180deg,rgba(236,254,255,0.10),rgba(255,255,255,0.52)_62%,rgba(255,255,255,0.92))] px-3 py-8 sm:px-6 sm:py-12">
               <div
-                className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-80"
+                className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-90"
                 style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(236,254,255,0.08),rgba(255,255,255,0.18)_32%,rgba(255,255,255,0.72)_68%,rgba(255,255,255,0.92))]" />
-              <div className="pointer-events-none absolute inset-0 opacity-80">
-                <div className="absolute -left-10 bottom-14 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
-                <div className="absolute -right-8 top-12 h-32 w-32 rounded-full bg-sky-400/10 blur-2xl" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(232,250,250,0.04),rgba(255,255,255,0.08)_24%,rgba(255,255,255,0.56)_64%,rgba(255,255,255,0.98))]" />
+              <div className="pointer-events-none absolute inset-0 opacity-75">
+                <div className="absolute -left-10 bottom-10 h-32 w-32 rounded-full bg-primary/8 blur-2xl" />
+                <div className="absolute -right-8 top-10 h-32 w-32 rounded-full bg-sky-400/8 blur-2xl" />
               </div>
 
               <div className="relative min-h-[420px] sm:min-h-[520px]">
-                <Card className="relative mx-auto mt-16 max-w-md border-white/70 bg-white/90 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur sm:mt-20">
+                <Card className="relative mx-auto mt-16 max-w-md border-white/60 bg-white/88 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur sm:mt-20">
                   <CardContent className="space-y-4 px-4 py-5 text-center sm:px-6 sm:py-6">
                     <div className="space-y-1.5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/75">SELECT YOUR COLLEGE TO</p>
@@ -428,6 +428,17 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                <div className="mt-4 flex items-center justify-center gap-5 text-[11px] font-medium text-foreground/75">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary/80" />
+                    <span>verified users</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary/80" />
+                    <span>verified items</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
