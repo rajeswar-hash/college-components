@@ -153,7 +153,7 @@ const Index = () => {
                 A cleaner, faster marketplace for engineering students to trade Arduino boards, sensors, tools, and project gear with confidence.
               </p>
               <div className="mb-5 rounded-2xl border border-primary/15 bg-background/75 px-4 py-3 text-sm font-medium text-foreground shadow-sm">
-                Filter by your college to buy from your campus community.
+                Filter by your college for faster campus deals.
               </div>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
