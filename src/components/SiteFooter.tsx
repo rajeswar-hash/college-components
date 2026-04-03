@@ -15,10 +15,7 @@ export function SiteFooter({ compact = false, hideTopBorder = false }: SiteFoote
           <div>
             <p className="font-display text-lg font-semibold text-foreground">CampusKart</p>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              A professional marketplace for students to buy and sell electronics, tools, and project gear inside their college network.
-            </p>
-            <p className="mt-3 max-w-md text-sm text-muted-foreground">
-              Built for campus communities that want faster discovery, cleaner listings, and direct student-to-student coordination.
+              A trusted campus marketplace for students to buy and sell electronics, gadgets, tools, notes, and project gear all within their college.
             </p>
           </div>
         )}

@@ -337,12 +337,12 @@ const Index = () => {
           <div className="animate-fade-in">
             <div className="relative -mx-4 overflow-hidden px-0 py-4 sm:mx-0">
               <div
-                className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-cover bg-center opacity-95"
+                className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-cover bg-center opacity-100"
                 style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
               />
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.14),rgba(255,255,255,0.10)_34%,rgba(255,255,255,0.52)_76%,rgba(255,255,255,0.90))]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.25),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.20),transparent_28%)]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-70">
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_34%,rgba(255,255,255,0.40)_76%,rgba(255,255,255,0.82))]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_28%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-55">
                 <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
