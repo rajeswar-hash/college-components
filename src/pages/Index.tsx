@@ -338,8 +338,8 @@ const Index = () => {
             <Card className="mx-auto mt-2 max-w-xl border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.94),rgba(255,255,255,1))] shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
               <CardContent className="space-y-3 px-4 py-5 text-center sm:px-5 sm:py-6">
                 <div className="space-y-1">
-                  <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">Select your college</h1>
-                  <p className="text-sm font-semibold text-primary">To Buy &amp; Sell Within Your Campus</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary/80">Select your college</p>
+                  <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">Buy &amp; Sell Within Your Campus</h1>
                 </div>
 
                 <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left" style={{ scrollMarginTop: "6rem" }}>
