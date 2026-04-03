@@ -325,36 +325,23 @@ const Index = () => {
       <section className="container mx-auto px-4 py-8 md:py-10">
         {!selectedCollege ? (
           <div className="animate-fade-in">
-            <Card className="mx-auto max-w-xl border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.94),rgba(255,255,255,1))] shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
-              <CardContent className="space-y-4 px-4 py-6 text-center sm:px-6 sm:py-7">
-                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Sparkles className="h-5 w-5" />
+            <Card className="mx-auto mt-2 max-w-xl border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.94),rgba(255,255,255,1))] shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+              <CardContent className="space-y-3 px-4 py-5 text-center sm:px-5 sm:py-6">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Sparkles className="h-4.5 w-4.5" />
                 </div>
-                <div className="space-y-1.5">
-                  <h1 className="font-display text-2xl font-bold text-foreground sm:text-[2rem]">Pick your college</h1>
-                  <p className="text-sm text-muted-foreground">See campus-only listings in seconds.</p>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <div className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
-                    Trusted campus-only listings
-                  </div>
-                  <div className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
-                    Direct WhatsApp contact
-                  </div>
-                  <div className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
-                    Notes, gadgets, tools
-                  </div>
+                <div className="space-y-1">
+                  <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">Select your college</h1>
                 </div>
 
-                <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left" style={{ scrollMarginTop: "8rem" }}>
+                <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left" style={{ scrollMarginTop: "6rem" }}>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       ref={collegeInputRef}
                       value={collegeQuery}
                       placeholder="Search your college..."
-                      className="h-12 rounded-2xl border-border/80 bg-background pl-10 pr-10 text-sm shadow-sm"
+                      className="h-12 rounded-2xl border-border/80 bg-background pl-10 pr-10 text-sm shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/50"
                       onChange={(e) => {
                         const value = e.target.value;
                         setCollegeQuery(value);
@@ -416,9 +403,7 @@ const Index = () => {
                   )}
                 </div>
 
-                <p className="text-xs text-muted-foreground">
-                  Start with your college to unlock the right campus marketplace.
-                </p>
+                <p className="text-xs text-muted-foreground">See items from your campus only</p>
               </CardContent>
             </Card>
           </div>
