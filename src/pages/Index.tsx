@@ -335,6 +335,18 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">See campus-only listings in seconds.</p>
                 </div>
 
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <div className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+                    Trusted campus-only listings
+                  </div>
+                  <div className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+                    Direct WhatsApp contact
+                  </div>
+                  <div className="rounded-full bg-background/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+                    Notes, gadgets, tools
+                  </div>
+                </div>
+
                 <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left" style={{ scrollMarginTop: "8rem" }}>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -403,6 +415,10 @@ const Index = () => {
                     </div>
                   )}
                 </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Start with your college to unlock the right campus marketplace.
+                </p>
               </CardContent>
             </Card>
           </div>
