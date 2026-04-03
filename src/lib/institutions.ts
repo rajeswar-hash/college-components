@@ -26,6 +26,8 @@ const INSTITUTION_ALIASES: Record<string, string> = {
   "don bosco college of engineering fatorda": "Don Bosco College of Engineering, Fatorda, Margao",
   "don bosco college of engineering fatora margao": "Don Bosco College of Engineering, Fatorda, Margao",
   "don bosco college of engineering fatorda margao": "Don Bosco College of Engineering, Fatorda, Margao",
+  "padre conceicao college of engineering verna": "Padre Conceicao College of Engineering, Agnel Ashram, Verna",
+  "padre conceicao college of engineering agnel ashram verna": "Padre Conceicao College of Engineering, Agnel Ashram, Verna",
 };
 
 function collapseWhitespace(value: string) {
