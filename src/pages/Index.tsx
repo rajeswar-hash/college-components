@@ -552,7 +552,9 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <SiteFooter hideTopBorder />
+      <div className="-mt-14 sm:-mt-16">
+        <SiteFooter hideTopBorder />
+      </div>
     </div>
   );
 };
