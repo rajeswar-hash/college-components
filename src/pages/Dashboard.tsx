@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Pencil, Package, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
+import { Pencil, Package, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ListingRow {
@@ -72,16 +72,6 @@ const Dashboard = () => {
   const activeListings = myListings.filter((listing) => !listing.sold).length;
   const soldListings = myListings.filter((listing) => listing.sold).length;
   const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
-
-  const handleMarkSold = async (id: string) => {
-    const { error } = await supabase.from("listings").update({ sold: true }).eq("id", id);
-    if (error) {
-      toast.error("Failed to update");
-      return;
-    }
-    setMyListings((prev) => prev.map((l) => (l.id === id ? { ...l, sold: true } : l)));
-    toast.success("Item marked as sold!");
-  };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("listings").delete().eq("id", id);
@@ -171,9 +161,9 @@ const Dashboard = () => {
                 <p className="text-xs text-muted-foreground">Currently visible on the marketplace</p>
               </div>
               <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-emerald-600 font-semibold">Sold Items</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-emerald-600 font-semibold">Delete After Sale</p>
                 <p className="mt-2 font-display text-2xl font-bold text-foreground">{soldListings}</p>
-                <p className="text-xs text-muted-foreground">Deals you have already completed</p>
+                <p className="text-xs text-muted-foreground">Remove sold listings so buyers only see available items</p>
               </div>
               <div className="rounded-2xl border border-sky-500/10 bg-sky-500/5 p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-sky-600 font-semibold">Catalog Value</p>
@@ -239,6 +229,10 @@ const Dashboard = () => {
             <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
           </div>
 
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800">
+            Delete a listing as soon as it is sold. Sold items should not stay visible on the marketplace.
+          </div>
+
           {loading ? (
             <div className="text-center py-16 glass rounded-xl">
               <p className="text-muted-foreground">Loading...</p>
@@ -261,20 +255,20 @@ const Dashboard = () => {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-display font-semibold text-foreground truncate">{listing.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="font-display font-bold gradient-text">?{listing.price}</span>
+                      <span className="font-display font-bold gradient-text">Rs. {listing.price}</span>
                       {listing.sold ? (
                         <Badge className="bg-success/10 text-success">Sold</Badge>
                       ) : (
                         <Badge variant="outline">Active</Badge>
                       )}
                     </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {listing.sold
+                        ? "This sold listing should be deleted now."
+                        : "If this item gets sold, delete this listing immediately."}
+                    </p>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    {!listing.sold && (
-                      <Button size="sm" variant="outline" onClick={() => handleMarkSold(listing.id)}>
-                        <CheckCircle className="w-4 h-4 mr-1" /> Sold
-                      </Button>
-                    )}
                     <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleDelete(listing.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
