@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { Activity, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, Shield, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 
@@ -66,6 +67,7 @@ export default function AdminDashboard() {
   const [listings, setListings] = useState<ListingAdminRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileAdminRow[]>([]);
   const [collegeRequests, setCollegeRequests] = useState<CollegeRequestRow[]>([]);
+  const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) return;
@@ -107,7 +109,11 @@ export default function AdminDashboard() {
       if (collegeRequestError) {
         toast.error("Could not load college requests.");
       } else {
-        setCollegeRequests((collegeRequestData as CollegeRequestRow[]) || []);
+        const nextRequests = (collegeRequestData as CollegeRequestRow[]) || [];
+        setCollegeRequests(nextRequests);
+        setCollegeNameDrafts(
+          Object.fromEntries(nextRequests.map((request) => [request.id, request.college_name]))
+        );
       }
 
       setLoading(false);
@@ -193,9 +199,19 @@ export default function AdminDashboard() {
   };
 
   const handleCollegeRequestStatus = async (id: string, status: "approved" | "rejected") => {
+    const editedCollegeName = (collegeNameDrafts[id] ?? "").trim();
+    if (status === "approved" && !editedCollegeName) {
+      toast.error("Please enter a college name before approving.");
+      return;
+    }
+
     const { error } = await supabase
       .from("college_requests")
-      .update({ status, reviewed_at: new Date().toISOString() })
+      .update({
+        college_name: status === "approved" ? editedCollegeName : collegeRequests.find((request) => request.id === id)?.college_name,
+        status,
+        reviewed_at: new Date().toISOString(),
+      })
       .eq("id", id);
 
     if (error) {
@@ -205,7 +221,14 @@ export default function AdminDashboard() {
 
     setCollegeRequests((current) =>
       current.map((request) =>
-        request.id === id ? { ...request, status, reviewed_at: new Date().toISOString() } : request
+        request.id === id
+          ? {
+              ...request,
+              college_name: status === "approved" ? editedCollegeName : request.college_name,
+              status,
+              reviewed_at: new Date().toISOString(),
+            }
+          : request
       )
     );
     invalidateInstitutionNamesCache();
@@ -424,10 +447,24 @@ export default function AdminDashboard() {
                     <div key={request.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-medium text-foreground">{request.college_name}</p>
                           <Badge variant={request.status === "approved" ? "default" : request.status === "rejected" ? "destructive" : "secondary"} className="text-[10px] capitalize">
                             {request.status}
                           </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                            College name
+                          </p>
+                          <Input
+                            value={collegeNameDrafts[request.id] ?? request.college_name}
+                            onChange={(e) =>
+                              setCollegeNameDrafts((current) => ({
+                                ...current,
+                                [request.id]: e.target.value,
+                              }))
+                            }
+                            className="h-9 text-sm"
+                          />
                         </div>
                         <p className="truncate text-xs text-muted-foreground">
                           {request.city}, {request.state}
