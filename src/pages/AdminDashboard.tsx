@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,12 +64,13 @@ function formatBytes(bytes: number) {
 export default function AdminDashboard() {
   const { isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members">("requests");
+  const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members" | null>(null);
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<ListingAdminRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileAdminRow[]>([]);
   const [collegeRequests, setCollegeRequests] = useState<CollegeRequestRow[]>([]);
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
+  const sectionContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) return;
@@ -232,6 +233,17 @@ export default function AdminDashboard() {
     );
     invalidateInstitutionNamesCache();
     toast.success(status === "approved" ? "College request approved." : "College request rejected.");
+  };
+
+  const handleSectionChange = (section: "requests" | "listings" | "members") => {
+    setActiveSection((current) => (current === section ? null : section));
+
+    window.setTimeout(() => {
+      sectionContentRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
   };
 
   if (!isAuthenticated || !isAdmin) {
@@ -434,7 +446,7 @@ export default function AdminDashboard() {
                   <Button
                     variant={activeSection === "requests" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => setActiveSection("requests")}
+                    onClick={() => handleSectionChange("requests")}
                   >
                     <span>College Requests</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
@@ -442,7 +454,7 @@ export default function AdminDashboard() {
                   <Button
                     variant={activeSection === "listings" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => setActiveSection("listings")}
+                    onClick={() => handleSectionChange("listings")}
                   >
                     <span>Listing Moderation</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{listings.length}</Badge>
@@ -450,7 +462,7 @@ export default function AdminDashboard() {
                   <Button
                     variant={activeSection === "members" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => setActiveSection("members")}
+                    onClick={() => handleSectionChange("members")}
                   >
                     <span>Member Snapshot</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
@@ -459,6 +471,7 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
           </Card>
+          <div ref={sectionContentRef}>
           {activeSection === "requests" && (
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
@@ -620,6 +633,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           )}
+          </div>
         </div>
       </div>
       <SiteFooter />
