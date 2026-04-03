@@ -55,7 +55,6 @@ const Index = () => {
   const [requestCollegeName, setRequestCollegeName] = useState("");
   const [requestState, setRequestState] = useState("");
   const [requestCity, setRequestCity] = useState("");
-  const [requestNote, setRequestNote] = useState("");
   const [submittingRequest, setSubmittingRequest] = useState(false);
   const [searchingCollege, setSearchingCollege] = useState(false);
   const [viewportHeight, setViewportHeight] = useState<number>(
@@ -277,7 +276,6 @@ const Index = () => {
     setRequestCollegeName("");
     setRequestState("");
     setRequestCity("");
-    setRequestNote("");
   };
 
   const handleCollegeRequest = async (e: React.FormEvent) => {
@@ -297,7 +295,6 @@ const Index = () => {
         college_name: requestCollegeName.trim(),
         state: requestState.trim(),
         city: requestCity.trim(),
-        note: requestNote.trim(),
         requester_name: user?.name || "",
         requester_email: user?.email || "",
       });
@@ -328,16 +325,14 @@ const Index = () => {
       <section className="container mx-auto px-4 py-8 md:py-10">
         {!selectedCollege ? (
           <div className="animate-fade-in">
-            <Card className="mx-auto max-w-2xl border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.92),rgba(255,255,255,1))] shadow-[0_22px_60px_rgba(20,184,166,0.10)]">
-              <CardContent className="space-y-5 px-5 py-8 text-center sm:px-8 sm:py-10">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Sparkles className="h-6 w-6" />
+            <Card className="mx-auto max-w-xl border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.94),rgba(255,255,255,1))] shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+              <CardContent className="space-y-4 px-4 py-6 text-center sm:px-6 sm:py-7">
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Sparkles className="h-5 w-5" />
                 </div>
-                <div className="space-y-2">
-                  <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Search your college to see listed items.</h1>
-                  <p className="text-sm text-muted-foreground">
-                    CampusKart shows items only after you choose a college, so the marketplace stays focused on one campus at a time.
-                  </p>
+                <div className="space-y-1.5">
+                  <h1 className="font-display text-2xl font-bold text-foreground sm:text-[2rem]">Pick your college</h1>
+                  <p className="text-sm text-muted-foreground">See campus-only listings in seconds.</p>
                 </div>
 
                 <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left" style={{ scrollMarginTop: "8rem" }}>
@@ -393,17 +388,17 @@ const Index = () => {
                   )}
 
                   {showRequestCollegeButton && (
-                    <div className="mt-3">
+                    <div className="mt-2 text-center">
                       <Button
-                        variant="outline"
-                        className="w-full rounded-xl"
+                        variant="ghost"
+                        className="h-auto rounded-full px-4 py-2 text-xs font-medium text-primary hover:bg-primary/5 hover:text-primary"
                         disabled={requestCooldownUntil > Date.now()}
                         onClick={() => {
                           setRequestCollegeName(collegeQuery.trim());
                           setRequestModalOpen(true);
                         }}
                       >
-                        Can't find your college? Request to add it.
+                        Can't find it? Request your college
                       </Button>
                     </div>
                   )}
@@ -517,16 +512,7 @@ const Index = () => {
               <Input
                 value={requestCity}
                 onChange={(e) => setRequestCity(e.target.value)}
-                placeholder="Enter city"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Optional note</label>
-              <Textarea
-                value={requestNote}
-                onChange={(e) => setRequestNote(e.target.value)}
-                placeholder="Anything that may help us verify this college"
-                rows={3}
+                placeholder="City as shown on Google Maps"
               />
             </div>
             <Button
