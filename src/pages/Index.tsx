@@ -552,7 +552,8 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="-mt-14 sm:-mt-16">
+      <div className="-mt-24 sm:-mt-28">
+        <div className="pointer-events-none h-24 bg-gradient-to-b from-transparent via-background/85 to-background sm:h-28" />
         <SiteFooter hideTopBorder />
       </div>
     </div>
