@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,47 +6,47 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 25% 10%;
+    --background: 221 39% 11%;
+    --foreground: 44 100% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card: 222 30% 14%;
+    --card-foreground: 44 100% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover: 222 30% 14%;
+    --popover-foreground: 44 100% 96%;
 
-    --primary: 174 72% 40%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 42 98% 57%;
+    --primary-foreground: 221 39% 11%;
 
-    --secondary: 220 14% 94%;
-    --secondary-foreground: 220 25% 20%;
+    --secondary: 221 25% 18%;
+    --secondary-foreground: 44 100% 96%;
 
-    --muted: 220 14% 94%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 221 25% 18%;
+    --muted-foreground: 220 11% 65%;
 
-    --accent: 220 14% 92%;
-    --accent-foreground: 220 25% 10%;
+    --accent: 18 95% 58%;
+    --accent-foreground: 44 100% 96%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 44 100% 96%;
 
-    --border: 220 13% 90%;
-    --input: 220 13% 90%;
-    --ring: 174 72% 40%;
+    --border: 220 22% 22%;
+    --input: 220 22% 22%;
+    --ring: 42 98% 57%;
 
-    --radius: 0.75rem;
+    --radius: 1.25rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(174, 72%, 40%), hsl(210, 78%, 50%));
-    --gradient-hero: linear-gradient(135deg, hsl(174, 72%, 95%), hsl(210, 78%, 95%));
-    --gradient-accent: linear-gradient(135deg, hsl(174, 72%, 40%), hsl(260, 60%, 55%));
+    --gradient-primary: linear-gradient(135deg, hsl(18 95% 58%), hsl(42 98% 57%));
+    --gradient-hero: linear-gradient(135deg, hsl(221 39% 11%), hsl(221 45% 14%));
+    --gradient-accent: linear-gradient(135deg, hsl(42 98% 57%), hsl(9 94% 62%));
 
-    --glass-bg: hsla(0, 0%, 100%, 0.7);
-    --glass-border: hsla(0, 0%, 100%, 0.3);
-    --glass-shadow: 0 8px 32px hsla(220, 25%, 10%, 0.08);
+    --glass-bg: hsla(0, 0%, 100%, 0.06);
+    --glass-border: hsla(0, 0%, 100%, 0.08);
+    --glass-shadow: 0 24px 80px hsla(222, 45%, 5%, 0.35);
 
-    --shadow-sm: 0 1px 2px hsla(220, 25%, 10%, 0.05);
-    --shadow-md: 0 4px 12px hsla(220, 25%, 10%, 0.08);
-    --shadow-lg: 0 12px 40px hsla(220, 25%, 10%, 0.12);
+    --shadow-sm: 0 4px 16px hsla(222, 45%, 5%, 0.18);
+    --shadow-md: 0 18px 42px hsla(222, 45%, 5%, 0.22);
+    --shadow-lg: 0 32px 90px hsla(222, 45%, 5%, 0.32);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -64,28 +64,28 @@
   }
 
   .dark {
-    --background: 222 30% 8%;
-    --foreground: 210 20% 95%;
-    --card: 222 25% 12%;
-    --card-foreground: 210 20% 95%;
-    --popover: 222 25% 12%;
-    --popover-foreground: 210 20% 95%;
-    --primary: 174 72% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 20% 18%;
-    --secondary-foreground: 210 20% 90%;
-    --muted: 222 20% 18%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 222 20% 18%;
-    --accent-foreground: 210 20% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 20% 20%;
-    --input: 222 20% 20%;
-    --ring: 174 72% 45%;
-    --glass-bg: hsla(222, 25%, 12%, 0.7);
+    --background: 221 39% 11%;
+    --foreground: 44 100% 96%;
+    --card: 222 30% 14%;
+    --card-foreground: 44 100% 96%;
+    --popover: 222 30% 14%;
+    --popover-foreground: 44 100% 96%;
+    --primary: 42 98% 57%;
+    --primary-foreground: 221 39% 11%;
+    --secondary: 221 25% 18%;
+    --secondary-foreground: 44 100% 96%;
+    --muted: 221 25% 18%;
+    --muted-foreground: 220 11% 65%;
+    --accent: 18 95% 58%;
+    --accent-foreground: 44 100% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 44 100% 96%;
+    --border: 220 22% 22%;
+    --input: 220 22% 22%;
+    --ring: 42 98% 57%;
+    --glass-bg: hsla(0, 0%, 100%, 0.06);
     --glass-border: hsla(0, 0%, 100%, 0.08);
-    --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.3);
+    --glass-shadow: 0 24px 80px hsla(222, 45%, 5%, 0.35);
   }
 }
 
@@ -95,6 +95,8 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-image: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(9, 14, 29, 1));
+    min-height: 100vh;
   }
 }
 
