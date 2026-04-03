@@ -37,8 +37,7 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="container mx-auto flex flex-col gap-2 px-4 py-4 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
         <p>&copy; {currentYear} CampusKart. Trusted listings for serious student builders.</p>
-          <p>Support: rajeswarbind39@gmail.com</p>
-        </div>
+      </div>
       </div>
     </footer>
   );
