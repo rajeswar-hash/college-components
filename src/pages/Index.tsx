@@ -1,13 +1,18 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
-import { FilterBar } from "@/components/FilterBar";
 import { ProductCard } from "@/components/ProductCard";
-import { Cpu, ShieldCheck, Sparkles, Zap } from "lucide-react";
-import { canonicalInstitutionName, normalizeInstitutionKey } from "@/lib/institutions";
+import { CollegeListingsFilterBar } from "@/components/CollegeListingsFilterBar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { MapPin, Search, Sparkles, X } from "lucide-react";
+import { canonicalInstitutionName, normalizeInstitutionKey, searchInstitutionNames } from "@/lib/institutions";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface ListingRow {
   id: string;
@@ -26,31 +31,27 @@ interface ListingRow {
   seller_phone?: string;
 }
 
-const LISTINGS_CACHE_KEY = "campuskart-home-cache-v2";
 const INITIAL_VISIBLE_IMAGE_BATCH = 8;
 const MAX_FILTER_PRICE = 10000;
 
 const Index = () => {
-  const location = useLocation();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_FILTER_PRICE]);
-  const [allListings, setAllListings] = useState<ListingRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const stripImagesForCache = useCallback(
-    (listings: ListingRow[]) => listings.map(({ images, ...listing }) => ({ ...listing, images: [] })),
-    []
-  );
-
-  const writeListingsCache = useCallback((listings: ListingRow[]) => {
-    localStorage.setItem(
-      LISTINGS_CACHE_KEY,
-      JSON.stringify({ listings: stripImagesForCache(listings), updatedAt: Date.now() })
-    );
-  }, [stripImagesForCache]);
+  const [collegeQuery, setCollegeQuery] = useState("");
+  const [collegeResults, setCollegeResults] = useState<string[]>([]);
+  const [collegeDropdownOpen, setCollegeDropdownOpen] = useState(false);
+  const [listings, setListings] = useState<ListingRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [requestCollegeName, setRequestCollegeName] = useState("");
+  const [requestCity, setRequestCity] = useState("");
+  const [submittingRequest, setSubmittingRequest] = useState(false);
+  const [searchingCollege, setSearchingCollege] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const collegeWrapperRef = useRef<HTMLDivElement>(null);
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
@@ -62,119 +63,79 @@ const Index = () => {
 
     if (error || !data) return;
 
-    setAllListings((prev) => {
+    setListings((prev) => {
       const imageMap = new Map(data.map((row) => [row.id, row.images || []]));
-      const merged = prev.map((listing) =>
-        imageMap.has(listing.id)
-          ? { ...listing, images: imageMap.get(listing.id) }
-          : listing
+      return prev.map((listing) =>
+        imageMap.has(listing.id) ? { ...listing, images: imageMap.get(listing.id) } : listing
       );
-      writeListingsCache(merged);
-      return merged;
     });
-  }, [writeListingsCache]);
-
-  useEffect(() => {
-    try {
-      const rawCache = localStorage.getItem(LISTINGS_CACHE_KEY);
-      if (!rawCache) return;
-
-      const parsed = JSON.parse(rawCache) as { listings?: ListingRow[] };
-      if (parsed.listings && Array.isArray(parsed.listings)) {
-        setAllListings(parsed.listings);
-        setLoading(false);
-      }
-    } catch {
-      localStorage.removeItem(LISTINGS_CACHE_KEY);
-    }
   }, []);
 
-  const fetchListings = useCallback(async () => {
-    const hasCachedListings = allListings.length > 0;
-    if (!hasCachedListings) {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
-
-    const { data: listingsData, error: listingsError } = await supabase
-      .from("listings")
-      .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
-      .order("created_at", { ascending: false });
-
-    if (listingsError || !listingsData) {
-      setLoading(false);
-      setRefreshing(false);
+  const runCollegeSearch = useCallback(async (query: string) => {
+    const cleanedQuery = query.trim();
+    if (cleanedQuery.length < 2) {
+      setCollegeResults([]);
       return;
     }
 
-    const nextListings = listingsData.map((listing) => {
-        return {
-          ...listing,
-          images: [],
-          college: canonicalInstitutionName(listing.college),
-          seller_name: "",
-          seller_phone: "",
-        };
-      });
-
-    setAllListings(nextListings);
-    writeListingsCache(nextListings);
-    void fetchListingImages(nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id));
-    setLoading(false);
-    setRefreshing(false);
-  }, [allListings.length, fetchListingImages, writeListingsCache]);
+    setSearchingCollege(true);
+    const matches = await searchInstitutionNames(cleanedQuery, 12);
+    setCollegeResults(matches);
+    setSearchingCollege(false);
+  }, []);
 
   useEffect(() => {
-    fetchListings();
-  }, [fetchListings, location.key]);
+    const handler = (e: MouseEvent) => {
+      if (collegeWrapperRef.current && !collegeWrapperRef.current.contains(e.target as Node)) {
+        setCollegeDropdownOpen(false);
+      }
+    };
 
-  const maxPrice = MAX_FILTER_PRICE;
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
-  const hasActiveFilters =
-    !!search || !!selectedCategory || !!selectedCollege || priceRange[0] > 0 || priceRange[1] < maxPrice;
-
-  const listings = useMemo(() => {
-    let items = allListings;
-    if (selectedCategory) items = items.filter((l) => l.category === selectedCategory);
-    if (selectedCollege) {
-      const selectedCollegeKey = normalizeInstitutionKey(selectedCollege);
-      items = items.filter((l) => normalizeInstitutionKey(l.college) === selectedCollegeKey);
+  useEffect(() => {
+    if (!selectedCollege) {
+      setListings([]);
+      setLoading(false);
+      return;
     }
-    if (priceRange[0] > 0 || priceRange[1] < maxPrice) {
-      items = items.filter((l) => l.price >= priceRange[0] && l.price <= priceRange[1]);
-    }
-    if (search) {
-      const q = search.toLowerCase();
-      items = items.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q) ||
-          l.category.toLowerCase().includes(q)
-      );
-    }
-    return [...items].sort((a, b) => {
-      if (b.likes !== a.likes) return b.likes - a.likes;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-  }, [search, selectedCategory, selectedCollege, priceRange, allListings, maxPrice]);
 
-  const adaptedListings = listings.map((l) => ({
-    id: l.id,
-    title: l.title,
-    description: l.description,
-    price: l.price,
-    category: l.category as Category,
-    condition: l.condition as any,
-    images: l.images || [],
-    sellerId: l.seller_id,
-    sellerName: l.seller_name || "Unknown",
-    sellerPhone: l.seller_phone || "",
-    college: l.college,
-    createdAt: l.created_at,
-    sold: l.sold,
-    likes: l.likes,
-  }));
+    const fetchCollegeListings = async () => {
+      setLoading(true);
+      setSearch("");
+      setSelectedCategory(null);
+      setPriceRange([0, MAX_FILTER_PRICE]);
+
+      const canonicalCollege = canonicalInstitutionName(selectedCollege);
+      const { data, error } = await supabase
+        .from("listings")
+        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
+        .eq("college", canonicalCollege)
+        .order("created_at", { ascending: false });
+
+      if (error || !data) {
+        setListings([]);
+        setLoading(false);
+        return;
+      }
+
+      const nextListings = data.map((listing) => ({
+        ...listing,
+        images: [],
+        college: canonicalInstitutionName(listing.college),
+        seller_name: "",
+        seller_phone: "",
+      }));
+
+      setListings(nextListings);
+      setLoading(false);
+      void fetchListingImages(nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id));
+    };
+
+    fetchCollegeListings();
+  }, [fetchListingImages, selectedCollege]);
 
   useEffect(() => {
     const missingVisibleImages = listings
@@ -187,96 +148,285 @@ const Index = () => {
     }
   }, [fetchListingImages, listings]);
 
+  const filteredListings = useMemo(() => {
+    let items = listings;
+
+    if (selectedCategory) {
+      items = items.filter((listing) => listing.category === selectedCategory);
+    }
+
+    if (priceRange[0] > 0 || priceRange[1] < MAX_FILTER_PRICE) {
+      items = items.filter((listing) => listing.price >= priceRange[0] && listing.price <= priceRange[1]);
+    }
+
+    if (search) {
+      const query = search.toLowerCase();
+      items = items.filter(
+        (listing) =>
+          listing.title.toLowerCase().includes(query) ||
+          listing.description.toLowerCase().includes(query) ||
+          listing.category.toLowerCase().includes(query)
+      );
+    }
+
+    return [...items].sort((a, b) => {
+      if (b.likes !== a.likes) return b.likes - a.likes;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [listings, priceRange, search, selectedCategory]);
+
+  const adaptedListings = filteredListings.map((listing) => ({
+    id: listing.id,
+    title: listing.title,
+    description: listing.description,
+    price: listing.price,
+    category: listing.category as Category,
+    condition: listing.condition as any,
+    images: listing.images || [],
+    sellerId: listing.seller_id,
+    sellerName: listing.seller_name || "Unknown",
+    sellerPhone: listing.seller_phone || "",
+    college: listing.college,
+    createdAt: listing.created_at,
+    sold: listing.sold,
+    likes: listing.likes,
+  }));
+
+  const handleCollegeSelect = (college: string) => {
+    const canonicalCollege = canonicalInstitutionName(college);
+    setSelectedCollege(canonicalCollege);
+    setCollegeQuery(canonicalCollege);
+    setCollegeDropdownOpen(false);
+    setCollegeResults([]);
+  };
+
+  const handleChangeCollege = () => {
+    setSelectedCollege(null);
+    setCollegeQuery("");
+    setCollegeResults([]);
+    setSearch("");
+    setSelectedCategory(null);
+    setPriceRange([0, MAX_FILTER_PRICE]);
+  };
+
+  const handleCollegeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestCollegeName.trim()) {
+      toast.error("Please enter the college name.");
+      return;
+    }
+
+    setSubmittingRequest(true);
+    try {
+      const { error } = await supabase.from("college_requests").insert({
+        college_name: requestCollegeName.trim(),
+        city: requestCity.trim(),
+        requester_name: user?.name || "",
+        requester_email: user?.email || "",
+      });
+
+      if (error) throw error;
+
+      toast.success("College request sent successfully.");
+      setRequestModalOpen(false);
+      setRequestCity("");
+      setRequestCollegeName("");
+    } catch (error: any) {
+      toast.error(error.message || "Could not send college request right now.");
+    } finally {
+      setSubmittingRequest(false);
+    }
+  };
+
+  const showRequestCollegeButton =
+    !selectedCollege && collegeQuery.trim().length >= 2 && !searchingCollege && collegeResults.length === 0;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {!hasActiveFilters && (
-        <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-          <div className="container mx-auto px-4 py-8 md:py-12">
-            <div className="mx-auto max-w-xl text-center">
-              <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Student Marketplace
-              </p>
-              <h1 className="mb-2 font-display text-2xl font-extrabold leading-tight text-foreground md:text-3xl lg:text-4xl">
-                Buy & Sell <span className="gradient-text">Within Your Campus</span>
-              </h1>
-              <p className="mx-auto mb-5 max-w-lg text-sm text-muted-foreground">
-                A fast, trusted marketplace where engineering students buy and sell notes, components, gadgets, tools, project kits, and much more.
-              </p>
-              <div className="mb-5 rounded-2xl border border-primary/20 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.12))] px-4 py-3 text-sm font-semibold text-foreground shadow-[0_12px_30px_rgba(20,184,166,0.10)]">
-                <span className="gradient-text">Filter by your college</span> for faster campus deals.
-              </div>
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <Cpu className="h-3.5 w-3.5 text-primary" /> 100+ Parts
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Verified
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Zap className="h-3.5 w-3.5 text-primary" /> WhatsApp
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="absolute left-5 top-5 h-24 w-24 rounded-full gradient-bg opacity-5 blur-3xl" />
-          <div className="absolute bottom-5 right-5 h-32 w-32 rounded-full gradient-accent-bg opacity-5 blur-3xl" />
-        </section>
-      )}
+      <section className="container mx-auto px-4 py-8 md:py-10">
+        {!selectedCollege ? (
+          <div className="animate-fade-in">
+            <Card className="mx-auto max-w-2xl border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.92),rgba(255,255,255,1))] shadow-[0_22px_60px_rgba(20,184,166,0.10)]">
+              <CardContent className="space-y-5 px-5 py-8 text-center sm:px-8 sm:py-10">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div className="space-y-2">
+                  <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Search your college to see listed items.</h1>
+                  <p className="text-sm text-muted-foreground">
+                    CampusKart shows items only after you choose a college, so the marketplace stays focused on one campus at a time.
+                  </p>
+                </div>
 
-      <section id="listings" className="container mx-auto px-4 py-6">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedCollege={selectedCollege}
-          onCollegeChange={setSelectedCollege}
-          priceRange={priceRange}
-          onPriceRangeChange={setPriceRange}
-          maxPrice={maxPrice}
-        />
+                <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left">
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={collegeQuery}
+                      placeholder="Search your college..."
+                      className="h-12 rounded-2xl border-border/80 bg-background pl-10 pr-10 text-sm shadow-sm"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setCollegeQuery(value);
+                        setCollegeDropdownOpen(true);
+                        clearTimeout(debounceRef.current);
+                        debounceRef.current = setTimeout(() => runCollegeSearch(value), 150);
+                      }}
+                      onFocus={() => {
+                        if (collegeQuery.trim().length >= 2) {
+                          setCollegeDropdownOpen(true);
+                          runCollegeSearch(collegeQuery);
+                        }
+                      }}
+                      autoComplete="off"
+                    />
+                    {collegeQuery && (
+                      <button
+                        onClick={() => {
+                          setCollegeQuery("");
+                          setCollegeResults([]);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                      >
+                        <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    )}
+                  </div>
 
-        {hasActiveFilters && (
-          <div className="mb-2 mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{listings.length}</span> result{listings.length !== 1 ? "s" : ""} found
-            </p>
-          </div>
-        )}
+                  {collegeDropdownOpen && collegeResults.length > 0 && (
+                    <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+                      <div className="max-h-72 overflow-auto py-1">
+                        {collegeResults.map((college) => (
+                          <button
+                            key={college}
+                            type="button"
+                            className="block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-accent"
+                            onClick={() => handleCollegeSelect(college)}
+                          >
+                            {college}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-        {refreshing && !loading && (
-          <div className="mb-2 mt-4 text-center">
-            <p className="text-xs text-muted-foreground">Refreshing latest listings...</p>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="py-16 text-center">
-            <div className="mx-auto max-w-md space-y-3">
-              <div className="h-4 w-40 mx-auto rounded-full bg-muted/80 animate-pulse" />
-              <div className="grid grid-cols-2 gap-3">
-                <div className="h-40 rounded-2xl bg-muted/70 animate-pulse" />
-                <div className="h-40 rounded-2xl bg-muted/70 animate-pulse" />
-              </div>
-            </div>
-          </div>
-        ) : listings.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-lg text-muted-foreground">No components found.</p>
-            <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+                  {showRequestCollegeButton && (
+                    <div className="mt-3">
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-xl"
+                        onClick={() => {
+                          setRequestCollegeName(collegeQuery.trim());
+                          setRequestModalOpen(true);
+                        }}
+                      >
+                        Can't find your college? Request to add it.
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {adaptedListings.map((listing, i) => (
-              <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
-                <ProductCard listing={listing} />
+          <div className="animate-fade-in space-y-5">
+            <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.10),rgba(59,130,246,0.08))] p-4 shadow-[0_18px_50px_rgba(20,184,166,0.10)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Selected College</p>
+                  <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-sm font-medium text-foreground shadow-sm">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {selectedCollege}
+                  </div>
+                </div>
+                <Button variant="outline" className="rounded-full" onClick={handleChangeCollege}>
+                  Change College
+                </Button>
               </div>
-            ))}
+            </div>
+
+            <CollegeListingsFilterBar
+              search={search}
+              onSearchChange={setSearch}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              priceRange={priceRange}
+              onPriceRangeChange={setPriceRange}
+              maxPrice={MAX_FILTER_PRICE}
+            />
+
+            {loading ? (
+              <div className="py-16 text-center">
+                <div className="mx-auto max-w-md space-y-3">
+                  <div className="mx-auto h-4 w-40 animate-pulse rounded-full bg-muted/80" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="h-40 animate-pulse rounded-2xl bg-muted/70" />
+                    <div className="h-40 animate-pulse rounded-2xl bg-muted/70" />
+                  </div>
+                </div>
+              </div>
+            ) : filteredListings.length === 0 ? (
+              <div className="rounded-3xl border border-border/70 bg-card/80 px-5 py-14 text-center shadow-sm">
+                <p className="text-lg font-medium text-foreground">No items listed yet for this college. Be the first to post!</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Once students from this college post listings, they will appear here.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">{filteredListings.length}</span> item{filteredListings.length !== 1 ? "s" : ""} from this college
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                  {adaptedListings.map((listing, index) => (
+                    <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${index * 35}ms` }}>
+                      <ProductCard listing={listing} />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
       </section>
+
+      <Dialog open={requestModalOpen} onOpenChange={setRequestModalOpen}>
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request to add your college</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCollegeRequest} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">College Name</label>
+              <Input
+                value={requestCollegeName}
+                onChange={(e) => setRequestCollegeName(e.target.value)}
+                placeholder="Enter your college name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">City (optional)</label>
+              <Input
+                value={requestCity}
+                onChange={(e) => setRequestCity(e.target.value)}
+                placeholder="City"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={submittingRequest}
+              className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90"
+            >
+              {submittingRequest ? "Sending..." : "Submit Request"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <SiteFooter />
     </div>

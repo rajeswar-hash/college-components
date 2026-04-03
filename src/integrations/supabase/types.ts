@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      college_requests: {
+        Row: {
+          city: string
+          college_name: string
+          created_at: string
+          id: string
+          requester_email: string
+          requester_name: string
+        }
+        Insert: {
+          city?: string
+          college_name: string
+          created_at?: string
+          id?: string
+          requester_email?: string
+          requester_name?: string
+        }
+        Update: {
+          city?: string
+          college_name?: string
+          created_at?: string
+          id?: string
+          requester_email?: string
+          requester_name?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           category: string
