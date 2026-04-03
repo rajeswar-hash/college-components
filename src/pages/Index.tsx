@@ -203,18 +203,6 @@ const Index = () => {
           </div>
         )}
 
-        {!hasActiveFilters && !loading && listings.length > 0 && (
-          <div className="mb-2 mt-4 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Fresh listings</p>
-              <h2 className="font-display text-2xl font-bold text-foreground">Popular components from real students</h2>
-            </div>
-            <p className="hidden text-sm text-muted-foreground md:block">
-              Ranked by likes first, then by newest listings.
-            </p>
-          </div>
-        )}
-
         {loading ? (
           <div className="text-center py-16">
             <p className="text-muted-foreground text-lg">Loading listings...</p>
