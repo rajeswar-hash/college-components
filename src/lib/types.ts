@@ -26,29 +26,52 @@ export interface Listing {
 }
 
 export type Category =
-  | "Arduino"
-  | "Sensors"
-  | "Motors"
+  | "Components"
+  | "Gadgets"
+  | "Notes"
   | "Tools"
-  | "Displays"
-  | "Communication"
-  | "Power"
-  | "Misc";
+  | "Projects"
+  | "Others";
 
-export type Condition = "New" | "Like New" | "Good" | "Fair";
+export type Condition = "New" | "Like New" | "Used" | "Old";
 
 export const CATEGORIES: Category[] = [
-  "Arduino",
-  "Sensors",
-  "Motors",
+  "Components",
+  "Gadgets",
+  "Notes",
   "Tools",
-  "Displays",
-  "Communication",
-  "Power",
-  "Misc",
+  "Projects",
+  "Others",
 ];
 
-export const CONDITIONS: Condition[] = ["New", "Like New", "Good", "Fair"];
+export const CONDITIONS: Condition[] = ["New", "Like New", "Used", "Old"];
+
+export function normalizeCategory(category: string): Category | string {
+  switch (category) {
+    case "Arduino":
+    case "Sensors":
+    case "Motors":
+    case "Displays":
+    case "Communication":
+    case "Power":
+      return "Components";
+    case "Misc":
+      return "Others";
+    default:
+      return category;
+  }
+}
+
+export function normalizeCondition(condition: string): Condition | string {
+  switch (condition) {
+    case "Good":
+      return "Used";
+    case "Fair":
+      return "Old";
+    default:
+      return condition;
+  }
+}
 
 export const COLLEGES: string[] = [
   // IITs

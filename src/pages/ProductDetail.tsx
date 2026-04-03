@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,8 @@ const ProductDetail = () => {
   }
 
   const hasImages = listing.images && listing.images.length > 0 && listing.images[0];
+  const displayCategory = normalizeCategory(listing.category);
+  const displayCondition = normalizeCondition(listing.condition);
 
   const handleLike = async () => {
     if (!listing || liking) return;
@@ -223,7 +226,7 @@ const ProductDetail = () => {
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="w-24 h-24 rounded-xl gradient-bg opacity-20" />
-                <span className="absolute text-muted-foreground font-medium">{listing.category}</span>
+                <span className="absolute text-muted-foreground font-medium">{displayCategory}</span>
               </div>
             )}
             {listing.sold && (
@@ -236,8 +239,8 @@ const ProductDetail = () => {
           <div className="min-w-0 space-y-5">
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{listing.category}</Badge>
-                <Badge variant="outline">{listing.condition}</Badge>
+                <Badge variant="secondary">{displayCategory}</Badge>
+                <Badge variant="outline">{displayCondition}</Badge>
               </div>
               <h1 className="break-words font-display font-bold text-2xl text-foreground md:text-3xl">{listing.title}</h1>
               <p className="font-display font-extrabold text-3xl gradient-text mt-2">₹{listing.price}</p>

@@ -1,4 +1,4 @@
-import { Listing } from "@/lib/types";
+import { Listing, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -13,14 +13,12 @@ interface ProductCardProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Arduino: "bg-primary/10 text-primary",
-  Sensors: "bg-success/10 text-success",
-  Motors: "bg-warning/10 text-warning",
+  Components: "bg-primary/10 text-primary",
+  Gadgets: "bg-sky-500/10 text-sky-600",
+  Notes: "bg-amber-500/10 text-amber-700",
   Tools: "bg-destructive/10 text-destructive",
-  Displays: "bg-accent text-accent-foreground",
-  Communication: "bg-primary/10 text-primary",
-  Power: "bg-warning/10 text-warning",
-  Misc: "bg-muted text-muted-foreground",
+  Projects: "bg-violet-500/10 text-violet-600",
+  Others: "bg-muted text-muted-foreground",
 };
 
 export function ProductCard({ listing }: ProductCardProps) {
@@ -30,6 +28,8 @@ export function ProductCard({ listing }: ProductCardProps) {
   const [liking, setLiking] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const hasImage = listing.images && listing.images.length > 0 && listing.images[0];
+  const displayCategory = normalizeCategory(listing.category);
+  const displayCondition = normalizeCondition(listing.condition);
 
   useEffect(() => {
     setLikeCount(listing.likes);
@@ -96,9 +96,9 @@ export function ProductCard({ listing }: ProductCardProps) {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />
+                <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />
               <span className="absolute text-muted-foreground text-sm font-medium">
-                {listing.category}
+                {displayCategory}
               </span>
             </div>
           )}
@@ -132,11 +132,11 @@ export function ProductCard({ listing }: ProductCardProps) {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className={CATEGORY_COLORS[listing.category] || ""}>
-              {listing.category}
+            <Badge variant="secondary" className={CATEGORY_COLORS[displayCategory] || ""}>
+              {displayCategory}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              {listing.condition}
+              {displayCondition}
             </Badge>
           </div>
 
