@@ -6,7 +6,7 @@ The old Lovable database should be left untouched.
 
 ### What to create
 
-New Supabase project selected for `College Components`:
+New Supabase project selected for `CampusKart`:
 
 - Project id: `vhdrmhnsnngfnnsfbrln`
 - Project URL: `https://vhdrmhnsnngfnnsfbrln.supabase.co`

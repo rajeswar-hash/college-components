@@ -58,7 +58,7 @@ function getBotReply(question: string) {
     return "Open a listing and use the WhatsApp contact button to reach the seller directly.";
   }
   if (normalized.includes("payment") || normalized.includes("price")) {
-    return "Payments are not handled inside College Components. Buyers and sellers coordinate directly.";
+    return "Payments are not handled inside CampusKart. Buyers and sellers coordinate directly.";
   }
   if (normalized.includes("admin")) {
     return "The admin account opens a separate admin dashboard with management controls.";

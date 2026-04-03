@@ -150,7 +150,7 @@ const ProductDetail = () => {
 
   const whatsappUrl = (() => {
     const msg = encodeURIComponent(
-      `Hi! I'm interested in your listing on College Components:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
+      `Hi! I'm interested in your listing on CampusKart:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
     );
     return `https://wa.me/${formatPhone(listing.seller_phone)}?text=${msg}`;
   })();
@@ -160,7 +160,7 @@ const ProductDetail = () => {
       navigator
         .share({
           title: listing.title,
-          text: `Check out this listing on College Components: ${listing.title}`,
+          text: `Check out this listing on CampusKart: ${listing.title}`,
           url: window.location.href,
         })
         .catch(() => {

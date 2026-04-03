@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const sections = [
   {
     title: "Use of the platform",
-    body: "College Components is provided for students to create, browse, and manage listings. Users are responsible for the accuracy of their listings and communications.",
+    body: "CampusKart is provided for students to create, browse, and manage listings. Users are responsible for the accuracy of their listings and communications.",
   },
   {
     title: "User responsibilities",
@@ -12,7 +12,7 @@ const sections = [
   },
   {
     title: "Transactions",
-    body: "Transactions happen between users. College Components provides the marketplace interface but does not guarantee any listing, payment, or exchange.",
+    body: "Transactions happen between users. CampusKart provides the marketplace interface but does not guarantee any listing, payment, or exchange.",
   },
   {
     title: "Account actions",

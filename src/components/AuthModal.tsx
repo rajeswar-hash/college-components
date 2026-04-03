@@ -99,7 +99,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         <div className="max-h-[85vh] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
         <DialogHeader className="pr-8 text-center sm:text-center">
           <DialogTitle className="font-display text-2xl text-center">
-            {mode === "login" ? "Welcome Back" : "Join College Components"}
+              {mode === "login" ? "Welcome Back" : "Join CampusKart"}
           </DialogTitle>
           <p className="mx-auto max-w-sm text-sm text-muted-foreground text-center">
             {mode === "login"

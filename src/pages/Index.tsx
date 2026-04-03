@@ -26,7 +26,7 @@ interface ListingRow {
   seller_phone?: string;
 }
 
-const LISTINGS_CACHE_KEY = "college-components-home-cache-v1";
+const LISTINGS_CACHE_KEY = "campuskart-home-cache-v1";
 
 const Index = () => {
   const location = useLocation();

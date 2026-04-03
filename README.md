@@ -1,4 +1,4 @@
-# College Components
+# CampusKart
 
 Student marketplace for buying and selling electronics, tools, and project parts across colleges.
 

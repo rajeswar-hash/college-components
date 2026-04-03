@@ -5,8 +5,8 @@ import { ShieldCheck, Sparkles, Users } from "lucide-react";
 export default function AboutPage() {
   return (
     <PublicPageLayout
-      title="About College Components"
-      subtitle="College Components helps students buy and sell electronics, tools, and project parts in a cleaner, more trusted campus marketplace."
+      title="About CampusKart"
+      subtitle="CampusKart helps students buy and sell electronics, tools, and project parts in a cleaner, more trusted campus marketplace."
     >
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <Card className="glass border-border/70">
@@ -15,7 +15,7 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
             <p>
-              Engineering students often need a few parts quickly, while other students have unused boards, sensors, lab tools, or project kits sitting idle. College Components closes that gap with a focused marketplace designed for college communities.
+              Engineering students often need a few parts quickly, while other students have unused boards, sensors, lab tools, or project kits sitting idle. CampusKart closes that gap with a focused marketplace designed for college communities.
             </p>
             <p>
               The platform is built to keep discovery simple, conversations direct, and listings easy to manage on both mobile and desktop.

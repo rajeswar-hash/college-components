@@ -5,7 +5,7 @@ import { canonicalInstitutionName } from "@/lib/institutions";
 
 const ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const ADMIN_PASSWORD = "raj84217#*";
-const ADMIN_SESSION_KEY = "college-components-admin-session";
+const ADMIN_SESSION_KEY = "campuskart-admin-session";
 
 interface Profile {
   id: string;
@@ -36,7 +36,7 @@ const adminProfile: Profile = {
   name: "Admin Control",
   email: ADMIN_EMAIL,
   phone: "Private",
-  college: "College Components HQ",
+  college: "CampusKart HQ",
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

@@ -24,7 +24,7 @@ export default function PrivacyPage() {
   return (
     <PublicPageLayout
       title="Privacy Policy"
-      subtitle="A straightforward summary of how user data is stored and handled on College Components."
+      subtitle="A straightforward summary of how user data is stored and handled on CampusKart."
     >
       <div className="grid gap-4">
         {privacySections.map((section) => (

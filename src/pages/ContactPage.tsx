@@ -113,7 +113,7 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
-              Send a suggestion, report an issue, or share product ideas. Messages are sent directly to the College Components support inbox.
+              Send a suggestion, report an issue, or share product ideas. Messages are sent directly to the CampusKart support inbox.
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">

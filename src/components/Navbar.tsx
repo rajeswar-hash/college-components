@@ -87,7 +87,7 @@ export function Navbar() {
               <Cpu className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-xl text-foreground">
-              College<span className="gradient-text">Components</span>
+            Campus<span className="gradient-text">Kart</span>
             </span>
           </Link>
 
