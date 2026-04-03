@@ -62,6 +62,9 @@ function getBotReply(question: string) {
 export default function HelpBotPage() {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== "undefined" ? window.visualViewport?.height ?? window.innerHeight : 0
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -77,18 +80,20 @@ export default function HelpBotPage() {
 
   useEffect(() => {
     const viewport = window.visualViewport;
-    if (!viewport) return;
-
     const handleViewportChange = () => {
+      setViewportHeight(window.visualViewport?.height ?? window.innerHeight);
       scrollToLatest();
     };
 
-    viewport.addEventListener("resize", handleViewportChange);
-    viewport.addEventListener("scroll", handleViewportChange);
+    window.addEventListener("resize", handleViewportChange);
+    viewport?.addEventListener("resize", handleViewportChange);
+    viewport?.addEventListener("scroll", handleViewportChange);
+    handleViewportChange();
 
     return () => {
-      viewport.removeEventListener("resize", handleViewportChange);
-      viewport.removeEventListener("scroll", handleViewportChange);
+      window.removeEventListener("resize", handleViewportChange);
+      viewport?.removeEventListener("resize", handleViewportChange);
+      viewport?.removeEventListener("scroll", handleViewportChange);
     };
   }, []);
 
@@ -122,8 +127,8 @@ export default function HelpBotPage() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-background">
-      <header className="border-b border-border bg-background/95 px-4 py-3 backdrop-blur-xl">
+    <div className="overflow-hidden bg-background" style={{ height: viewportHeight || undefined }}>
+      <header className="fixed inset-x-0 top-0 z-20 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Button asChild variant="ghost" size="icon" className="shrink-0">
@@ -144,8 +149,8 @@ export default function HelpBotPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+      <main className="mx-auto h-full w-full max-w-4xl overflow-hidden px-4 pb-24 pt-[73px]">
+        <div className="h-full overflow-y-auto py-4">
           <div className="space-y-3">
             {chatMessages.map((chat) => (
               <div key={chat.id} className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -163,8 +168,8 @@ export default function HelpBotPage() {
             <div ref={messagesEndRef} />
           </div>
         </div>
-
-        <div className="border-t border-border bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+          <div className="mx-auto max-w-4xl">
           <form
             className="flex gap-2"
             onSubmit={(e) => {
@@ -191,6 +196,7 @@ export default function HelpBotPage() {
               <Send className="h-4 w-4" />
             </Button>
           </form>
+          </div>
         </div>
       </main>
     </div>
