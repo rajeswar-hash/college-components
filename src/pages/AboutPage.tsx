@@ -2,11 +2,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PublicPageLayout } from "@/components/PublicPageLayout";
 import { ArrowRight, MessageCircle, Recycle, ShieldCheck, Sparkles, Store, Users, Wallet, Zap } from "lucide-react";
 
+const currentHighlights = [
+  {
+    icon: Users,
+    title: "Student-focused trust",
+    body: "CampusKart is built for campus communities, so buyers and sellers are dealing in a more familiar student environment instead of a random public marketplace.",
+  },
+  {
+    icon: Zap,
+    title: "Faster same-campus deals",
+    body: "Most exchanges can happen locally without shipping, which makes buying and selling quicker and more practical for students.",
+  },
+  {
+    icon: Wallet,
+    title: "Better prices for students",
+    body: "Many listings are posted by students recovering cost from books, notes, gadgets, components, tools, or project kits rather than selling for profit.",
+  },
+  {
+    icon: Recycle,
+    title: "Reuse over waste",
+    body: "Items used for one semester, lab, or project can move to the next student instead of staying unused or getting wasted.",
+  },
+];
+
 export default function AboutPage() {
   return (
     <PublicPageLayout
       title="About CampusKart"
-      subtitle="CampusKart is a campus-first marketplace built for engineering students who want faster deals, cleaner listings, and more trust inside their own college community."
+      subtitle="CampusKart is a campus-first marketplace for students who want faster local deals, clearer listings, and a simpler way to buy or sell useful academic and engineering items."
     >
       <div className="space-y-6">
         <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
@@ -15,102 +38,78 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
             <p>
-              Students often need notes, components, gadgets, tools, or project kits quickly, while other students already have those items sitting unused. CampusKart is built to close that gap with a focused marketplace that feels local, simple, and useful from the first tap.
+              Students often need notes, components, gadgets, tools, or project kits quickly, while other students already have those same items sitting unused. CampusKart is built to close that gap with a marketplace that feels local, focused, and simple to use.
             </p>
             <p>
-              Instead of searching random public marketplaces, students can browse relevant listings, filter by college, and connect directly with sellers inside their own academic environment.
+              Instead of searching broad public platforms, students can browse relevant listings, filter by college, and contact sellers directly through WhatsApp when a listing is active.
             </p>
           </CardContent>
         </Card>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="glass border-border/70">
-            <CardContent className="flex items-start gap-4 p-5">
-              <div className="rounded-xl bg-primary/10 p-3 text-primary">
-                <Users className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Campus-first trust</p>
-                <p className="mt-1 text-sm text-muted-foreground">Listings are designed for students buying and selling inside their own college network.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="glass border-border/70">
-            <CardContent className="flex items-start gap-4 p-5">
-              <div className="rounded-xl bg-primary/10 p-3 text-primary">
-                <Store className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Made for student needs</p>
-                <p className="mt-1 text-sm text-muted-foreground">Notes, components, gadgets, tools, and project items all fit naturally on the platform.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="glass border-border/70">
-            <CardContent className="flex items-start gap-4 p-5">
-              <div className="rounded-xl bg-primary/10 p-3 text-primary">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Transparent flow</p>
-                <p className="mt-1 text-sm text-muted-foreground">Clear condition labels, photo-first listings, and direct seller contact keep things straightforward.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="glass border-border/70">
-            <CardContent className="flex items-start gap-4 p-5">
-              <div className="rounded-xl bg-primary/10 p-3 text-primary">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Mobile-friendly design</p>
-                <p className="mt-1 text-sm text-muted-foreground">CampusKart is designed to feel quick, clean, and easy to use on both phone and laptop.</p>
-              </div>
-            </CardContent>
-          </Card>
+          {currentHighlights.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Card key={item.title} className="glass border-border/70">
+                <CardContent className="flex items-start gap-4 p-5">
+                  <div className="rounded-xl bg-primary/10 p-3 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{item.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <Card className="glass border-border/70">
             <CardHeader>
-              <CardTitle>How the platform works today</CardTitle>
+              <CardTitle>How CampusKart works right now</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Students create an account with their name, email, phone number, and college details.</p>
+                <p>Students register with their name, email, WhatsApp number, and college details.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Sellers post clean listings with photos, title, description, category, condition, and price.</p>
+                <p>Sellers can post listings with up to five photos, a clean title, product details, condition, category, and price.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Buyers can search, filter by category or college, and like useful items to spot popular listings.</p>
+                <p>Buyers can browse, search, filter by category or college, open item pages, and like listings they find useful.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Interested buyers contact sellers directly, which keeps conversations quick and practical.</p>
+                <p>Interested buyers contact sellers directly through WhatsApp, while sellers are expected to delete listings once an item is sold.</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="glass border-border/70">
             <CardHeader>
-              <CardTitle>What makes CampusKart useful</CardTitle>
+              <CardTitle>What makes the platform useful</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
               <div className="flex items-start gap-3">
                 <MessageCircle className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Direct buyer-seller contact for faster decisions.</p>
+                <p>Direct buyer-seller contact without a middle layer.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Account and listing controls, including permanent account deletion.</p>
+                <p>Account tools such as password reset, profile editing, and permanent account deletion.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <Store className="mt-1 h-4 w-4 shrink-0 text-primary" />
+                <p>A listing flow designed around student items instead of general public marketplace clutter.</p>
               </div>
               <div className="flex items-start gap-3">
                 <Sparkles className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>A polished browsing experience that feels more focused than a general public marketplace.</p>
+                <p>Mobile-friendly browsing, a help bot for quick doubts, and a cleaner overall marketplace experience.</p>
               </div>
             </CardContent>
           </Card>
@@ -118,36 +117,16 @@ export default function AboutPage() {
 
         <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
           <CardHeader>
-            <CardTitle>Why CampusKart is better for students</CardTitle>
+            <CardTitle>Why students may prefer CampusKart</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <ShieldCheck className="h-5 w-5" />
               </div>
-              <p className="font-semibold text-foreground">Only for students</p>
+              <p className="font-semibold text-foreground">Campus community feeling</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                CampusKart is built around student communities, not random public traffic. That gives users a more trusted environment than a general marketplace.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Zap className="h-5 w-5" />
-              </div>
-              <p className="font-semibold text-foreground">Faster same-campus deals</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Buyers and sellers are usually in the same campus environment, so there is no shipping delay and exchanges can happen much faster.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Wallet className="h-5 w-5" />
-              </div>
-              <p className="font-semibold text-foreground">Better student pricing</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Many students sell items simply to recover some cost, not to maximize profit. That often means cheaper prices than online stores.
+                The platform is built around student use, which can feel more trusted and more relevant than a broad marketplace with random public listings.
               </p>
             </div>
 
@@ -155,9 +134,9 @@ export default function AboutPage() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Store className="h-5 w-5" />
               </div>
-              <p className="font-semibold text-foreground">Made for engineering needs</p>
+              <p className="font-semibold text-foreground">Academic and engineering fit</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                CampusKart is a better fit for engineering students because it naturally supports notes, lab materials, components, gadgets, tools, and project kits.
+                CampusKart is suited to notes, gadgets, components, tools, lab-related items, and student project needs in one place.
               </p>
             </div>
 
@@ -165,19 +144,9 @@ export default function AboutPage() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Users className="h-5 w-5" />
               </div>
-              <p className="font-semibold text-foreground">Helps juniors and seniors</p>
+              <p className="font-semibold text-foreground">Useful for juniors and seniors</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Seniors can pass on useful books, notes, and components, while juniors get what they need faster and at lower cost. That builds a real student ecosystem.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Recycle className="h-5 w-5" />
-              </div>
-              <p className="font-semibold text-foreground">Smarter reuse, less waste</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Items used once for a project do not need to sit unused or get wasted. Reusing them saves money and makes the platform more sustainable.
+                Seniors can pass on items they no longer need, while juniors can get useful things faster and often at a lower price.
               </p>
             </div>
 
@@ -185,9 +154,9 @@ export default function AboutPage() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <MessageCircle className="h-5 w-5" />
               </div>
-              <p className="font-semibold text-foreground">Direct communication, no middleman</p>
+              <p className="font-semibold text-foreground">Direct communication, fewer steps</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Buyers and sellers connect directly, which makes questions, negotiation, and final decisions quicker and clearer without unnecessary middle steps.
+                Buyers and sellers connect directly for questions and final coordination, which keeps the flow faster than a platform with heavy middleman steps.
               </p>
             </div>
           </CardContent>

@@ -13,27 +13,31 @@ import { Bot, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
 const faqs = [
   {
     question: "How do I create an account?",
-    answer: "Open the sign in modal, switch to register, fill in your details, and create your account. Once registered, you can sign in from both mobile and laptop using the same credentials.",
+    answer: "Open the sign in modal, switch to Register, fill in your details, and create your account. Use a valid WhatsApp number, because buyers contact sellers through WhatsApp.",
   },
   {
     question: "How do I publish a listing?",
-    answer: "Open Sell Item, add clear photos, write a strong title, fill in product details, choose category and condition, set the price, and post the item. The first photo becomes the cover image.",
+    answer: "Open Sell Item, add clear photos, write a strong title, fill in product details, choose category and condition, set the price, and post the item. The first photo becomes the cover image. Listings above ₹10,000 are not allowed.",
   },
   {
     question: "How do I contact a seller?",
-    answer: "Open any product and use the direct contact option shown on the listing. Buyers and sellers connect directly for faster deals.",
+    answer: "Open any product and use Contact on WhatsApp. Logged-out users and other buyers can contact the seller directly, but sellers cannot contact their own listing.",
   },
   {
     question: "Can I delete my account?",
     answer: "Yes. Signed-in users can use the Delete Account option, confirm with their password, and permanently remove their account and linked data.",
   },
   {
-    question: "Who can see my listing?",
-    answer: "CampusKart is designed around college-based visibility and college filtering, so listings are presented in a more campus-focused way than a general marketplace.",
+    question: "Why is my sell button disabled?",
+    answer: "If your WhatsApp number is missing or invalid, CampusKart blocks posting. Update your profile with a valid WhatsApp number before you list an item.",
   },
   {
     question: "What should I do after my item is sold?",
     answer: "Delete the listing once the item is sold so buyers do not waste time opening unavailable products.",
+  },
+  {
+    question: "How do I reset my password?",
+    answer: "Use Forgot Password on the sign in form. CampusKart sends a reset email, and you should use the newest reset link that arrives in your inbox.",
   },
 ];
 
@@ -41,7 +45,7 @@ export default function HelpPage() {
   return (
     <PublicPageLayout
       title="Help Center"
-      subtitle="Get quick answers about accounts, listings, filters, safety, and how CampusKart works right now."
+      subtitle="Get quick answers about accounts, listings, seller contact, password reset, and the way CampusKart works today."
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
         <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
@@ -68,7 +72,7 @@ export default function HelpPage() {
             <CardContent className="space-y-4 text-sm text-muted-foreground">
               <div className="flex items-start gap-3">
                 <Bot className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p>Use the Help Bot for quick doubts, basic questions, and simple platform guidance.</p>
+                <p>Use the Help Bot for quick doubts, basic questions, and simple platform guidance without leaving the app.</p>
               </div>
               <div className="flex items-start gap-3">
                 <MessageSquareText className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -76,7 +80,7 @@ export default function HelpPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p>Keep listings honest and updated to build trust for the entire campus community.</p>
+                <p>Keep listings honest, use a valid WhatsApp number, and delete sold items to build trust for the campus community.</p>
               </div>
             </CardContent>
           </Card>
