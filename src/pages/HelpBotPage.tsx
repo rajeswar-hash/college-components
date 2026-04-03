@@ -89,7 +89,7 @@ export default function HelpBotPage() {
   };
 
   useEffect(() => {
-    scrollToLatest(chatMessages.length > 1 ? "smooth" : "auto");
+    scrollToLatest("auto");
   }, [chatMessages]);
 
   const sendChatMessage = (rawMessage?: string) => {
