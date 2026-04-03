@@ -20,24 +20,30 @@ export type Database = {
           college_name: string
           created_at: string
           id: string
+          note: string
           requester_email: string
           requester_name: string
+          state: string
         }
         Insert: {
           city?: string
           college_name: string
           created_at?: string
           id?: string
+          note?: string
           requester_email?: string
           requester_name?: string
+          state?: string
         }
         Update: {
           city?: string
           college_name?: string
           created_at?: string
           id?: string
+          note?: string
           requester_email?: string
           requester_name?: string
+          state?: string
         }
         Relationships: []
       }

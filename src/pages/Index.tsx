@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Category } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -9,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MapPin, Search, Sparkles, X } from "lucide-react";
-import { canonicalInstitutionName, normalizeInstitutionKey, searchInstitutionNames } from "@/lib/institutions";
+import { Textarea } from "@/components/ui/textarea";
+import { MapPin, Sparkles, Store, X } from "lucide-react";
+import { canonicalInstitutionName, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -33,9 +35,13 @@ interface ListingRow {
 
 const INITIAL_VISIBLE_IMAGE_BATCH = 8;
 const MAX_FILTER_PRICE = 10000;
+const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
+const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
+const REQUEST_COOLDOWN_MS = 60 * 1000;
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
@@ -47,11 +53,18 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [requestCollegeName, setRequestCollegeName] = useState("");
+  const [requestState, setRequestState] = useState("");
   const [requestCity, setRequestCity] = useState("");
+  const [requestNote, setRequestNote] = useState("");
   const [submittingRequest, setSubmittingRequest] = useState(false);
   const [searchingCollege, setSearchingCollege] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number>(
+    typeof window !== "undefined" ? window.visualViewport?.height || window.innerHeight : 800
+  );
+  const [requestCooldownUntil, setRequestCooldownUntil] = useState<number>(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
+  const collegeInputRef = useRef<HTMLInputElement>(null);
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
@@ -82,6 +95,40 @@ const Index = () => {
     const matches = await searchInstitutionNames(cleanedQuery, 12);
     setCollegeResults(matches);
     setSearchingCollege(false);
+  }, []);
+
+  useEffect(() => {
+    const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
+    if (savedCollege) {
+      setSelectedCollege(savedCollege);
+      setCollegeQuery(savedCollege);
+    }
+
+    const savedCooldown = Number(localStorage.getItem(COLLEGE_REQUEST_COOLDOWN_KEY) || 0);
+    if (savedCooldown > Date.now()) {
+      setRequestCooldownUntil(savedCooldown);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedCollege) {
+      localStorage.setItem(SELECTED_COLLEGE_STORAGE_KEY, selectedCollege);
+    } else {
+      localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
+    }
+  }, [selectedCollege]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      setViewportHeight(viewport.height);
+    };
+
+    handleResize();
+    viewport.addEventListener("resize", handleResize);
+    return () => viewport.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -198,6 +245,9 @@ const Index = () => {
     setCollegeQuery(canonicalCollege);
     setCollegeDropdownOpen(false);
     setCollegeResults([]);
+    setSearch("");
+    setSelectedCategory(null);
+    setPriceRange([0, MAX_FILTER_PRICE]);
   };
 
   const handleChangeCollege = () => {
@@ -209,10 +259,35 @@ const Index = () => {
     setPriceRange([0, MAX_FILTER_PRICE]);
   };
 
+  const handleCollegeInputFocus = () => {
+    setTimeout(() => {
+      collegeWrapperRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 180);
+
+    if (collegeQuery.trim().length >= 2) {
+      setCollegeDropdownOpen(true);
+      void runCollegeSearch(collegeQuery);
+    }
+  };
+
+  const resetCollegeRequestForm = () => {
+    setRequestCollegeName("");
+    setRequestState("");
+    setRequestCity("");
+    setRequestNote("");
+  };
+
   const handleCollegeRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!requestCollegeName.trim()) {
-      toast.error("Please enter the college name.");
+    if (requestCooldownUntil > Date.now()) {
+      toast.error("Please wait a moment before sending another request.");
+      return;
+    }
+    if (!requestCollegeName.trim() || !requestState.trim() || !requestCity.trim()) {
+      toast.error("Please fill in college name, state, and city.");
       return;
     }
 
@@ -220,17 +295,21 @@ const Index = () => {
     try {
       const { error } = await supabase.from("college_requests").insert({
         college_name: requestCollegeName.trim(),
+        state: requestState.trim(),
         city: requestCity.trim(),
+        note: requestNote.trim(),
         requester_name: user?.name || "",
         requester_email: user?.email || "",
       });
 
       if (error) throw error;
 
-      toast.success("College request sent successfully.");
+      const cooldownUntil = Date.now() + REQUEST_COOLDOWN_MS;
+      localStorage.setItem(COLLEGE_REQUEST_COOLDOWN_KEY, String(cooldownUntil));
+      setRequestCooldownUntil(cooldownUntil);
+      toast.success("Your request has been submitted. The college will be added within 24 hours if valid.");
       setRequestModalOpen(false);
-      setRequestCity("");
-      setRequestCollegeName("");
+      resetCollegeRequestForm();
     } catch (error: any) {
       toast.error(error.message || "Could not send college request right now.");
     } finally {
@@ -240,6 +319,7 @@ const Index = () => {
 
   const showRequestCollegeButton =
     !selectedCollege && collegeQuery.trim().length >= 2 && !searchingCollege && collegeResults.length === 0;
+  const collegeDropdownMaxHeight = Math.max(180, Math.min(320, viewportHeight - 260));
 
   return (
     <div className="min-h-screen bg-background">
@@ -260,10 +340,11 @@ const Index = () => {
                   </p>
                 </div>
 
-                <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left">
+                <div ref={collegeWrapperRef} className="mx-auto max-w-xl text-left" style={{ scrollMarginTop: "8rem" }}>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
+                      ref={collegeInputRef}
                       value={collegeQuery}
                       placeholder="Search your college..."
                       className="h-12 rounded-2xl border-border/80 bg-background pl-10 pr-10 text-sm shadow-sm"
@@ -274,12 +355,7 @@ const Index = () => {
                         clearTimeout(debounceRef.current);
                         debounceRef.current = setTimeout(() => runCollegeSearch(value), 150);
                       }}
-                      onFocus={() => {
-                        if (collegeQuery.trim().length >= 2) {
-                          setCollegeDropdownOpen(true);
-                          runCollegeSearch(collegeQuery);
-                        }
-                      }}
+                      onFocus={handleCollegeInputFocus}
                       autoComplete="off"
                     />
                     {collegeQuery && (
@@ -295,19 +371,23 @@ const Index = () => {
                     )}
                   </div>
 
-                  {collegeDropdownOpen && collegeResults.length > 0 && (
+                  {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
                     <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
-                      <div className="max-h-72 overflow-auto py-1">
-                        {collegeResults.map((college) => (
-                          <button
-                            key={college}
-                            type="button"
-                            className="block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-accent"
-                            onClick={() => handleCollegeSelect(college)}
-                          >
-                            {college}
-                          </button>
-                        ))}
+                      <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
+                        {searchingCollege ? (
+                          <div className="px-4 py-3 text-sm text-muted-foreground">Searching colleges...</div>
+                        ) : (
+                          collegeResults.map((college) => (
+                            <button
+                              key={college}
+                              type="button"
+                              className="block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-accent"
+                              onClick={() => handleCollegeSelect(college)}
+                            >
+                              {college}
+                            </button>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}
@@ -317,6 +397,7 @@ const Index = () => {
                       <Button
                         variant="outline"
                         className="w-full rounded-xl"
+                        disabled={requestCooldownUntil > Date.now()}
                         onClick={() => {
                           setRequestCollegeName(collegeQuery.trim());
                           setRequestModalOpen(true);
@@ -335,10 +416,10 @@ const Index = () => {
             <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.10),rgba(59,130,246,0.08))] p-4 shadow-[0_18px_50px_rgba(20,184,166,0.10)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Selected College</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Viewing</p>
                   <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-sm font-medium text-foreground shadow-sm">
                     <MapPin className="h-4 w-4 text-primary" />
-                    {selectedCollege}
+                    Viewing: {selectedCollege}
                   </div>
                 </div>
                 <Button variant="outline" className="rounded-full" onClick={handleChangeCollege}>
@@ -368,11 +449,17 @@ const Index = () => {
                 </div>
               </div>
             ) : filteredListings.length === 0 ? (
-              <div className="rounded-3xl border border-border/70 bg-card/80 px-5 py-14 text-center shadow-sm">
-                <p className="text-lg font-medium text-foreground">No items listed yet for this college. Be the first to post!</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Once students from this college post listings, they will appear here.
+              <div className="animate-fade-in rounded-3xl border border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.85),rgba(255,255,255,1))] px-5 py-14 text-center shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Store className="h-7 w-7" />
+                </div>
+                <p className="text-2xl font-semibold text-foreground">No items listed yet</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  Be the first to sell something in your college and help others!
                 </p>
+                <Button className="mt-6 gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => navigate("/sell")}>
+                  Sell First Item
+                </Button>
               </div>
             ) : (
               <>
@@ -395,7 +482,15 @@ const Index = () => {
         )}
       </section>
 
-      <Dialog open={requestModalOpen} onOpenChange={setRequestModalOpen}>
+      <Dialog
+        open={requestModalOpen}
+        onOpenChange={(open) => {
+          setRequestModalOpen(open);
+          if (!open && !submittingRequest) {
+            resetCollegeRequestForm();
+          }
+        }}
+      >
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Request to add your college</DialogTitle>
@@ -410,16 +505,33 @@ const Index = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">City (optional)</label>
+              <label className="text-sm font-medium text-foreground">State</label>
+              <Input
+                value={requestState}
+                onChange={(e) => setRequestState(e.target.value)}
+                placeholder="Enter state"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">City</label>
               <Input
                 value={requestCity}
                 onChange={(e) => setRequestCity(e.target.value)}
-                placeholder="City"
+                placeholder="Enter city"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Optional note</label>
+              <Textarea
+                value={requestNote}
+                onChange={(e) => setRequestNote(e.target.value)}
+                placeholder="Anything that may help us verify this college"
+                rows={3}
               />
             </div>
             <Button
               type="submit"
-              disabled={submittingRequest}
+              disabled={submittingRequest || requestCooldownUntil > Date.now()}
               className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90"
             >
               {submittingRequest ? "Sending..." : "Submit Request"}
