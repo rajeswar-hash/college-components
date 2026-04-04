@@ -114,7 +114,7 @@ const CartPageCompact = () => {
               </div>
               <div className="rounded-2xl border border-primary/10 bg-background/80 px-4 py-3 text-sm shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Grand Total</p>
-                <p className="mt-2 font-display text-2xl font-bold text-foreground">₹{totalValue.toLocaleString()}</p>
+                <p className="mt-2 font-display text-2xl font-bold text-foreground">{"\u20B9"}{totalValue.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -164,7 +164,7 @@ const CartPageCompact = () => {
                               <h3 className="truncate font-display text-xl font-semibold text-foreground">{item.title}</h3>
                             </Link>
                             <div className="mt-1 flex flex-wrap items-center gap-2">
-                              <span className="font-display text-2xl font-bold gradient-text">₹{item.price}</span>
+                              <span className="font-display text-2xl font-bold gradient-text">{"\u20B9"}{item.price}</span>
                               <Badge variant="secondary">{item.category}</Badge>
                               {item.condition ? <Badge variant="outline">{item.condition}</Badge> : null}
                             </div>

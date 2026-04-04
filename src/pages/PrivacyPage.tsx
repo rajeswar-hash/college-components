@@ -8,7 +8,7 @@ const privacySections = [
   },
   {
     title: "How your information is used",
-    body: "Your information is used to operate your account, show your listings, support buyer-seller contact, improve browsing and filtering, and keep the platform functional and reliable.",
+    body: "Your information is used to operate your account, verify email ownership during signup and password reset, show your listings, support buyer-seller contact, improve browsing and filtering, and keep the platform functional and reliable.",
   },
   {
     title: "Account and listing visibility",
@@ -20,11 +20,11 @@ const privacySections = [
   },
   {
     title: "Account deletion and control",
-    body: "Users can permanently delete their own account from the platform. When account deletion is completed, linked profile and listing data are removed from the platform database according to the current product flow.",
+    body: "Users can permanently delete their own account from the platform. The admin account may also permanently remove non-admin accounts when moderation or platform management requires it. When account deletion is completed, linked profile and listing data are removed from the platform database according to the current product flow.",
   },
   {
     title: "Authentication and platform services",
-    body: "CampusKart currently relies on connected platform services for authentication, database storage, and app hosting. Those services may process technical data needed to keep sign-in, listings, and platform access working.",
+    body: "CampusKart currently relies on connected platform services for email OTP verification, sign-in, database storage, and app hosting. Those services may process technical data needed to keep authentication, listings, and platform access working.",
   },
 ];
 

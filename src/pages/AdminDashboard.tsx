@@ -660,7 +660,7 @@ export default function AdminDashboard() {
                           )}
                         </div>
                         <p className="truncate text-xs text-muted-foreground">
-                          {listing.category} • {listing.college} • Rs. {Number(listing.price).toLocaleString("en-IN")}
+                          {listing.category} - {listing.college} - Rs. {Number(listing.price).toLocaleString("en-IN")}
                         </p>
                       </div>
                       <div className="flex gap-2">

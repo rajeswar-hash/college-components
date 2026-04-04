@@ -73,7 +73,7 @@ export default function AboutPage() {
             <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Students register with their name, email, WhatsApp number, and college details.</p>
+                <p>Students register with their name, college, WhatsApp number, email, password, and a final email OTP verification step.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
@@ -81,7 +81,7 @@ export default function AboutPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Buyers can browse, search, filter by category or college, open item pages, and like listings they find useful.</p>
+                <p>Buyers can browse, search, filter by category or college, open item pages, and save useful listings to their cart for later.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
@@ -101,7 +101,7 @@ export default function AboutPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Account tools such as password reset, profile editing, and permanent account deletion.</p>
+                <p>Account tools such as password reset through email OTP, profile editing, and permanent account deletion.</p>
               </div>
               <div className="flex items-start gap-3">
                 <Store className="mt-1 h-4 w-4 shrink-0 text-primary" />

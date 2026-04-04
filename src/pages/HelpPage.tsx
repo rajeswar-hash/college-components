@@ -13,31 +13,38 @@ import { Bot, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
 const faqs = [
   {
     question: "How do I create an account?",
-    answer: "Open the sign in modal, switch to Register, fill in your details, and create your account. Use a valid WhatsApp number, because buyers contact sellers through WhatsApp.",
+    answer:
+      "Open the sign in modal, switch to Register, fill in the full form, and press Create Account. CampusKart then sends an email OTP. After you verify that OTP, your account setup is completed.",
   },
   {
     question: "How do I publish a listing?",
-    answer: "Open Sell Item, add clear photos, write a strong title, fill in product details, choose category and condition, set the price, and post the item. The first photo becomes the cover image. Listings above ₹10,000 are not allowed.",
+    answer:
+      "Open Sell Item, choose the right category first, add clear photos or the required file or link, write strong details, choose condition if needed, set the price, and post the item. Category-based price limits apply, and most product listings currently stay within Rs. 5,000.",
   },
   {
     question: "How do I contact a seller?",
-    answer: "Open any product and use Contact on WhatsApp. Logged-out users and other buyers can contact the seller directly, but sellers cannot contact their own listing.",
+    answer:
+      "Open any product and use Contact on WhatsApp. Logged-out users and other buyers can contact the seller directly, but sellers cannot contact their own listing.",
   },
   {
     question: "Can I delete my account?",
-    answer: "Yes. Signed-in users can use the Delete Account option, confirm with their password, and permanently remove their account and linked data.",
+    answer:
+      "Yes. Signed-in users can use the Delete Account option, confirm with their password, and permanently remove their own account. Admin can also permanently delete non-admin accounts from Member Snapshot.",
   },
   {
     question: "Why is my sell button disabled?",
-    answer: "If your WhatsApp number is missing or invalid, CampusKart blocks posting. Update your profile with a valid WhatsApp number before you list an item.",
+    answer:
+      "If your WhatsApp number is missing or invalid, CampusKart blocks posting. Update your profile with a valid WhatsApp number before you list an item.",
   },
   {
     question: "What should I do after my item is sold?",
-    answer: "Delete the listing once the item is sold so buyers do not waste time opening unavailable products.",
+    answer:
+      "Delete the listing once the item is sold so buyers do not waste time opening unavailable products.",
   },
   {
     question: "How do I reset my password?",
-    answer: "Use Forgot Password on the sign in form. CampusKart sends a reset email, and you should use the newest reset link that arrives in your inbox.",
+    answer:
+      "Use Forgot Password on the sign in form, enter your email, verify the OTP from your inbox, and then set a new password on the reset page.",
   },
 ];
 
@@ -45,7 +52,7 @@ export default function HelpPage() {
   return (
     <PublicPageLayout
       title="Help Center"
-      subtitle="Get quick answers about accounts, listings, seller contact, password reset, and the way CampusKart works today."
+      subtitle="Get quick answers about accounts, listings, seller contact, cart saving, password reset, and the way CampusKart works today."
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
         <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
@@ -91,7 +98,7 @@ export default function HelpPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <Link to="/help-bot">
-                <Button className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
+                <Button className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
                   <Sparkles className="mr-2 h-4 w-4" /> Open Help Bot
                 </Button>
               </Link>

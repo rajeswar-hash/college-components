@@ -8,11 +8,11 @@ const sections = [
   },
   {
     title: "User responsibilities",
-    body: "Users must provide correct account information, including a valid WhatsApp number if they want to sell, avoid misleading listings, and use the platform lawfully. Prohibited, unsafe, or dishonest listings should not be posted.",
+    body: "Users must provide correct account information, including a valid email for OTP verification and a valid WhatsApp number if they want to sell, avoid misleading listings, and use the platform lawfully. Prohibited, unsafe, or dishonest listings should not be posted.",
   },
   {
     title: "Listings and pricing",
-    body: "Sellers are responsible for their listing content, photos, condition details, and price. CampusKart may limit certain listing types or price ranges, and listings should be deleted once an item is sold.",
+    body: "Sellers are responsible for their listing content, photos, condition details, and price. CampusKart may limit listing types or category-based price ranges, and listings should be deleted once an item is sold.",
   },
   {
     title: "Transactions and contact",
@@ -20,11 +20,11 @@ const sections = [
   },
   {
     title: "Account access and recovery",
-    body: "Users are responsible for keeping their password secure. Password reset is available through the account recovery flow, and users may permanently delete their own account through the in-app delete-account option.",
+    body: "Users are responsible for keeping their password secure. Account creation currently includes email OTP verification, password reset uses an email OTP plus reset page flow, and users may permanently delete their own account through the in-app delete-account option.",
   },
   {
     title: "Platform actions",
-    body: "CampusKart may limit, moderate, or remove listings, accounts, or access where misuse, abuse, suspicious activity, or policy violations are identified. Administrative actions are controlled by the platform owner.",
+    body: "CampusKart may limit, moderate, or remove listings, accounts, or access where misuse, abuse, suspicious activity, or policy violations are identified. Administrative actions are controlled by the platform owner, and the admin account may permanently remove non-admin accounts when required.",
   },
 ];
 
