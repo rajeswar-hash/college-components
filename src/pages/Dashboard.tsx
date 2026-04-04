@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Package, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
+import { Pencil, Package, Plus, Save, Sparkles, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ListingRow {
@@ -174,11 +174,14 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="animate-fade-in space-y-8">
-          <div className="space-y-3">
-            <div className="flex justify-start pl-1">
-              <Badge className="border-0 bg-primary/10 px-3 py-1 text-primary shadow-sm">My Profile</Badge>
+          <div className="relative pt-8">
+            <div className="absolute left-4 top-0 z-10">
+              <Badge className="border-0 bg-[linear-gradient(135deg,rgb(45,212,191),rgb(59,130,246))] px-5 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(34,197,194,0.25)]">
+                <User className="mr-2 h-4 w-4" />
+                My Profile
+              </Badge>
             </div>
-            <div className="glass rounded-2xl border border-primary/10 p-6 pt-4 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
+            <div className="glass rounded-2xl border border-primary/10 p-6 pt-6 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
               <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                 <div className="flex min-w-0 items-center gap-4 md:items-center">
                   <div className="relative h-20 w-20 shrink-0">
