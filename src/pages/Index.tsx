@@ -376,7 +376,7 @@ const Index = () => {
           <div className="animate-fade-in">
             <div className="relative -mx-4 overflow-hidden px-0 py-4 sm:mx-0">
               <picture className="pointer-events-none absolute inset-x-0 top-0 bottom-0">
-                <source media="(min-width: 640px)" srcSet={`${import.meta.env.BASE_URL}campus-hero-desktop.png`} />
+                <source media="(min-width: 640px)" srcSet={`${import.meta.env.BASE_URL}campus-hero-desktop.jpg`} />
                 <img
                   src={`${import.meta.env.BASE_URL}campus-hero-mobile.jpg`}
                   alt=""
