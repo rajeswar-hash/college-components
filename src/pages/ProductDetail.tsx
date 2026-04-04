@@ -375,6 +375,10 @@ const ProductDetail = () => {
                   key={`${currentImage}-${imageAnimationClass}`}
                   src={listing.images[currentImage]}
                   alt={`${listing.title} - Image ${currentImage + 1}`}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 100vw, 896px"
                   className={`h-full w-full max-w-full object-cover ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (

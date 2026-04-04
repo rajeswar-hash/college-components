@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()"
+    />
     <title>CampusKart | Student Marketplace</title>
     <meta
       name="description"
@@ -23,6 +33,7 @@
       name="twitter:description"
       content="Buy and sell components with students in your college network."
     />
+    <link rel="preconnect" href="https://vhdrmhnsnngfnnsfbrln.supabase.co" crossorigin />
   </head>
 
   <body>

@@ -213,7 +213,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
-          if (mode === "register" && registerStep === "otp") {
+          if ((mode === "register" && registerStep === "otp") || (mode === "forgot" && forgotStep === "otp")) {
             void supabase.auth.signOut();
           }
           resetForm();

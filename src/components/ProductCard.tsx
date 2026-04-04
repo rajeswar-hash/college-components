@@ -108,6 +108,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               alt={listing.title}
               loading="lazy"
               decoding="async"
+              sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
@@ -153,7 +154,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               {listing.title}
             </h3>
             <span className="font-display font-bold text-lg gradient-text whitespace-nowrap">
-              ₹{listing.price}
+              {"\u20B9"}{listing.price}
             </span>
           </div>
 
@@ -179,3 +180,4 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
     </>
   );
 }
+

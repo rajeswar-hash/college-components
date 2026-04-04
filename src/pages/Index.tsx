@@ -79,8 +79,22 @@ const Index = () => {
 
     if (error || !data) return;
 
+    const imageMap = new Map(data.map((row) => [row.id, row.images || []]));
+
+    listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
+      let changed = false;
+      const nextCachedListings = cachedListings.map((listing) => {
+        if (!imageMap.has(listing.id)) return listing;
+        changed = true;
+        return { ...listing, images: imageMap.get(listing.id) };
+      });
+
+      if (changed) {
+        listingsCacheRef.current.set(cacheKey, nextCachedListings);
+      }
+    });
+
     setListings((prev) => {
-      const imageMap = new Map(data.map((row) => [row.id, row.images || []]));
       return prev.map((listing) =>
         imageMap.has(listing.id) ? { ...listing, images: imageMap.get(listing.id) } : listing
       );
@@ -416,6 +430,12 @@ const Index = () => {
       if (error) throw error;
 
       setListings((prev) => prev.filter((listing) => listing.id !== listingId));
+      listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
+        listingsCacheRef.current.set(
+          cacheKey,
+          cachedListings.filter((listing) => listing.id !== listingId)
+        );
+      });
       toast.success("Listing deleted successfully.");
     } catch (error: any) {
       toast.error(error.message || "Could not delete this listing right now.");
@@ -444,6 +464,8 @@ const Index = () => {
                   className="h-full w-full object-cover object-center opacity-100"
                   loading="eager"
                   decoding="async"
+                  fetchPriority="high"
+                  sizes="100vw"
                   aria-hidden="true"
                 />
               </picture>
