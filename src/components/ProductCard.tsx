@@ -1,5 +1,5 @@
 import { Listing, normalizeCategory, normalizeCondition } from "@/lib/types";
-import { Heart, MapPin, ShoppingCart, Trash2 } from "lucide-react";
+import { MapPin, ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -171,10 +171,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{listing.college}</span>
             </span>
-            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${liked ? "bg-primary/10 text-primary" : "bg-muted/80"}`}>
-              <ShoppingCart className={`w-3 h-3 ${liked ? "fill-primary text-primary" : ""}`} />
-              {liked ? "In Cart" : "Add"}
-            </span>
+            <span>{likeCount}</span>
           </div>
         </div>
       </div>
