@@ -40,7 +40,7 @@ export type Category =
   | "Projects"
   | "Others";
 
-export type Condition = "New" | "Like New" | "Used" | "Old";
+export type Condition = "New" | "Like New" | "Fair" | "Used";
 
 export const CATEGORIES: Category[] = [
   "Handwriting Service",
@@ -54,7 +54,7 @@ export const CATEGORIES: Category[] = [
   "Others",
 ];
 
-export const CONDITIONS: Condition[] = ["New", "Like New", "Used", "Old"];
+export const CONDITIONS: Condition[] = ["New", "Like New", "Fair", "Used"];
 
 export function normalizeCategory(category: string): Category | string {
   switch (category) {
@@ -81,8 +81,8 @@ export function normalizeCondition(condition: string): Condition | string {
   switch (condition) {
     case "Good":
       return "Used";
-    case "Fair":
-      return "Old";
+    case "Old":
+      return "Fair";
     default:
       return condition;
   }

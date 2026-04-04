@@ -35,7 +35,7 @@ export async function verifyListingImageWithQwen(params: {
             content: [
               {
                 type: "text",
-                text: `Check if the uploaded image matches the product title and category.\nTitle: ${params.title}\nCategory: ${params.category}\nRespond strictly with:\nYES / NO / UNSURE`,
+                text: `Check whether the uploaded image clearly matches the product title and category.\nBe strict.\nIf the image is a building, landscape, person, unrelated object, or does not clearly show the product/service in the title, answer NO.\nIf the match is not clear enough, answer UNSURE.\nTitle: ${params.title}\nCategory: ${params.category}\nRespond with exactly one word only:\nYES\nNO\nUNSURE`,
               },
               {
                 type: "image_url",
@@ -63,11 +63,12 @@ export async function verifyListingImageWithQwen(params: {
         ""
     )
       .trim()
-      .toUpperCase();
+      .toUpperCase()
+      .replace(/[^A-Z]/g, "");
 
-    if (text.includes("YES")) return { status: "approved", response: "YES" };
-    if (text.includes("NO")) return { status: "rejected", response: "NO" };
-    if (text.includes("UNSURE")) return { status: "low_confidence", response: "UNSURE" };
+    if (text === "YES") return { status: "approved", response: "YES" };
+    if (text === "NO") return { status: "rejected", response: "NO" };
+    if (text === "UNSURE") return { status: "low_confidence", response: "UNSURE" };
     return { status: "skipped", response: "SKIPPED" };
   } catch {
     return { status: "skipped", response: "SKIPPED" };

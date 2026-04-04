@@ -75,15 +75,15 @@ const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = 
 const conditionLabelMap: Record<Condition, string> = {
   New: "New",
   "Like New": "Like New",
+  Fair: "Fair",
   Used: "Used",
-  Old: "Old",
 };
 
 const conditionNoteMap: Record<Condition, string> = {
   New: "Never used",
   "Like New": "Used once or twice",
+  Fair: "Clearly used but still usable",
   Used: "Regular use",
-  Old: "Visible wear",
 };
 
 function readFileAsDataUrl(file: File) {
@@ -352,15 +352,14 @@ const SellPage = () => {
         }
 
         if (aiResult.status === "low_confidence") {
-          aiVerificationStatus = "low_confidence";
-          moderationStatus = "flagged";
           setAiStatus("low_confidence");
+          throw new Error("We could not confidently match the photo with your title. Upload a clearer item photo or improve the title and try again.");
         } else if (aiResult.status === "approved") {
           aiVerificationStatus = "approved";
           setAiStatus("approved");
         } else {
-          aiVerificationStatus = "skipped";
           setAiStatus("skipped");
+          throw new Error("Image verification is not available right now for this category. Please try again in a moment.");
         }
       }
 
