@@ -1,5 +1,5 @@
 import { Listing, normalizeCategory, normalizeCondition } from "@/lib/types";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -10,6 +10,9 @@ import { AuthModal } from "@/components/AuthModal";
 
 interface ProductCardProps {
   listing: Listing;
+  showAdminDelete?: boolean;
+  onAdminDelete?: (listingId: string) => void;
+  deleting?: boolean;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -24,7 +27,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Others: "bg-muted text-muted-foreground",
 };
 
-export function ProductCard({ listing }: ProductCardProps) {
+export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, deleting = false }: ProductCardProps) {
   const { isAuthenticated, supabaseUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
@@ -86,6 +89,13 @@ export function ProductCard({ listing }: ProductCardProps) {
     }
   };
 
+  const handleAdminDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!onAdminDelete || deleting) return;
+    onAdminDelete(listing.id);
+  };
+
   return (
     <>
     <Link to={`/product/${listing.id}`} className="group block h-full">
@@ -118,12 +128,22 @@ export function ProductCard({ listing }: ProductCardProps) {
             onClick={handleLike}
             disabled={liking}
             aria-label={liked ? "Unlike listing" : "Like listing"}
-            className="absolute top-3 right-3 w-9 h-9 rounded-full glass flex items-center justify-center transition-transform hover:scale-110"
+            className={`absolute w-9 h-9 rounded-full glass flex items-center justify-center transition-transform hover:scale-110 ${showAdminDelete ? "top-3 right-14" : "top-3 right-3"}`}
           >
             <Heart
               className={`w-4 h-4 transition-colors ${liked ? "fill-destructive text-destructive" : "text-muted-foreground"}`}
             />
           </button>
+          {showAdminDelete && (
+            <button
+              onClick={handleAdminDelete}
+              disabled={deleting}
+              aria-label="Delete listing as admin"
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center shadow-sm transition-transform hover:scale-110 disabled:opacity-60"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex h-full flex-col p-4 space-y-2">

@@ -40,7 +40,7 @@ const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -61,6 +61,7 @@ const Index = () => {
     typeof window !== "undefined" ? window.visualViewport?.height || window.innerHeight : 800
   );
   const [requestCooldownUntil, setRequestCooldownUntil] = useState<number>(0);
+  const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const collegeInputRef = useRef<HTMLInputElement>(null);
@@ -341,6 +342,26 @@ const Index = () => {
     }
   };
 
+  const handleAdminDeleteListing = async (listingId: string) => {
+    if (!isAdmin) return;
+
+    const confirmed = window.confirm("Delete this listing from the marketplace?");
+    if (!confirmed) return;
+
+    setDeletingListingId(listingId);
+    try {
+      const { error } = await supabase.from("listings").delete().eq("id", listingId);
+      if (error) throw error;
+
+      setListings((prev) => prev.filter((listing) => listing.id !== listingId));
+      toast.success("Listing deleted successfully.");
+    } catch (error: any) {
+      toast.error(error.message || "Could not delete this listing right now.");
+    } finally {
+      setDeletingListingId(null);
+    }
+  };
+
   const showRequestCollegeButton =
     !selectedCollege && collegeQuery.trim().length >= 2 && !searchingCollege && collegeResults.length === 0;
   const collegeDropdownMaxHeight = Math.max(180, Math.min(320, viewportHeight - 260));
@@ -510,7 +531,12 @@ const Index = () => {
                 <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                   {adaptedListings.map((listing, index) => (
                     <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${index * 35}ms` }}>
-                      <ProductCard listing={listing} />
+                      <ProductCard
+                        listing={listing}
+                        showAdminDelete={isAdmin}
+                        onAdminDelete={handleAdminDeleteListing}
+                        deleting={deletingListingId === listing.id}
+                      />
                     </div>
                   ))}
                 </div>
