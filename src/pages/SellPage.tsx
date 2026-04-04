@@ -51,6 +51,15 @@ function hasValidWhatsappNumber(phone: string) {
   return digits.length >= 10;
 }
 
+function getMissingColumnName(message: string) {
+  const match = message.match(/Could not find the '([^']+)' column/i);
+  return match?.[1] ?? null;
+}
+
+function isSchemaCacheColumnError(message: string) {
+  return /Could not find the '.*' column of 'listings' in the schema cache/i.test(message);
+}
+
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
   { value: "Handwriting Service", label: "Handwriting Service", icon: PenTool },
   { value: "Notes", label: "Notes", icon: FileText },
@@ -226,6 +235,25 @@ const SellPage = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const getFriendlyListingError = (errorMessage: string, missingColumn?: string | null) => {
+    if (missingColumn === "ai_verification_status" || missingColumn === "moderation_status" || missingColumn === "report_count") {
+      return "The item could not be posted because marketplace moderation setup is not finished in the database yet. Please ask the admin to complete the latest database update and try again.";
+    }
+    if (missingColumn === "resource_link") {
+      return "This item category needs the latest database setup before it can be posted. Please ask the admin to complete the update and try again.";
+    }
+    if (/duplicate key value/i.test(errorMessage)) {
+      return "You already have a similar listing saved. Change the title slightly and try again.";
+    }
+    if (/row-level security/i.test(errorMessage)) {
+      return "You do not have permission to post this item right now. Please sign in again and try once more.";
+    }
+    if (/invalid input syntax/i.test(errorMessage)) {
+      return "Some listing details are not in the expected format. Please review the form and try again.";
+    }
+    return errorMessage || "The item could not be listed right now. Please review the form and try again.";
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
@@ -336,7 +364,7 @@ const SellPage = () => {
         }
       }
 
-      const { error } = await supabase.from("listings").insert({
+      const listingPayload = {
         title: trimmedTitle,
         description: description.trim(),
         price: parsedPrice,
@@ -351,13 +379,56 @@ const SellPage = () => {
         moderation_status: moderationStatus,
         report_count: 0,
         ai_verification_status: aiVerificationStatus,
-      });
+      };
 
-      if (error) throw error;
-      toast.success(aiVerificationStatus === "low_confidence" ? "Listing posted and marked for admin review." : "Listing created successfully!");
+      const legacyPayload = {
+        title: trimmedTitle,
+        description: description.trim(),
+        price: parsedPrice,
+        category,
+        condition: selectedRule?.requiresCondition ? condition : "",
+        images: canUploadImages ? images : [],
+        seller_id: supabaseUser.id,
+        college: postingCollege,
+        sold: false,
+        likes: 0,
+      };
+
+      let insertError: Error | null = null;
+      let usedLegacyFallback = false;
+
+      const { error } = await supabase.from("listings").insert(listingPayload);
+      if (error) {
+        const missingColumn = getMissingColumnName(error.message || "");
+        const canFallbackToLegacy = isSchemaCacheColumnError(error.message || "") && missingColumn !== "resource_link";
+
+        if (canFallbackToLegacy) {
+          const legacyInsert = await supabase.from("listings").insert(legacyPayload);
+          if (legacyInsert.error) {
+            insertError = legacyInsert.error;
+          } else {
+            usedLegacyFallback = true;
+          }
+        } else {
+          insertError = error;
+        }
+      }
+
+      if (insertError) {
+        const missingColumn = getMissingColumnName(insertError.message || "");
+        throw new Error(getFriendlyListingError(insertError.message || "", missingColumn));
+      }
+
+      toast.success(
+        usedLegacyFallback
+          ? "Listing created successfully. Advanced moderation checks will start after the latest database update is completed."
+          : aiVerificationStatus === "low_confidence"
+            ? "Listing posted and marked for admin review."
+            : "Listing created successfully!"
+      );
       navigate("/dashboard");
     } catch (err: any) {
-      toast.error(err.message || "Failed to create listing");
+      toast.error(err.message || "The item could not be listed right now. Please review the form and try again.");
     } finally {
       setSubmitting(false);
     }
