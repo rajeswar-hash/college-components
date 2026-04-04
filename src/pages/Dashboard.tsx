@@ -175,8 +175,11 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="animate-fade-in space-y-8">
           <div className="glass rounded-2xl border border-primary/10 p-6 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
+            <div className="mb-4 flex justify-end">
+              <Badge className="border-0 bg-primary/10 px-3 py-1 text-primary shadow-sm">My Profile</Badge>
+            </div>
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div className="flex min-w-0 items-center gap-4">
+              <div className="flex min-w-0 items-center gap-4 md:items-center">
                 <div className="relative h-20 w-20 shrink-0">
                   <div className="absolute inset-0 rounded-full bg-primary/10 blur-md" />
                   <div className="relative overflow-hidden rounded-full border border-white/80 bg-white shadow-[0_18px_32px_rgba(15,23,42,0.12)] ring-4 ring-white/75">
@@ -189,10 +192,7 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-                <div className="min-w-0">
-                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                    <Badge className="border-0 bg-primary/10 px-3 py-1 text-primary shadow-sm">My Profile</Badge>
-                  </div>
+                <div className="min-w-0 self-center">
                   <h1 className="font-display text-[1.9rem] font-bold leading-[1.05] text-foreground">{user?.name || "Loading..."}</h1>
                   <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.email}</p>
                   <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.college}</p>
