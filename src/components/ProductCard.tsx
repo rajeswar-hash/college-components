@@ -171,7 +171,6 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{listing.college}</span>
             </span>
-            <span>{likeCount}</span>
           </div>
         </div>
       </div>
