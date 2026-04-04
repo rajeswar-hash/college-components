@@ -386,7 +386,8 @@ const Index = () => {
                   aria-hidden="true"
                 />
               </picture>
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_34%,rgba(255,255,255,0.40)_76%,rgba(255,255,255,0.82))]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_32%,rgba(255,255,255,0.38)_68%,rgba(255,255,255,0.92)_86%,rgb(255,255,255)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.58)_42%,rgba(255,255,255,0.9)_74%,rgb(255,255,255)_100%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_28%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-55">
                 <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
