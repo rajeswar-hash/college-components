@@ -53,6 +53,7 @@ const ProductDetail = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [hasReported, setHasReported] = useState(false);
+  const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
@@ -229,24 +230,64 @@ const ProductDetail = () => {
     }
   };
 
-  const whatsappPhone = formatPhone(listing.seller_phone);
   const isOwnListing = !!supabaseUser && supabaseUser.id === listing.seller_id;
-  const whatsappUrl = (() => {
+  const whatsappPhone = formatPhone(listing.seller_phone);
+
+  const buildWhatsappUrl = (phone: string) => {
     const msg = encodeURIComponent(
       `Hi! I'm interested in your listing on CampusKart:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
     );
-    return whatsappPhone ? `https://wa.me/${whatsappPhone}?text=${msg}` : "#";
-  })();
+    return `https://wa.me/${phone}?text=${msg}`;
+  };
 
-  const handleWhatsappContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleWhatsappContact = async () => {
     if (isOwnListing) {
-      e.preventDefault();
       toast.error("This is your own listing.");
       return;
     }
-    if (whatsappPhone) return;
-    e.preventDefault();
-    toast.error("This seller has not added a valid WhatsApp number yet.");
+
+    if (openingWhatsapp) return;
+
+    setOpeningWhatsapp(true);
+    try {
+      const { data: contactRows, error } = await supabase.rpc("get_listing_contact", {
+        p_listing_id: listing.id,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const contact = contactRows?.[0];
+      const latestPhone = formatPhone(contact?.seller_phone || "");
+
+      if (!latestPhone) {
+        toast.error("This seller has not added a valid WhatsApp number yet.");
+        return;
+      }
+
+      if (contact?.seller_phone && contact.seller_phone !== listing.seller_phone) {
+        setListing((current) =>
+          current
+            ? {
+                ...current,
+                seller_phone: contact.seller_phone,
+                seller_name: contact.seller_name || current.seller_name,
+              }
+            : current
+        );
+      }
+
+      window.open(buildWhatsappUrl(latestPhone), "_blank", "noopener,noreferrer");
+    } catch {
+      if (whatsappPhone) {
+        window.open(buildWhatsappUrl(whatsappPhone), "_blank", "noopener,noreferrer");
+        return;
+      }
+      toast.error("This seller has not added a valid WhatsApp number yet.");
+    } finally {
+      setOpeningWhatsapp(false);
+    }
   };
 
   const handleShare = () => {
@@ -403,11 +444,15 @@ const ProductDetail = () => {
                     <MessageCircle className="w-4 h-4 mr-2" /> Your Listing
                   </Button>
                 ) : (
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full flex-1" onClick={handleWhatsappContact}>
-                    <Button className="w-full bg-success text-success-foreground hover:opacity-90 border-0" size="lg" disabled={!whatsappPhone}>
-                      <MessageCircle className="w-4 h-4 mr-2" /> Contact on WhatsApp
-                    </Button>
-                  </a>
+                  <Button
+                    className="w-full bg-success text-success-foreground hover:opacity-90 border-0"
+                    size="lg"
+                    onClick={handleWhatsappContact}
+                    disabled={openingWhatsapp || (!whatsappPhone && !listing.seller_phone)}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    {openingWhatsapp ? "Opening WhatsApp..." : "Contact on WhatsApp"}
+                  </Button>
                 )
               )}
               <div className="grid grid-cols-2 gap-3">
