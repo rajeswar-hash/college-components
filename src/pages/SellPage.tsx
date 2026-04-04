@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   BookOpen,
   Cpu,
+  Loader2,
   ExternalLink,
   FileQuestion,
   FileText,
@@ -144,6 +145,7 @@ const SellPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
   const [aiStatus, setAiStatus] = useState<"idle" | "checking" | "approved" | "rejected" | "low_confidence" | "skipped">("idle");
+  const [verificationToken, setVerificationToken] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
   const postingCollege = canonicalInstitutionName(user?.college || "");
@@ -171,6 +173,11 @@ const SellPage = () => {
       setImages([]);
     }
   }, [isDigitalCategory]);
+
+  useEffect(() => {
+    setAiStatus("idle");
+    setVerificationToken("");
+  }, [trimmedTitle, category, images]);
 
   const validationMessages = useMemo(() => {
     const messages: string[] = [];
@@ -338,29 +345,11 @@ const SellPage = () => {
       let aiVerificationStatus = "not_checked";
       let moderationStatus = "active";
 
-      if (selectedRule?.requiresAiCheck && images[0]) {
-        setAiStatus("checking");
-        const aiResult = await verifyListingImageWithAI({
-          title: trimmedTitle,
-          category: selectedRule.aiCategoryLabel,
-          imageDataUrl: images[0],
-        });
-
-        if (aiResult.status === "rejected") {
-          setAiStatus("rejected");
-          throw new Error("Image does not match item.");
+      if (selectedRule?.requiresAiCheck) {
+        if (aiStatus !== "approved" || verificationToken !== `${selectedRule.aiCategoryLabel}|${trimmedTitle}|${images[0] || ""}`) {
+          throw new Error("Please verify the item image before posting this listing.");
         }
-
-        if (aiResult.status === "low_confidence") {
-          setAiStatus("low_confidence");
-          throw new Error("We could not confidently match the photo with your title. Upload a clearer product photo that matches the item and try again.");
-        } else if (aiResult.status === "approved") {
-          aiVerificationStatus = "approved";
-          setAiStatus("approved");
-        } else {
-          setAiStatus("skipped");
-          throw new Error("AI verification is unavailable right now for this category. Please try again in a moment.");
-        }
+        aiVerificationStatus = "approved";
       }
 
       const listingPayload = {
@@ -430,6 +419,56 @@ const SellPage = () => {
       toast.error(err.message || "The item could not be listed right now. Please review the form and try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleVerifyItem = async () => {
+    if (!selectedRule?.requiresAiCheck) return;
+    if (!trimmedTitle || trimmedTitle.length < 5) {
+      toast.error("Add a clear title before verification.");
+      return;
+    }
+    if (!images[0]) {
+      toast.error("Upload at least one product image before verification.");
+      return;
+    }
+
+    setAiStatus("checking");
+    try {
+      const aiResult = await verifyListingImageWithAI({
+        title: trimmedTitle,
+        category: selectedRule.aiCategoryLabel,
+        imageDataUrl: images[0],
+      });
+
+      if (aiResult.status === "approved") {
+        setAiStatus("approved");
+        setVerificationToken(`${selectedRule.aiCategoryLabel}|${trimmedTitle}|${images[0]}`);
+        toast.success("Item verified. You can post this listing now.");
+        return;
+      }
+
+      if (aiResult.status === "rejected") {
+        setAiStatus("rejected");
+        setVerificationToken("");
+        toast.error("Image does not match the item title. Upload the correct product photo and verify again.");
+        return;
+      }
+
+      if (aiResult.status === "low_confidence") {
+        setAiStatus("low_confidence");
+        setVerificationToken("");
+        toast.error("We could not confidently match the photo with your title. Upload a clearer product photo and verify again.");
+        return;
+      }
+
+      setAiStatus("skipped");
+      setVerificationToken("");
+      toast.error("AI verification is unavailable right now. Please try again in a moment.");
+    } catch {
+      setAiStatus("skipped");
+      setVerificationToken("");
+      toast.error("AI verification is unavailable right now. Please try again in a moment.");
     }
   };
 
@@ -712,8 +751,42 @@ const SellPage = () => {
                 )}
                 {aiStatus === "checking" && <Badge variant="secondary">Checking image with AI...</Badge>}
                 {aiStatus === "low_confidence" && <Badge variant="secondary">AI marked this listing low confidence</Badge>}
+                {aiStatus === "approved" && <Badge className="border-0 bg-emerald-500 text-white">Verified for posting</Badge>}
+                {selectedRule?.requiresAiCheck && aiStatus === "idle" && (
+                  <Badge variant="secondary">Verification required before posting</Badge>
+                )}
               </div>
             </section>
+
+            {selectedRule?.requiresAiCheck && (
+              <section className="rounded-2xl border border-primary/15 bg-primary/5 p-4 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Verify item photo before posting</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      The title and first image must clearly match. Change the title or image? Verify again.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleVerifyItem}
+                    disabled={aiStatus === "checking" || processingImages > 0}
+                    className="h-11 rounded-2xl bg-[linear-gradient(135deg,rgb(20,184,166),rgb(59,130,246))] px-5 text-sm font-semibold text-white hover:opacity-90"
+                  >
+                    {aiStatus === "checking" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : aiStatus === "approved" ? (
+                      "Verified"
+                    ) : (
+                      "Verify Item"
+                    )}
+                  </Button>
+                </div>
+              </section>
+            )}
 
             <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
@@ -754,7 +827,7 @@ const SellPage = () => {
             <Button
               type="submit"
               size="lg"
-              disabled={submitting || processingImages > 0 || !hasValidSellerPhone}
+              disabled={submitting || processingImages > 0 || !hasValidSellerPhone || (!!selectedRule?.requiresAiCheck && aiStatus !== "approved")}
               className="h-12 w-full rounded-2xl border-0 bg-[linear-gradient(135deg,rgb(20,184,166),rgb(59,130,246))] text-base font-semibold text-primary-foreground shadow-[0_16px_40px_rgba(34,197,194,0.22)] hover:opacity-90"
             >
               {processingImages > 0 ? "Preparing Images..." : submitting ? "Posting..." : "Post Item 🚀"}
