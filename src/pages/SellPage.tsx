@@ -85,6 +85,88 @@ const conditionNoteMap: Record<Condition, string> = {
   Used: "Regular use",
 };
 
+const categoryContentMap: Partial<Record<Category, {
+  titlePlaceholder: string;
+  titleHint: string;
+  descriptionPlaceholder: string;
+  descriptionHint: string;
+  pricePlaceholder: string;
+  priceHint: string;
+}>> = {
+  "Handwriting Service": {
+    titlePlaceholder: "e.g. Neat assignment handwriting per page",
+    titleHint: "Mention the service clearly so students know what writing help you offer.",
+    descriptionPlaceholder: "Describe handwriting style, page quality, language, turnaround time, and what kind of assignments, records, or notes you can write...",
+    descriptionHint: "Minimum 20 words. Explain the service, speed, and what the buyer will receive.",
+    pricePlaceholder: "25",
+    priceHint: "Max ₹50 per page. Keep the price fair and easy for students.",
+  },
+  Notes: {
+    titlePlaceholder: "e.g. DBMS Semester 4 Notes PDF",
+    titleHint: "Include subject, semester, branch, and format in the title.",
+    descriptionPlaceholder: "Mention subject, semester, branch, year, topics covered, file format, and what will be shared after payment...",
+    descriptionHint: "Minimum 20 words. Include year, subject, and branch info clearly.",
+    pricePlaceholder: "49",
+    priceHint: "Max ₹100 for digital notes.",
+  },
+  "Question Papers": {
+    titlePlaceholder: "e.g. 2023-2024 OOP Question Papers",
+    titleHint: "Mention year, subject, and exam type clearly.",
+    descriptionPlaceholder: "Mention subject, branch, semester, year, exam type, and how many papers are included in the drive folder...",
+    descriptionHint: "Minimum 20 words. Include year, subject, and branch info clearly.",
+    pricePlaceholder: "39",
+    priceHint: "Max ₹100 for question papers.",
+  },
+  Components: {
+    titlePlaceholder: "e.g. Arduino Uno with jumper wires",
+    titleHint: "Include the exact component name and key included accessories.",
+    descriptionPlaceholder: "Mention working condition, brand, quantity, included wires/modules, usage history, and reason for selling...",
+    descriptionHint: "Minimum 20 words. Explain the exact component condition and what is included.",
+    pricePlaceholder: "450",
+    priceHint: "Max ₹5000 for components.",
+  },
+  Gadgets: {
+    titlePlaceholder: "e.g. Casio scientific calculator fx-991ES",
+    titleHint: "Include the gadget brand, model, and important included accessories.",
+    descriptionPlaceholder: "Mention brand, model, condition, battery or charger details, usage history, and reason for selling...",
+    descriptionHint: "Minimum 20 words. Explain the gadget condition and accessories clearly.",
+    pricePlaceholder: "1200",
+    priceHint: "Max ₹5000 for gadgets.",
+  },
+  Tools: {
+    titlePlaceholder: "e.g. Soldering iron kit with stand",
+    titleHint: "Include the tool name and any kit parts included with it.",
+    descriptionPlaceholder: "Mention tool condition, brand, included bits or stand, how often it was used, and reason for selling...",
+    descriptionHint: "Minimum 20 words. Help buyers understand the working condition and kit contents.",
+    pricePlaceholder: "850",
+    priceHint: "Max ₹5000 for tools.",
+  },
+  Books: {
+    titlePlaceholder: "e.g. Engineering Mathematics textbook by B.S. Grewal",
+    titleHint: "Mention the book title, author, and edition if possible.",
+    descriptionPlaceholder: "Mention author, edition, semester relevance, page condition, highlighting or notes, and reason for selling...",
+    descriptionHint: "Minimum 20 words. Explain the book condition and academic relevance clearly.",
+    pricePlaceholder: "250",
+    priceHint: "Max ₹500 for books.",
+  },
+  Projects: {
+    titlePlaceholder: "e.g. Line follower robot project kit",
+    titleHint: "Include the project name and what stage it is in.",
+    descriptionPlaceholder: "Mention project type, components included, working status, documentation availability, and why you are selling it...",
+    descriptionHint: "Minimum 20 words. Explain what the buyer gets and the current project status.",
+    pricePlaceholder: "2500",
+    priceHint: "Max ₹5000 for projects.",
+  },
+  Others: {
+    titlePlaceholder: "e.g. Lab coat and drawing sheet set",
+    titleHint: "Use a title that clearly tells buyers what the item is.",
+    descriptionPlaceholder: "Describe the item clearly, mention condition, quantity, what is included, and why you are selling it...",
+    descriptionHint: "Minimum 20 words. Help buyers quickly understand the item and condition.",
+    pricePlaceholder: "300",
+    priceHint: "Max ₹5000 for this category.",
+  },
+};
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -153,6 +235,7 @@ const SellPage = () => {
   const isDigitalCategory = category === "Notes" || category === "Question Papers";
   const canUploadImages = !!selectedRule && !isDigitalCategory;
   const conditionOptions = selectedRule?.allowsConditionOptions ?? [];
+  const categoryContent = category ? categoryContentMap[category] : null;
 
   useEffect(() => {
     if (!selectedRule?.requiresCondition) {
@@ -576,18 +659,12 @@ const SellPage = () => {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={
-                  category === "Handwriting Service"
-                    ? "e.g. Clean assignment handwriting service"
-                    : category === "Notes"
-                      ? "e.g. Signals & Systems Notes"
-                      : category === "Question Papers"
-                        ? "e.g. 2024 DBMS Midterm Papers"
-                        : "e.g. Arduino Uno R3 with USB Cable"
-                }
+                placeholder={categoryContent?.titlePlaceholder || "Select a category to see a better title example"}
                 className="h-12 rounded-2xl border-border/80 bg-background"
               />
-              <p className="text-xs leading-5 text-muted-foreground">Minimum 5 characters. Keep it clear and specific.</p>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {categoryContent?.titleHint || "Minimum 5 characters. Keep it clear and specific."}
+              </p>
             </section>
 
             <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
@@ -596,21 +673,11 @@ const SellPage = () => {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={
-                  category === "Handwriting Service"
-                    ? "Describe handwriting style, turnaround time, languages supported, and what writing work you provide..."
-                    : category === "Notes" || category === "Question Papers"
-                      ? "Mention year, subject, branch, semester, and exactly what files will be shared after payment..."
-                      : "Add clear product details, usage, what is included, and the reason for selling..."
-                }
+                placeholder={categoryContent?.descriptionPlaceholder || "Select a category to see the right description format"}
                 rows={5}
                 className="rounded-2xl border-border/80 bg-background"
               />
-              <p className="text-xs leading-5 text-muted-foreground">
-                {selectedRule?.requiresYearSubjectBranch
-                  ? "Minimum 20 words. Include year, subject, and branch info."
-                  : "Minimum 20 words. Explain the item or service clearly."}
-              </p>
+              <p className="text-xs leading-5 text-muted-foreground">{categoryContent?.descriptionHint || "Minimum 20 words. Explain the item or service clearly."}</p>
             </section>
 
             {selectedRule?.requiresCondition && (
@@ -650,19 +717,11 @@ const SellPage = () => {
                   max={selectedRule?.maxPrice || 5000}
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  placeholder={category === "Handwriting Service" ? "20" : "500"}
+                  placeholder={categoryContent?.pricePlaceholder || "Enter price"}
                   className="h-12 rounded-2xl border-border/80 bg-background pl-9"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
-                {category === "Handwriting Service"
-                  ? "Max ₹50 per page"
-                  : category === "Notes" || category === "Question Papers"
-                    ? "Max ₹100 for notes or question papers"
-                    : selectedRule
-                      ? `Max ₹${selectedRule.maxPrice} for this category`
-                      : "Choose a category to see the price rule."}
-              </p>
+              <p className="text-xs text-muted-foreground">{categoryContent?.priceHint || (selectedRule ? `Max ₹${selectedRule.maxPrice} for this category.` : "Choose a category to see the price rule.")}</p>
             </section>
 
             <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
