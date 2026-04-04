@@ -44,13 +44,13 @@ function hasValidWhatsappNumber(phone: string) {
 }
 
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
+  { value: "Writing Service", label: "Writing Service", icon: PenTool },
   { value: "Components", label: "Components", icon: Cpu },
   { value: "Gadgets", label: "Gadgets", icon: Smartphone },
   { value: "Books", label: "Books", icon: BookOpen },
   { value: "Notes", label: "Notes", icon: FileText },
   { value: "Tools", label: "Tools", icon: Wrench },
   { value: "Projects", label: "Projects", icon: Rocket },
-  { value: "Writing Service", label: "Writing Service", icon: PenTool },
   { value: "Others", label: "Others", icon: MoreHorizontal },
 ];
 
@@ -370,26 +370,21 @@ const SellPage = () => {
                 <Label className="text-base font-semibold">Condition</Label>
                 <p className="mt-1 text-xs text-muted-foreground">Choose honestly to build trust</p>
               </div>
-              <div className="grid gap-2">
-                {conditionOptions.map((option) => {
-                  const selected = condition === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setCondition(option.value)}
-                      className={`rounded-2xl border px-4 py-3 text-left transition-all ${
-                        selected
-                          ? "border-primary bg-primary/5 shadow-[0_12px_30px_rgba(34,197,194,0.08)]"
-                          : "border-border bg-background hover:border-primary/40"
-                      }`}
-                    >
-                      <p className="text-sm font-semibold text-foreground">{option.title}</p>
-                      <p className="text-xs text-muted-foreground">{option.note}</p>
-                    </button>
-                  );
-                })}
-              </div>
+              <Select value={condition} onValueChange={(value) => setCondition(value as Condition)}>
+                <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4">
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  {conditionOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="rounded-xl py-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-foreground">{option.title}</span>
+                        <span className="text-xs text-muted-foreground">{option.note}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </section>
 
                         <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
