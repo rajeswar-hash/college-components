@@ -375,10 +375,17 @@ const Index = () => {
         {!selectedCollege ? (
           <div className="animate-fade-in">
             <div className="relative -mx-4 overflow-hidden px-0 py-4 sm:mx-0">
-              <div
-                className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-cover bg-center opacity-100"
-                style={{ backgroundImage: `url(${import.meta.env.BASE_URL}campus-hero.jpeg)` }}
-              />
+              <picture className="pointer-events-none absolute inset-x-0 top-0 bottom-0">
+                <source media="(min-width: 640px)" srcSet={`${import.meta.env.BASE_URL}campus-hero-desktop.png`} />
+                <img
+                  src={`${import.meta.env.BASE_URL}campus-hero-mobile.jpg`}
+                  alt=""
+                  className="h-full w-full object-cover object-center opacity-100"
+                  loading="eager"
+                  decoding="async"
+                  aria-hidden="true"
+                />
+              </picture>
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_34%,rgba(255,255,255,0.40)_76%,rgba(255,255,255,0.82))]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_28%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-55">
