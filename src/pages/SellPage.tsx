@@ -346,10 +346,21 @@ const SellPage = () => {
       let moderationStatus = "active";
 
       if (selectedRule?.requiresAiCheck) {
-        if (aiStatus !== "approved" || verificationToken !== `${selectedRule.aiCategoryLabel}|${trimmedTitle}|${images[0] || ""}`) {
+        const currentVerificationToken = `${selectedRule.aiCategoryLabel}|${trimmedTitle}|${images[0] || ""}`;
+        const verificationPassed =
+          (aiStatus === "approved" || aiStatus === "skipped") &&
+          verificationToken === currentVerificationToken;
+
+        if (!verificationPassed) {
           throw new Error("Please verify the item image before posting this listing.");
         }
-        aiVerificationStatus = "approved";
+
+        if (aiStatus === "approved") {
+          aiVerificationStatus = "approved";
+        } else {
+          aiVerificationStatus = "skipped";
+          moderationStatus = "flagged";
+        }
       }
 
       const listingPayload = {
@@ -463,12 +474,12 @@ const SellPage = () => {
       }
 
       setAiStatus("skipped");
-      setVerificationToken("");
-      toast.error("AI verification is unavailable right now. Please try again in a moment.");
+      setVerificationToken(`${selectedRule.aiCategoryLabel}|${trimmedTitle}|${images[0]}`);
+      toast.message("AI verification is unavailable right now. You can still post, and the listing will go for admin review.");
     } catch {
       setAiStatus("skipped");
-      setVerificationToken("");
-      toast.error("AI verification is unavailable right now. Please try again in a moment.");
+      setVerificationToken(`${selectedRule.aiCategoryLabel}|${trimmedTitle}|${images[0]}`);
+      toast.message("AI verification is unavailable right now. You can still post, and the listing will go for admin review.");
     }
   };
 
@@ -752,6 +763,7 @@ const SellPage = () => {
                 {aiStatus === "checking" && <Badge variant="secondary">Checking image with AI...</Badge>}
                 {aiStatus === "low_confidence" && <Badge variant="secondary">AI marked this listing low confidence</Badge>}
                 {aiStatus === "approved" && <Badge className="border-0 bg-emerald-500 text-white">Verified for posting</Badge>}
+                {aiStatus === "skipped" && <Badge className="border-0 bg-amber-500 text-white">AI unavailable, admin review enabled</Badge>}
                 {selectedRule?.requiresAiCheck && aiStatus === "idle" && (
                   <Badge variant="secondary">Verification required before posting</Badge>
                 )}
@@ -780,6 +792,8 @@ const SellPage = () => {
                       </>
                     ) : aiStatus === "approved" ? (
                       "Verified"
+                    ) : aiStatus === "skipped" ? (
+                      "Verified with fallback"
                     ) : (
                       "Verify Item"
                     )}
@@ -827,7 +841,12 @@ const SellPage = () => {
             <Button
               type="submit"
               size="lg"
-              disabled={submitting || processingImages > 0 || !hasValidSellerPhone || (!!selectedRule?.requiresAiCheck && aiStatus !== "approved")}
+              disabled={
+                submitting ||
+                processingImages > 0 ||
+                !hasValidSellerPhone ||
+                (!!selectedRule?.requiresAiCheck && !["approved", "skipped"].includes(aiStatus))
+              }
               className="h-12 w-full rounded-2xl border-0 bg-[linear-gradient(135deg,rgb(20,184,166),rgb(59,130,246))] text-base font-semibold text-primary-foreground shadow-[0_16px_40px_rgba(34,197,194,0.22)] hover:opacity-90"
             >
               {processingImages > 0 ? "Preparing Images..." : submitting ? "Posting..." : "Post Item 🚀"}
