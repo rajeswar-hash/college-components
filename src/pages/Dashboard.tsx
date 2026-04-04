@@ -20,28 +20,40 @@ interface ListingRow {
 
 const PROFILE_AVATARS = [
   {
-    id: "scholar",
-    label: "Scholar",
-    hint: "Calm and academic",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-scholar.svg`,
+    id: "avatar-1",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-1.jpg`,
   },
   {
-    id: "builder",
-    label: "Builder",
-    hint: "Hands-on and practical",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-builder.svg`,
+    id: "avatar-2",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-2.jpg`,
   },
   {
-    id: "creator",
-    label: "Creator",
-    hint: "Creative and expressive",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-creator.svg`,
+    id: "avatar-3",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-3.jpg`,
   },
   {
-    id: "trader",
-    label: "Trader",
-    hint: "Active and helpful",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-trader.svg`,
+    id: "avatar-4",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-4.jpg`,
+  },
+  {
+    id: "avatar-6",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-6.jpg`,
+  },
+  {
+    id: "avatar-7",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-7.jpg`,
+  },
+  {
+    id: "avatar-8",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-8.jpg`,
+  },
+  {
+    id: "avatar-9",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-9.jpg`,
+  },
+  {
+    id: "avatar-10",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-10.jpg`,
   },
 ];
 
@@ -241,9 +253,9 @@ const Dashboard = () => {
               <div className="mb-5 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-foreground">Choose profile character</span>
-                  <span className="text-xs text-muted-foreground">Pick the vibe that fits you</span>
+                  <span className="text-xs text-muted-foreground">Pick one avatar</span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-3 gap-3">
                   {PROFILE_AVATARS.map((avatar) => {
                     const isSelected = (profileForm.avatar_url || selectedAvatar) === avatar.url;
                     return (
@@ -251,23 +263,21 @@ const Dashboard = () => {
                         key={avatar.id}
                         type="button"
                         onClick={() => setProfileForm((prev) => ({ ...prev, avatar_url: avatar.url }))}
-                        className={`rounded-2xl border p-3 text-left transition ${
+                        className={`overflow-hidden rounded-2xl border p-1 transition ${
                           isSelected
                             ? "border-primary bg-primary/5 shadow-[0_14px_24px_rgba(20,184,166,0.10)]"
                             : "border-border/70 bg-background/80 hover:border-primary/30 hover:bg-background"
                         }`}
                       >
-                        <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full border border-white/80 bg-white shadow-sm">
+                        <div className="aspect-square overflow-hidden rounded-[18px] bg-white">
                           <img
                             src={avatar.url}
-                            alt={avatar.label}
+                            alt="Profile avatar option"
                             className="h-full w-full object-cover"
                             loading="lazy"
                             decoding="async"
                           />
                         </div>
-                        <p className="text-sm font-semibold text-foreground">{avatar.label}</p>
-                        <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{avatar.hint}</p>
                       </button>
                     );
                   })}
