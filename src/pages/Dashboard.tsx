@@ -15,6 +15,7 @@ interface ListingRow {
   price: number;
   category: string;
   sold: boolean;
+  images: string[] | null;
 }
 
 const Dashboard = () => {
@@ -49,7 +50,7 @@ const Dashboard = () => {
     const fetchListings = async () => {
       const { data } = await supabase
         .from("listings")
-        .select("id, title, price, category, sold")
+        .select("id, title, price, category, sold, images")
         .eq("seller_id", supabaseUser.id)
         .order("created_at", { ascending: false });
       setMyListings(data || []);
@@ -257,7 +258,17 @@ const Dashboard = () => {
               {myListings.map((listing) => (
                 <div key={listing.id} className="glass rounded-xl p-4 flex items-center gap-4 animate-fade-in">
                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <span className="text-xs text-muted-foreground">{listing.category}</span>
+                    {listing.images && listing.images.length > 0 && listing.images[0] ? (
+                      <img
+                        src={listing.images[0]}
+                        alt={listing.title}
+                        className="w-full h-full rounded-lg object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">{listing.category}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-display font-semibold text-foreground truncate">{listing.title}</h3>
