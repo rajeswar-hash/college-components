@@ -18,6 +18,39 @@ interface ListingRow {
   images: string[] | null;
 }
 
+const PROFILE_AVATARS = [
+  {
+    id: "scholar",
+    label: "Scholar",
+    hint: "Calm and academic",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-scholar.svg`,
+  },
+  {
+    id: "builder",
+    label: "Builder",
+    hint: "Hands-on and practical",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-builder.svg`,
+  },
+  {
+    id: "creator",
+    label: "Creator",
+    hint: "Creative and expressive",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-creator.svg`,
+  },
+  {
+    id: "trader",
+    label: "Trader",
+    hint: "Active and helpful",
+    url: `${import.meta.env.BASE_URL}avatars/avatar-trader.svg`,
+  },
+];
+
+function getDefaultAvatar(name?: string | null, email?: string | null) {
+  const seed = `${name || ""}${email || ""}`;
+  const index = Array.from(seed).reduce((sum, char) => sum + char.charCodeAt(0), 0) % PROFILE_AVATARS.length;
+  return PROFILE_AVATARS[index]?.url || PROFILE_AVATARS[0].url;
+}
+
 const Dashboard = () => {
   const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +62,7 @@ const Dashboard = () => {
     name: "",
     phone: "",
     college: "",
+    avatar_url: "",
   });
 
   useEffect(() => {
@@ -37,6 +71,7 @@ const Dashboard = () => {
         name: user.name || "",
         phone: user.phone || "",
         college: user.college || "",
+        avatar_url: user.avatar_url || "",
       });
     }
   }, [user]);
@@ -73,6 +108,7 @@ const Dashboard = () => {
   const activeListings = myListings.filter((listing) => !listing.sold).length;
   const soldListings = myListings.filter((listing) => listing.sold).length;
   const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
+  const selectedAvatar = profileForm.avatar_url || user?.avatar_url || getDefaultAvatar(user?.name, user?.email);
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("listings").delete().eq("id", id);
@@ -100,6 +136,7 @@ const Dashboard = () => {
         name: profileForm.name.trim(),
         phone: profileForm.phone.trim(),
         college: profileForm.college.trim(),
+        avatar_url: profileForm.avatar_url || getDefaultAvatar(profileForm.name, user?.email),
       });
       setIsEditingProfile(false);
       toast.success("Profile updated");
@@ -115,6 +152,7 @@ const Dashboard = () => {
       name: user?.name || "",
       phone: user?.phone || "",
       college: user?.college || "",
+      avatar_url: user?.avatar_url || "",
     });
     setIsEditingProfile(false);
   };
@@ -127,23 +165,32 @@ const Dashboard = () => {
           <div className="glass rounded-2xl border border-primary/10 p-6 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/70 gradient-bg text-xl font-display font-bold text-primary-foreground shadow-[0_14px_24px_rgba(20,184,166,0.22)] ring-4 ring-white/70">
-                  {user?.name?.charAt(0) || "?"}
+                <div className="relative h-20 w-20 shrink-0">
+                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-md" />
+                  <div className="relative overflow-hidden rounded-full border border-white/80 bg-white shadow-[0_18px_32px_rgba(15,23,42,0.12)] ring-4 ring-white/75">
+                    <img
+                      src={selectedAvatar}
+                      alt="Profile avatar"
+                      className="h-20 w-20 object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
                 </div>
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <Badge className="bg-primary/10 text-primary border-0">My Profile</Badge>
+                    <Badge className="border-0 bg-primary/10 px-3 py-1 text-primary shadow-sm">My Profile</Badge>
                   </div>
-                  <h1 className="font-display font-bold text-2xl text-foreground">{user?.name || "Loading..."}</h1>
-                  <p className="text-sm text-muted-foreground break-words">{user?.email}</p>
-                  <p className="text-sm text-muted-foreground break-words">{user?.college}</p>
+                  <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">{user?.name || "Loading..."}</h1>
+                  <p className="mt-1 text-sm break-words text-muted-foreground">{user?.email}</p>
+                  <p className="mt-1 text-sm leading-6 break-words text-muted-foreground">{user?.college}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 md:w-auto md:min-w-[320px]">
                 <Button
                   variant="outline"
                   onClick={() => setIsEditingProfile((prev) => !prev)}
-                  className="h-11 w-full rounded-xl border-border/70 bg-background/90 px-4 font-medium shadow-sm"
+                  className="h-11 w-full rounded-xl border-border/70 bg-background/90 px-4 font-medium shadow-sm hover:bg-background"
                 >
                   <Pencil className="w-4 h-4 mr-2" />
                   {isEditingProfile ? "Close Edit" : "Edit Profile"}
@@ -190,6 +237,42 @@ const Dashboard = () => {
                 <h2 className="font-display font-semibold text-xl text-foreground">Edit Profile</h2>
               </div>
               <p className="text-sm text-muted-foreground mb-5">Update your profile details so buyers can trust you faster.</p>
+
+              <div className="mb-5 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-foreground">Choose profile character</span>
+                  <span className="text-xs text-muted-foreground">Pick the vibe that fits you</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {PROFILE_AVATARS.map((avatar) => {
+                    const isSelected = (profileForm.avatar_url || selectedAvatar) === avatar.url;
+                    return (
+                      <button
+                        key={avatar.id}
+                        type="button"
+                        onClick={() => setProfileForm((prev) => ({ ...prev, avatar_url: avatar.url }))}
+                        className={`rounded-2xl border p-3 text-left transition ${
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-[0_14px_24px_rgba(20,184,166,0.10)]"
+                            : "border-border/70 bg-background/80 hover:border-primary/30 hover:bg-background"
+                        }`}
+                      >
+                        <div className="mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full border border-white/80 bg-white shadow-sm">
+                          <img
+                            src={avatar.url}
+                            alt={avatar.label}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">{avatar.label}</p>
+                        <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{avatar.hint}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
