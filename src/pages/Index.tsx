@@ -606,7 +606,7 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="-mt-14 sm:-mt-16">
+      <div className="-mt-32 sm:-mt-20">
         <SiteFooter hideTopBorder />
       </div>
     </div>
