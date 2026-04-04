@@ -20,7 +20,7 @@ interface AuthContextType {
   user: Profile | null;
   supabaseUser: SupabaseUser | null;
   login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
-  register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
+  register: (email: string, password: string, name: string, phone: string, college: string) => Promise<{ requiresEmailVerification: boolean }>;
   logout: () => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
   updateProfile: (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => Promise<void>;
@@ -35,6 +35,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
   return digits.length >= 10;
+}
+
+function isEmailConfirmed(user: SupabaseUser | null) {
+  if (!user) return false;
+  return !!(user.email_confirmed_at || user.confirmed_at);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -102,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!hasValidWhatsappNumber(phone)) {
       throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
     }
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
@@ -110,6 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     if (error) throw error;
+
+    if (data.session && !isEmailConfirmed(data.user)) {
+      await supabase.auth.signOut();
+    }
+
+    return { requiresEmailVerification: true };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -119,6 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) {
       return { isAdmin: false };
+    }
+
+    if (!isEmailConfirmed(userData.user)) {
+      await supabase.auth.signOut();
+      throw new Error("Verify your email before signing in. Use the verification link sent to your inbox.");
     }
 
     const { data: profileData } = await supabase

@@ -102,7 +102,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         }
       } else {
         await register(email, password, name, phone, college);
-        toast.success("Account created! You may need to verify your email.");
+        toast.success("Account created. Check your inbox and verify your email before signing in.");
       }
       onClose();
       resetForm();
@@ -205,10 +205,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 ref={emailRef}
                 type="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (resetLinkSent) setResetLinkSent(false);
-                }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (resetLinkSent) setResetLinkSent(false);
+                  }}
                 onKeyDown={mode === "forgot" ? undefined : moveOnEnter(passwordRef)}
                 placeholder="you@example.com"
                 autoComplete={mode === "login" ? "email" : "username"}
@@ -216,6 +216,9 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 autoCorrect="off"
                 spellCheck={false}
               />
+              {mode === "register" && (
+                <p className="mt-1 text-xs text-muted-foreground">Use a real email address you can access for verification.</p>
+              )}
             </div>
 
             {mode === "forgot" && resetLinkSent && (
