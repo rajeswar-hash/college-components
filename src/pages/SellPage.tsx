@@ -97,7 +97,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Handwritten assignments, files, and notes service",
     titleHint: "Make it clear that you can write assignments, files, records, or notes neatly on request.",
     descriptionPlaceholder: "Explain the kind of files, notes, assignments, or record work you can complete, your handwriting quality, turnaround time, language, and how you charge according to the work...",
-    descriptionHint: "Minimum 20 words. Tell buyers what work you can do and how the service will be handled.",
+    descriptionHint: "Minimum 10 words. Tell buyers what work you can do and how the service will be handled.",
     pricePlaceholder: "15",
     priceHint: "Max ₹20 per page. Keep the rate student-friendly and clear.",
   },
@@ -105,7 +105,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. DBMS Semester 4 Notes PDF",
     titleHint: "Include subject, semester, branch, and format in the title.",
     descriptionPlaceholder: "Mention subject, semester, branch, year, topics covered, file format, and what will be shared after payment...",
-    descriptionHint: "Minimum 20 words. Include year, subject, and branch info clearly.",
+    descriptionHint: "Minimum 10 words. Include year, subject, and branch info clearly.",
     pricePlaceholder: "49",
     priceHint: "Max ₹100 for digital notes.",
   },
@@ -113,7 +113,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. 2023-2024 OOP Question Papers",
     titleHint: "Mention year, subject, and exam type clearly.",
     descriptionPlaceholder: "Mention subject, branch, semester, year, exam type, and how many papers are included in the drive folder...",
-    descriptionHint: "Minimum 20 words. Include year, subject, and branch info clearly.",
+    descriptionHint: "Minimum 10 words. Include year, subject, and branch info clearly.",
     pricePlaceholder: "39",
     priceHint: "Max ₹100 for question papers.",
   },
@@ -121,7 +121,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Arduino Uno with jumper wires",
     titleHint: "Include the exact component name and key included accessories.",
     descriptionPlaceholder: "Mention working condition, brand, quantity, included wires/modules, usage history, and reason for selling...",
-    descriptionHint: "Minimum 20 words. Explain the exact component condition and what is included.",
+    descriptionHint: "Minimum 10 words. Explain the exact component condition and what is included.",
     pricePlaceholder: "450",
     priceHint: "Max ₹5000 for components.",
   },
@@ -129,7 +129,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Casio scientific calculator fx-991ES",
     titleHint: "Include the gadget brand, model, and important included accessories.",
     descriptionPlaceholder: "Mention brand, model, condition, battery or charger details, usage history, and reason for selling...",
-    descriptionHint: "Minimum 20 words. Explain the gadget condition and accessories clearly.",
+    descriptionHint: "Minimum 10 words. Explain the gadget condition and accessories clearly.",
     pricePlaceholder: "1200",
     priceHint: "Max ₹5000 for gadgets.",
   },
@@ -137,7 +137,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Soldering iron kit with stand",
     titleHint: "Include the tool name and any kit parts included with it.",
     descriptionPlaceholder: "Mention tool condition, brand, included bits or stand, how often it was used, and reason for selling...",
-    descriptionHint: "Minimum 20 words. Help buyers understand the working condition and kit contents.",
+    descriptionHint: "Minimum 10 words. Help buyers understand the working condition and kit contents.",
     pricePlaceholder: "850",
     priceHint: "Max ₹5000 for tools.",
   },
@@ -145,7 +145,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Engineering Mathematics textbook by B.S. Grewal",
     titleHint: "Mention the book title, author, and edition if possible.",
     descriptionPlaceholder: "Mention author, edition, semester relevance, page condition, highlighting or notes, and reason for selling...",
-    descriptionHint: "Minimum 20 words. Explain the book condition and academic relevance clearly.",
+    descriptionHint: "Minimum 10 words. Explain the book condition and academic relevance clearly.",
     pricePlaceholder: "250",
     priceHint: "Max ₹500 for books.",
   },
@@ -153,7 +153,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Line follower robot project kit",
     titleHint: "Include the project name and what stage it is in.",
     descriptionPlaceholder: "Mention project type, components included, working status, documentation availability, and why you are selling it...",
-    descriptionHint: "Minimum 20 words. Explain what the buyer gets and the current project status.",
+    descriptionHint: "Minimum 10 words. Explain what the buyer gets and the current project status.",
     pricePlaceholder: "2500",
     priceHint: "Max ₹5000 for projects.",
   },
@@ -161,7 +161,7 @@ const categoryContentMap: Partial<Record<Category, {
     titlePlaceholder: "e.g. Lab coat and drawing sheet set",
     titleHint: "Use a title that clearly tells buyers what the item is.",
     descriptionPlaceholder: "Describe the item clearly, mention condition, quantity, what is included, and why you are selling it...",
-    descriptionHint: "Minimum 20 words. Help buyers quickly understand the item and condition.",
+    descriptionHint: "Minimum 10 words. Help buyers quickly understand the item and condition.",
     pricePlaceholder: "300",
     priceHint: "Max ₹5000 for this category.",
   },
@@ -262,7 +262,7 @@ const SellPage = () => {
     }
 
     if (trimmedTitle.length < 5) messages.push("Title must be at least 5 characters.");
-    if (descriptionWordCount < 20) messages.push("Description must be at least 20 words.");
+    if (descriptionWordCount < 10) messages.push("Description must be at least 10 words.");
     if (!price || parsedPrice <= 0) messages.push("Enter a valid price.");
     if (selectedRule && parsedPrice > selectedRule.maxPrice) messages.push(`Max allowed is ₹${selectedRule.maxPrice}.`);
     if (selectedRule?.requiresCondition && !condition) messages.push("Select a condition.");
@@ -363,7 +363,7 @@ const SellPage = () => {
       throw new Error("Please select a category.");
     }
     if (trimmedTitle.length < 5) throw new Error("Title must be at least 5 characters.");
-    if (descriptionWordCount < 20) throw new Error("Description must be at least 20 words.");
+    if (descriptionWordCount < 10) throw new Error("Description must be at least 10 words.");
     if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
     if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
     if (selectedRule.requiresCondition && !condition) throw new Error("Select the condition before posting.");
@@ -677,7 +677,7 @@ const SellPage = () => {
                 rows={5}
                 className="rounded-2xl border-border/80 bg-background"
               />
-              <p className="text-xs leading-5 text-muted-foreground">{categoryContent?.descriptionHint || "Minimum 20 words. Explain the item or service clearly."}</p>
+              <p className="text-xs leading-5 text-muted-foreground">{categoryContent?.descriptionHint || "Minimum 10 words. Explain the item or service clearly."}</p>
             </section>
 
             {selectedRule?.requiresCondition && (
