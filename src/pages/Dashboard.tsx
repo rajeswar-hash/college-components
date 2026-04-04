@@ -213,7 +213,7 @@ const Dashboard = () => {
                   </Button>
                   <Button
                     onClick={() => navigate("/sell")}
-                    className="gradient-bg h-11 w-full rounded-xl border-0 px-4 text-primary-foreground shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:opacity-90"
+                    className="h-11 w-full rounded-xl border border-primary/20 bg-[linear-gradient(135deg,rgba(45,212,191,0.16),rgba(59,130,246,0.14))] px-4 text-foreground shadow-sm hover:bg-[linear-gradient(135deg,rgba(45,212,191,0.22),rgba(59,130,246,0.18))]"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     New Listing
