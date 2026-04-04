@@ -124,10 +124,10 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="animate-fade-in space-y-8">
-          <div className="glass rounded-2xl p-6 border border-primary/10 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
+          <div className="glass rounded-2xl border border-primary/10 p-6 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-display font-bold text-xl shadow-lg">
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/70 gradient-bg text-xl font-display font-bold text-primary-foreground shadow-[0_14px_24px_rgba(20,184,166,0.22)] ring-4 ring-white/70">
                   {user?.name?.charAt(0) || "?"}
                 </div>
                 <div className="min-w-0">
@@ -139,16 +139,19 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground break-words">{user?.college}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-2 gap-3 md:w-auto md:min-w-[320px]">
                 <Button
                   variant="outline"
                   onClick={() => setIsEditingProfile((prev) => !prev)}
-                  className="rounded-full"
+                  className="h-11 w-full rounded-xl border-border/70 bg-background/90 px-4 font-medium shadow-sm"
                 >
                   <Pencil className="w-4 h-4 mr-2" />
                   {isEditingProfile ? "Close Edit" : "Edit Profile"}
                 </Button>
-                <Button onClick={() => navigate("/sell")} className="gradient-bg text-primary-foreground border-0 hover:opacity-90 rounded-full">
+                <Button
+                  onClick={() => navigate("/sell")}
+                  className="gradient-bg h-11 w-full rounded-xl border-0 px-4 text-primary-foreground shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:opacity-90"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   New Listing
                 </Button>
