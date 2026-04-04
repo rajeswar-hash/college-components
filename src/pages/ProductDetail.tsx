@@ -52,6 +52,7 @@ const ProductDetail = () => {
   const [liking, setLiking] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
@@ -106,6 +107,34 @@ const ProductDetail = () => {
           setLiked(false);
         }
       });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [listing, supabaseUser]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!listing || !supabaseUser) {
+      setHasReported(false);
+      return;
+    }
+
+    const fetchReportState = async () => {
+      const { data, error } = await supabase
+        .from("listing_reports")
+        .select("id")
+        .eq("listing_id", listing.id)
+        .eq("reporter_id", supabaseUser.id)
+        .maybeSingle();
+
+      if (!cancelled) {
+        setHasReported(!error && !!data);
+      }
+    };
+
+    void fetchReportState();
 
     return () => {
       cancelled = true;
@@ -248,15 +277,16 @@ const ProductDetail = () => {
 
     setReporting(true);
     try {
-      const { data, error } = await supabase.rpc("submit_listing_report", {
+      const { data, error } = await supabase.rpc("toggle_listing_report", {
         p_listing_id: listing.id,
         p_reason: "Community report from product page",
       });
       if (error) throw error;
 
       const result = data?.[0];
-      const nextStatus = result?.moderation_status || "flagged";
-      const nextCount = result?.report_count || (listing.report_count || 0) + 1;
+      const nextStatus = result?.moderation_status || "active";
+      const nextCount = result?.report_count ?? Math.max(0, listing.report_count || 0);
+      const nextHasReported = result?.has_reported ?? false;
       setListing((current) =>
         current
           ? {
@@ -266,7 +296,12 @@ const ProductDetail = () => {
             }
           : current
       );
-      toast.success(nextStatus === "hidden" ? "Listing hidden for admin review." : "Listing reported for review.");
+      setHasReported(nextHasReported);
+      if (nextHasReported) {
+        toast.success(nextStatus === "hidden" ? "Listing hidden for admin review." : "Listing reported for review.");
+      } else {
+        toast.success("Report removed.");
+      }
     } catch (error: any) {
       toast.error(error.message || "Could not report this listing right now");
     } finally {
@@ -393,7 +428,7 @@ const ProductDetail = () => {
                   className="w-full rounded-2xl border-destructive/20 bg-destructive/5 text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                 >
                   <ShieldAlert className="w-4 h-4 mr-1.5" />
-                  {reporting ? "Reporting..." : `Report Listing${listing.report_count ? ` (${listing.report_count})` : ""}`}
+                  {reporting ? (hasReported ? "Undoing..." : "Reporting...") : hasReported ? "Undo Report" : "Report Listing"}
                 </Button>
               )}
             </div>

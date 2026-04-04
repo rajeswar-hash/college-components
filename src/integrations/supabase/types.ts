@@ -252,6 +252,17 @@ export type Database = {
           report_count: number
         }[]
       }
+      toggle_listing_report: {
+        Args: {
+          p_listing_id: string
+          p_reason: string
+        }
+        Returns: {
+          has_reported: boolean
+          moderation_status: string
+          report_count: number
+        }[]
+      }
       toggle_listing_like: {
         Args: {
           listing_id: string
