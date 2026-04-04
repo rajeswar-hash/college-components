@@ -173,9 +173,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("is_admin, is_banned, ban_reason")
+      .select("is_admin, is_banned, ban_reason, name, phone, college")
       .eq("id", userData.user.id)
       .single();
+
+    const profileComplete =
+      !!profileData &&
+      [profileData.name, profileData.phone, profileData.college].every((value) => (value ?? "").trim().length > 0);
+    if (!profileComplete) {
+      await supabase.auth.signOut();
+      throw new Error("Finish creating your account first. Complete the profile step after OTP verification.");
+    }
 
     if (profileData?.is_banned) {
       await supabase.auth.signOut();

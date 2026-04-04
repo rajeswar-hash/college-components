@@ -26,7 +26,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [registerStep, setRegisterStep] = useState<"email" | "otp" | "profile">("email");
-  const [forgotStep, setForgotStep] = useState<"email" | "otp" | "done">("email");
+  const [forgotStep, setForgotStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +34,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [resetLinkSent, setResetLinkSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const otpRef = useRef<HTMLInputElement>(null);
   const collegeRef = useRef<HTMLInputElement>(null);
@@ -57,7 +56,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setName("");
     setPhone("");
     setCollege("");
-    setResetLinkSent(false);
     setRegisterStep("email");
     setForgotStep("email");
   };
@@ -81,7 +79,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       if (error) throw error;
 
       setOtp("");
-      setResetLinkSent(false);
       if (target === "register") {
         setRegisterStep("otp");
         toast.success("OTP sent to your email. Enter the code to continue.");
@@ -122,7 +119,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     }
   };
 
-  const verifyForgotOtpAndSendReset = async () => {
+  const verifyForgotOtpAndOpenReset = async () => {
     if (!otp.trim()) {
       toast.error("Enter the OTP sent to your email.");
       return;
@@ -137,14 +134,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       });
       if (verifyError) throw verifyError;
 
-      const redirectTo = `${window.location.origin}${window.location.pathname}#/reset-password`;
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
-      if (resetError) throw resetError;
-
-      setResetLinkSent(true);
-      setForgotStep("done");
-      await supabase.auth.signOut();
-      toast.success("Email verified. A password reset link has been sent to your inbox.");
+      toast.success("OTP verified. Set your new password now.");
+      onClose();
+      resetForm();
+      navigate("/reset-password");
     } catch (err: any) {
       toast.error(err.message || "Could not verify OTP.");
     } finally {
@@ -160,7 +153,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       if (forgotStep === "email") {
         await sendOtp("forgot");
       } else if (forgotStep === "otp") {
-        await verifyForgotOtpAndSendReset();
+        await verifyForgotOtpAndOpenReset();
       }
       return;
     }
@@ -240,9 +233,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   ? registerStep === "profile"
                     ? "Your email is verified. Finish your profile and set your password."
                     : "Enter your email, verify the OTP from your inbox, then complete your profile."
-                  : forgotStep === "done"
-                    ? "Your email was verified first. Use the reset link sent to your inbox to create a new password."
-                    : "Enter your account email, verify the OTP from your inbox, then receive your reset link."}
+                  : "Enter your account email and verify the OTP from your inbox before resetting your password."}
             </p>
           </DialogHeader>
 
@@ -283,7 +274,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (resetLinkSent) setResetLinkSent(false);
                   if (mode === "register" && registerStep !== "email") {
                     setRegisterStep("email");
                     setOtp("");
@@ -299,10 +289,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
-                disabled={
-                  (mode === "register" && registerStep === "profile") ||
-                  (mode === "forgot" && forgotStep === "done")
-                }
+                disabled={mode === "register" && registerStep === "profile"}
               />
               {mode === "register" && registerStep === "email" && (
                 <p className="mt-1 text-xs text-muted-foreground">We will send an OTP to this email before profile setup.</p>
@@ -396,14 +383,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               </>
             )}
 
-            {mode === "forgot" && resetLinkSent && (
-              <Alert className="border-primary/20 bg-primary/5 text-left">
-                <AlertDescription>
-                  Your email was verified first. A fresh reset link was sent to this inbox. Use the newest email only.
-                </AlertDescription>
-              </Alert>
-            )}
-
             {(mode === "login" || (mode === "register" && registerStep === "profile")) && (
               <div>
                 <Label htmlFor="password">Password</Label>
@@ -456,14 +435,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   : mode === "register"
                     ? registerStep === "email"
                       ? "Send OTP"
-                      : registerStep === "otp"
+                    : registerStep === "otp"
                         ? "Verify OTP"
                         : "Create Account"
                     : forgotStep === "email"
                       ? "Send OTP"
-                      : forgotStep === "otp"
-                        ? "Verify OTP & Send Reset Link"
-                        : "Reset Link Sent"}
+                      : "Verify OTP"}
             </Button>
 
             <p className="pb-1 text-center text-sm text-muted-foreground">
