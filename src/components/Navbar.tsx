@@ -142,7 +142,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 relative border-b border-border bg-background/85 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg gradient-bg flex items-center justify-center">
@@ -276,6 +276,7 @@ export function Navbar() {
         </div>
 
       </nav>
+      <div className="h-16" aria-hidden="true" />
 
       {mobileMenuMounted && (
         <div className="fixed inset-0 z-40 md:hidden">
