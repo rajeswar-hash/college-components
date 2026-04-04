@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,17 +15,6 @@ export default function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
-
-  const hasRecoveryHash = useMemo(
-    () =>
-      typeof window !== "undefined" &&
-      (
-        window.location.hash.includes("type=recovery") ||
-        window.location.hash.includes("access_token=") ||
-        window.location.search.includes("code=")
-      ),
-    []
-  );
 
   useEffect(() => {
     let mounted = true;
@@ -131,12 +120,12 @@ export default function ResetPasswordPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!hasRecoveryHash || !sessionReady ? (
+            {!sessionReady ? (
               <Alert className="border-primary/20 bg-primary/5">
                 <ShieldCheck className="h-4 w-4" />
                 <AlertTitle>Reset link required</AlertTitle>
                 <AlertDescription>
-                  Open this page from the password reset email you received. Once the secure recovery link is active, you can set a new password here.
+                  Open this page from the password reset email you received, or verify your email OTP first from the forgot-password flow. Once the secure session is active, you can set a new password here.
                 </AlertDescription>
               </Alert>
             ) : (
