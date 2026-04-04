@@ -35,6 +35,9 @@ jobs:
           VITE_SUPABASE_PROJECT_ID: vhdrmhnsnngfnnsfbrln
           VITE_SUPABASE_URL: https://vhdrmhnsnngfnnsfbrln.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoZHJtaG5zbm5nZm5uc2ZicmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDcxMTUsImV4cCI6MjA5MDYyMzExNX0.OwmJBgvT49jbKZKVyIQ0j-q_S_F58Y1YhAyJGS4J9nw
+          VITE_QWEN_API_URL: ${{ secrets.VITE_QWEN_API_URL }}
+          VITE_QWEN_API_KEY: ${{ secrets.VITE_QWEN_API_KEY }}
+          VITE_QWEN_MODEL: ${{ secrets.VITE_QWEN_MODEL }}
         run: npm run build
 
       - name: Setup Pages

@@ -359,7 +359,7 @@ const SellPage = () => {
           setAiStatus("approved");
         } else {
           setAiStatus("skipped");
-          throw new Error("Image verification is not available right now for this category. Please try again in a moment.");
+          throw new Error("Photo verification is required for this category, but AI verification is not configured right now. Please ask the admin to complete Qwen setup and try again.");
         }
       }
 
