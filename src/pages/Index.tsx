@@ -66,6 +66,8 @@ const Index = () => {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const collegeInputRef = useRef<HTMLInputElement>(null);
+  const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
+  const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
@@ -83,6 +85,80 @@ const Index = () => {
         imageMap.has(listing.id) ? { ...listing, images: imageMap.get(listing.id) } : listing
       );
     });
+  }, []);
+
+  const fetchCollegeListingsData = useCallback(async (collegeName: string) => {
+    const canonicalCollege = canonicalInstitutionName(collegeName);
+    const cached = listingsCacheRef.current.get(canonicalCollege);
+    if (cached) return cached;
+
+    const existingPromise = listingFetchPromiseRef.current.get(canonicalCollege);
+    if (existingPromise) return existingPromise;
+
+    const fetchPromise = (async () => {
+      let data: any[] | null = null;
+      let error: any = null;
+
+      const primaryResponse = await supabase
+        .from("listings")
+        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
+        .eq("college", canonicalCollege)
+        .neq("moderation_status", "hidden")
+        .order("created_at", { ascending: false });
+
+      data = primaryResponse.data;
+      error = primaryResponse.error;
+
+      if (error) {
+        const fallbackResponse = await supabase
+          .from("listings")
+          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
+          .eq("college", canonicalCollege)
+          .order("created_at", { ascending: false });
+        data = fallbackResponse.data;
+        error = fallbackResponse.error;
+      }
+
+      if (error || !data) {
+        return [];
+      }
+
+      const nextListings: ListingRow[] = data.map((listing) => ({
+        ...listing,
+        images: [],
+        college: canonicalInstitutionName(listing.college),
+        seller_name: "",
+        seller_phone: "",
+      }));
+
+      const visibleIds = nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id);
+      if (visibleIds.length > 0) {
+        const { data: imageRows } = await supabase
+          .from("listings")
+          .select("id, images")
+          .in("id", visibleIds);
+
+        if (imageRows) {
+          const imageMap = new Map(imageRows.map((row) => [row.id, row.images || []]));
+          nextListings.forEach((listing) => {
+            if (imageMap.has(listing.id)) {
+              listing.images = imageMap.get(listing.id);
+            }
+          });
+        }
+      }
+
+      listingsCacheRef.current.set(canonicalCollege, nextListings);
+      return nextListings;
+    })();
+
+    listingFetchPromiseRef.current.set(canonicalCollege, fetchPromise);
+
+    try {
+      return await fetchPromise;
+    } finally {
+      listingFetchPromiseRef.current.delete(canonicalCollege);
+    }
   }, []);
 
   const runCollegeSearch = useCallback(async (query: string) => {
@@ -164,51 +240,22 @@ const Index = () => {
       setSelectedCategory(null);
       setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
 
-      const canonicalCollege = canonicalInstitutionName(selectedCollege);
-      let data: any[] | null = null;
-      let error: any = null;
-
-      const primaryResponse = await supabase
-        .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
-        .eq("college", canonicalCollege)
-        .neq("moderation_status", "hidden")
-        .order("created_at", { ascending: false });
-
-      data = primaryResponse.data;
-      error = primaryResponse.error;
-
-      if (error) {
-        const fallbackResponse = await supabase
-          .from("listings")
-          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
-          .eq("college", canonicalCollege)
-          .order("created_at", { ascending: false });
-        data = fallbackResponse.data;
-        error = fallbackResponse.error;
-      }
-
-      if (error || !data) {
-        setListings([]);
-        setLoading(false);
-        return;
-      }
-
-      const nextListings = data.map((listing) => ({
-        ...listing,
-        images: [],
-        college: canonicalInstitutionName(listing.college),
-        seller_name: "",
-        seller_phone: "",
-      }));
-
+      const nextListings = await fetchCollegeListingsData(selectedCollege);
       setListings(nextListings);
       setLoading(false);
-      void fetchListingImages(nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id));
     };
 
-    fetchCollegeListings();
-  }, [fetchListingImages, selectedCollege]);
+    void fetchCollegeListings();
+  }, [fetchCollegeListingsData, selectedCollege]);
+
+  useEffect(() => {
+    if (collegeResults.length === 0) return;
+
+    const collegesToWarm = collegeResults.slice(0, 2);
+    collegesToWarm.forEach((college) => {
+      void fetchCollegeListingsData(college);
+    });
+  }, [collegeResults, fetchCollegeListingsData]);
 
   useEffect(() => {
     const missingVisibleImages = listings
@@ -298,6 +345,20 @@ const Index = () => {
     if (collegeQuery.trim().length >= 2) {
       setCollegeDropdownOpen(true);
       void runCollegeSearch(collegeQuery);
+    }
+  };
+
+  const handleCollegeInputSubmit = () => {
+    const trimmedQuery = collegeQuery.trim();
+    if (trimmedQuery.length < 2) return;
+
+    const exactMatch = collegeResults.find(
+      (college) => canonicalInstitutionName(college).toLowerCase() === canonicalInstitutionName(trimmedQuery).toLowerCase()
+    );
+
+    const bestMatch = exactMatch ?? collegeResults[0];
+    if (bestMatch) {
+      handleCollegeSelect(bestMatch);
     }
   };
 
@@ -418,6 +479,12 @@ const Index = () => {
                             debounceRef.current = setTimeout(() => runCollegeSearch(value), 80);
                           }}
                           onFocus={handleCollegeInputFocus}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleCollegeInputSubmit();
+                            }
+                          }}
                           autoComplete="off"
                         />
                         {collegeQuery ? (
