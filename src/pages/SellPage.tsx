@@ -352,16 +352,14 @@ const SellPage = () => {
         }
 
         if (aiResult.status === "low_confidence") {
-          aiVerificationStatus = "low_confidence";
-          moderationStatus = "flagged";
           setAiStatus("low_confidence");
+          throw new Error("We could not confidently match the photo with your title. Upload a clearer product photo that matches the item and try again.");
         } else if (aiResult.status === "approved") {
           aiVerificationStatus = "approved";
           setAiStatus("approved");
         } else {
-          aiVerificationStatus = "skipped";
-          moderationStatus = "flagged";
           setAiStatus("skipped");
+          throw new Error("AI verification is unavailable right now for this category. Please try again in a moment.");
         }
       }
 
@@ -425,8 +423,6 @@ const SellPage = () => {
           ? "Listing created successfully. Advanced moderation checks will start after the latest database update is completed."
           : aiVerificationStatus === "low_confidence"
             ? "Listing posted and marked for admin review."
-            : aiVerificationStatus === "skipped"
-              ? "Listing posted. AI check was unavailable, so it was sent for admin review."
             : "Listing created successfully!"
       );
       navigate("/dashboard");
