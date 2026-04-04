@@ -190,12 +190,12 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
                     <Badge className="border-0 bg-primary/10 px-3 py-1 text-primary shadow-sm">My Profile</Badge>
                   </div>
-                  <h1 className="font-display text-[1.9rem] font-bold leading-tight text-foreground">{user?.name || "Loading..."}</h1>
-                  <p className="mt-1 text-sm break-words text-muted-foreground">{user?.email}</p>
-                  <p className="mt-1 text-sm leading-6 break-words text-muted-foreground">{user?.college}</p>
+                  <h1 className="font-display text-[1.9rem] font-bold leading-[1.05] text-foreground">{user?.name || "Loading..."}</h1>
+                  <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.email}</p>
+                  <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.college}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 md:w-auto md:min-w-[320px]">
