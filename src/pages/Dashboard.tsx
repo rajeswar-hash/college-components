@@ -176,7 +176,7 @@ const Dashboard = () => {
         <div className="animate-fade-in space-y-8">
           <div className="relative pt-8">
             <div className="absolute left-4 top-0 z-10">
-              <Badge className="border-0 bg-[linear-gradient(135deg,rgb(45,212,191),rgb(59,130,246))] px-5 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(34,197,194,0.25)]">
+              <Badge className="rounded-xl border-0 bg-[linear-gradient(135deg,rgb(45,212,191),rgb(59,130,246))] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(34,197,194,0.22)]">
                 <User className="mr-2 h-4 w-4" />
                 My Profile
               </Badge>
