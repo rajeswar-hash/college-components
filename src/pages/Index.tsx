@@ -34,7 +34,8 @@ interface ListingRow {
 }
 
 const INITIAL_VISIBLE_IMAGE_BATCH = 8;
-const MAX_FILTER_PRICE = 10000;
+const MIN_FILTER_PRICE = 5;
+const MAX_FILTER_PRICE = 5000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
@@ -45,7 +46,7 @@ const Index = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_FILTER_PRICE]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   const [collegeQuery, setCollegeQuery] = useState("");
   const [collegeResults, setCollegeResults] = useState<string[]>([]);
   const [collegeDropdownOpen, setCollegeDropdownOpen] = useState(false);
@@ -161,7 +162,7 @@ const Index = () => {
       setLoading(true);
       setSearch("");
       setSelectedCategory(null);
-      setPriceRange([0, MAX_FILTER_PRICE]);
+      setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
 
       const canonicalCollege = canonicalInstitutionName(selectedCollege);
       let data: any[] | null = null;
@@ -227,7 +228,7 @@ const Index = () => {
       items = items.filter((listing) => listing.category === selectedCategory);
     }
 
-    if (priceRange[0] > 0 || priceRange[1] < MAX_FILTER_PRICE) {
+    if (priceRange[0] > MIN_FILTER_PRICE || priceRange[1] < MAX_FILTER_PRICE) {
       items = items.filter((listing) => listing.price >= priceRange[0] && listing.price <= priceRange[1]);
     }
 
@@ -272,7 +273,7 @@ const Index = () => {
     setCollegeResults([]);
     setSearch("");
     setSelectedCategory(null);
-    setPriceRange([0, MAX_FILTER_PRICE]);
+    setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   };
 
   const handleChangeCollege = () => {
@@ -281,7 +282,7 @@ const Index = () => {
     setCollegeResults([]);
     setSearch("");
     setSelectedCategory(null);
-    setPriceRange([0, MAX_FILTER_PRICE]);
+    setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   };
 
   const handleCollegeInputFocus = () => {
@@ -494,6 +495,7 @@ const Index = () => {
               onCategoryChange={setSelectedCategory}
               priceRange={priceRange}
               onPriceRangeChange={setPriceRange}
+              minPrice={MIN_FILTER_PRICE}
               maxPrice={MAX_FILTER_PRICE}
             />
 

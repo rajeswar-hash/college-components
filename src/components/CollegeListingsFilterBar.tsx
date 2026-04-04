@@ -13,6 +13,7 @@ interface CollegeListingsFilterBarProps {
   onCategoryChange: (value: Category | null) => void;
   priceRange: [number, number];
   onPriceRangeChange: (value: [number, number]) => void;
+  minPrice: number;
   maxPrice: number;
 }
 
@@ -23,17 +24,18 @@ export function CollegeListingsFilterBar({
   onCategoryChange,
   priceRange,
   onPriceRangeChange,
+  minPrice,
   maxPrice,
 }: CollegeListingsFilterBarProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const activeFilterCount =
     (selectedCategory ? 1 : 0) +
-    (priceRange[0] > 0 || priceRange[1] < maxPrice ? 1 : 0);
+    (priceRange[0] > minPrice || priceRange[1] < maxPrice ? 1 : 0);
 
   const clearAll = () => {
     onCategoryChange(null);
-    onPriceRangeChange([0, maxPrice]);
+    onPriceRangeChange([minPrice, maxPrice]);
   };
 
   return (
@@ -80,10 +82,10 @@ export function CollegeListingsFilterBar({
               </button>
             </Badge>
           )}
-          {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
+          {(priceRange[0] > minPrice || priceRange[1] < maxPrice) && (
             <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
               ₹{priceRange[0]} – ₹{priceRange[1]}
-              <button onClick={() => onPriceRangeChange([0, maxPrice])}>
+              <button onClick={() => onPriceRangeChange([minPrice, maxPrice])}>
                 <X className="h-2.5 w-2.5" />
               </button>
             </Badge>
@@ -128,9 +130,9 @@ export function CollegeListingsFilterBar({
             </div>
             <div className="px-1">
               <Slider
-                min={0}
+                min={minPrice}
                 max={maxPrice}
-                step={50}
+                step={5}
                 value={priceRange}
                 onValueChange={(value) => onPriceRangeChange(value as [number, number])}
                 className="w-full"
