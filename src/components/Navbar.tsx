@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2, Eye, EyeOff, ShoppingCart } from "lucide-react";
@@ -30,6 +30,7 @@ export function Navbar() {
   const [showDeletePasswordMobile, setShowDeletePasswordMobile] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const lockedScrollY = useRef(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -54,13 +55,40 @@ export function Navbar() {
 
   useEffect(() => {
     if (!mobileMenuMounted) {
+      const restoreY = lockedScrollY.current;
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      if (restoreY) {
+        window.scrollTo(0, restoreY);
+      }
       return;
     }
 
+    lockedScrollY.current = window.scrollY;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${lockedScrollY.current}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
     return () => {
+      const restoreY = lockedScrollY.current;
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      if (restoreY) {
+        window.scrollTo(0, restoreY);
+      }
     };
   }, [mobileMenuMounted]);
 
