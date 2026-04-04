@@ -44,11 +44,11 @@ function hasValidWhatsappNumber(phone: string) {
 }
 
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
-  { value: "Writing Service", label: "Writing Service", icon: PenTool },
+  { value: "Hand Writing Service", label: "Hand Writing Service", icon: PenTool },
   { value: "Components", label: "Components", icon: Cpu },
   { value: "Gadgets", label: "Gadgets", icon: Smartphone },
   { value: "Books", label: "Books", icon: BookOpen },
-  { value: "Notes", label: "Notes", icon: FileText },
+  { value: "Notes & Question Papers", label: "Notes & Question Papers", icon: FileText },
   { value: "Tools", label: "Tools", icon: Wrench },
   { value: "Projects", label: "Projects", icon: Rocket },
   { value: "Others", label: "Others", icon: MoreHorizontal },

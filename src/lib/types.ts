@@ -29,10 +29,10 @@ export type Category =
   | "Components"
   | "Gadgets"
   | "Books"
-  | "Notes"
+  | "Notes & Question Papers"
   | "Tools"
   | "Projects"
-  | "Writing Service"
+  | "Hand Writing Service"
   | "Others";
 
 export type Condition = "New" | "Like New" | "Used" | "Old";
@@ -41,10 +41,10 @@ export const CATEGORIES: Category[] = [
   "Components",
   "Gadgets",
   "Books",
-  "Notes",
+  "Notes & Question Papers",
   "Tools",
   "Projects",
-  "Writing Service",
+  "Hand Writing Service",
   "Others",
 ];
 
@@ -61,6 +61,10 @@ export function normalizeCategory(category: string): Category | string {
       return "Components";
     case "Misc":
       return "Others";
+    case "Notes":
+      return "Notes & Question Papers";
+    case "Writing Service":
+      return "Hand Writing Service";
     default:
       return category;
   }
