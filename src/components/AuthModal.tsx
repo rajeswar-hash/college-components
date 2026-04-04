@@ -137,7 +137,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       toast.success("OTP verified. Set your new password now.");
       onClose();
       resetForm();
-      navigate("/reset-password");
+      window.location.href = `${window.location.origin}${window.location.pathname}#/reset-password`;
     } catch (err: any) {
       toast.error(err.message || "Could not verify OTP.");
     } finally {
