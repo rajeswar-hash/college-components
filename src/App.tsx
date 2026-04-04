@@ -11,7 +11,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const HelpBotPage = lazy(() => import("./pages/HelpBotPage"));
 const SellPage = lazy(() => import("./pages/SellPage"));
-const CartPage = lazy(() => import("./pages/CartPage"));
+const CartPage = lazy(() => import("./pages/CartPageCompact"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));

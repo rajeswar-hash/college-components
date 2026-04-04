@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -356,7 +356,7 @@ const ProductDetail = () => {
               <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" /> <span className="break-words">{listing.college}</span></div>
               <p className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Listed {dateStr}</p>
-              <p className="flex items-center gap-2"><Heart className="w-4 h-4" /> Saved by {listing.likes} users</p>
+              <p className="flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Saved by {listing.likes} users</p>
               <p className="break-words">Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
             </div>
             </div>
@@ -377,7 +377,7 @@ const ProductDetail = () => {
               )}
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full">
-                  <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />
+                  <ShoppingCart className={`w-4 h-4 mr-1 ${liked ? "fill-primary text-primary" : ""}`} />
                   {liked ? "Added to Cart" : "Add to Cart"}
                 </Button>
                 <Button variant="outline" size="lg" onClick={handleShare} className="w-full">
