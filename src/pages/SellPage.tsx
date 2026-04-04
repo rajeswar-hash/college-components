@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
 import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
-import { verifyListingImageWithQwen } from "@/lib/qwen";
+import { verifyListingImageWithAI } from "@/lib/aiVerification";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -340,7 +340,7 @@ const SellPage = () => {
 
       if (selectedRule?.requiresAiCheck && images[0]) {
         setAiStatus("checking");
-        const aiResult = await verifyListingImageWithQwen({
+        const aiResult = await verifyListingImageWithAI({
           title: trimmedTitle,
           category: selectedRule.aiCategoryLabel,
           imageDataUrl: images[0],
@@ -352,14 +352,16 @@ const SellPage = () => {
         }
 
         if (aiResult.status === "low_confidence") {
+          aiVerificationStatus = "low_confidence";
+          moderationStatus = "flagged";
           setAiStatus("low_confidence");
-          throw new Error("We could not confidently match the photo with your title. Upload a clearer item photo or improve the title and try again.");
         } else if (aiResult.status === "approved") {
           aiVerificationStatus = "approved";
           setAiStatus("approved");
         } else {
+          aiVerificationStatus = "skipped";
+          moderationStatus = "flagged";
           setAiStatus("skipped");
-          throw new Error("Photo verification is required for this category, but AI verification is not configured right now. Please ask the admin to complete Qwen setup and try again.");
         }
       }
 
@@ -423,6 +425,8 @@ const SellPage = () => {
           ? "Listing created successfully. Advanced moderation checks will start after the latest database update is completed."
           : aiVerificationStatus === "low_confidence"
             ? "Listing posted and marked for admin review."
+            : aiVerificationStatus === "skipped"
+              ? "Listing posted. AI check was unavailable, so it was sent for admin review."
             : "Listing created successfully!"
       );
       navigate("/dashboard");
