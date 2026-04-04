@@ -472,7 +472,7 @@ const Index = () => {
             </div>
           </div>
         ) : (
-          <div className="animate-fade-in space-y-5">
+          <div className="animate-fade-in space-y-5 pt-4">
             <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.10),rgba(59,130,246,0.08))] p-4 shadow-[0_18px_50px_rgba(20,184,166,0.10)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
