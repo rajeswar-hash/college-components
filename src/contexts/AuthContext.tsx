@@ -42,6 +42,11 @@ function isEmailConfirmed(user: SupabaseUser | null) {
   return !!(user.email_confirmed_at || user.confirmed_at);
 }
 
+function isProfileComplete(profile: Pick<Profile, "name" | "phone" | "college"> | null) {
+  if (!profile) return false;
+  return [profile.name, profile.phone, profile.college].every((value) => value.trim().length > 0);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
@@ -56,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("id", userId)
       .single();
     if (data) {
-      setProfile({
+      const nextProfile = {
         id: data.id,
         name: data.name,
         email: data.email,
@@ -67,7 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ban_reason: data.ban_reason ?? null,
         violation_count: data.violation_count ?? 0,
         avatar_url: data.avatar_url ?? undefined,
-      });
+      };
+      setProfile(isProfileComplete(nextProfile) || nextProfile.is_admin ? nextProfile : null);
     }
   }, []);
 
@@ -100,6 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(!!profile?.is_admin);
     setIsBanned(!!profile?.is_banned);
   }, [profile?.is_admin, profile?.is_banned]);
+
+  const profileComplete = isProfileComplete(profile);
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -266,7 +274,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       deleteAccount,
       updateProfile,
-      isAuthenticated: isAdmin || !!supabaseUser,
+      isAuthenticated: isAdmin || (!!supabaseUser && profileComplete),
       isAdmin,
       isBanned,
       loading,
