@@ -25,7 +25,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
-  const [registerStep, setRegisterStep] = useState<"email" | "otp" | "profile">("email");
+  const [registerStep, setRegisterStep] = useState<"form" | "otp">("form");
   const [forgotStep, setForgotStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -56,7 +56,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setName("");
     setPhone("");
     setCollege("");
-    setRegisterStep("email");
+    setRegisterStep("form");
     setForgotStep("email");
   };
 
@@ -110,8 +110,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       });
       if (error) throw error;
 
-      setRegisterStep("profile");
-      toast.success("Email verified. Complete your profile to finish signup.");
+      await register(email, password, name, phone, college);
+      toast.success("Account created successfully. You can now sign in with your email and password.");
+      onClose();
+      resetForm();
     } catch (err: any) {
       toast.error(err.message || "Incorrect OTP. Please try again.");
     } finally {
@@ -164,23 +166,23 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     }
 
     if (mode === "register") {
-      if (registerStep === "email") {
+      if (registerStep === "form") {
+        if (!password || password.length < 6) {
+          toast.error("Please enter a password with at least 6 characters.");
+          return;
+        }
+
+        if (!name || !phone || !college) {
+          toast.error("Please fill in all fields");
+          return;
+        }
+
         await sendOtp("register");
         return;
       }
 
       if (registerStep === "otp") {
         await verifyRegisterOtp();
-        return;
-      }
-
-      if (!password || password.length < 6) {
-        toast.error("Please enter a password with at least 6 characters.");
-        return;
-      }
-
-      if (!name || !phone || !college) {
-        toast.error("Please fill in all fields");
         return;
       }
     } else if (!password || password.length < 6) {
@@ -196,9 +198,6 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         if (result.isAdmin) {
           navigate("/admin");
         }
-      } else {
-        await register(email, password, name, phone, college);
-        toast.success("Account created successfully. You can now sign in with your email and password.");
       }
       onClose();
       resetForm();
@@ -214,7 +213,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
-          if (mode === "register" && registerStep === "profile") {
+          if (mode === "register" && registerStep === "otp") {
             void supabase.auth.signOut();
           }
           resetForm();
@@ -233,9 +232,9 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               {mode === "login"
                 ? "Sign in to publish listings, like products, and manage your dashboard."
                 : mode === "register"
-                  ? registerStep === "profile"
-                    ? "Your email is verified. Finish your profile and set your password."
-                    : "Enter your email, verify the OTP from your inbox, then complete your profile."
+                  ? registerStep === "otp"
+                    ? "Enter the OTP sent to your email to finish creating your account."
+                    : "Create your account to start selling, liking, and managing your listings."
                   : "Enter your account email and verify the OTP from your inbox before resetting your password."}
             </p>
           </DialogHeader>
@@ -268,36 +267,72 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           )}
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                ref={emailRef}
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (mode === "register" && registerStep !== "email") {
-                    setRegisterStep("email");
-                    setOtp("");
-                  }
-                  if (mode === "forgot" && forgotStep !== "email") {
-                    setForgotStep("email");
-                    setOtp("");
-                  }
-                }}
-                onKeyDown={moveOnEnter(mode === "login" ? passwordRef : otpRef)}
-                placeholder="you@example.com"
-                autoComplete={mode === "login" ? "email" : "username"}
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                disabled={mode === "register" && registerStep === "profile"}
-              />
-              {mode === "register" && registerStep === "email" && (
-                <p className="mt-1 text-xs text-muted-foreground">We will send an OTP to this email before profile setup.</p>
-              )}
-            </div>
+            {mode !== "register" || registerStep === "form" ? (
+              <>
+                {mode === "register" && (
+                  <>
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        onKeyDown={moveOnEnter(collegeRef)}
+                        placeholder="Rahul Sharma"
+                        autoComplete="name"
+                      />
+                    </div>
+                    <CollegeAutocomplete
+                      value={college}
+                      onChange={setCollege}
+                      inputRef={collegeRef}
+                      onNextField={() => phoneRef.current?.focus()}
+                      dropdownPosition="above"
+                    />
+                    <div>
+                      <Label htmlFor="phone">WhatsApp Number</Label>
+                      <Input
+                        id="phone"
+                        ref={phoneRef}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        onKeyDown={moveOnEnter(emailRef)}
+                        placeholder="919876543210"
+                        autoComplete="tel"
+                        inputMode="tel"
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">Enter a valid 10-digit WhatsApp number so buyers can reach you.</p>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    ref={emailRef}
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (mode === "forgot" && forgotStep !== "email") {
+                        setForgotStep("email");
+                        setOtp("");
+                      }
+                    }}
+                    onKeyDown={moveOnEnter(mode === "login" ? passwordRef : mode === "register" ? passwordRef : otpRef)}
+                    placeholder="you@example.com"
+                    autoComplete={mode === "login" ? "email" : "username"}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                  {mode === "register" && (
+                    <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email.</p>
+                  )}
+                </div>
+              </>
+            ) : null}
 
             {mode === "register" && registerStep === "otp" && (
               <div>
@@ -312,7 +347,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   autoComplete="one-time-code"
                 />
                 <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-                  <span className="text-muted-foreground">Enter the OTP from your email inbox.</span>
+                  <span className="text-muted-foreground">Enter the OTP from your email inbox to finish account creation.</span>
                   <button
                     type="button"
                     onClick={() => void sendOtp("register")}
@@ -349,44 +384,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               </div>
             )}
 
-            {mode === "register" && registerStep === "profile" && (
-              <>
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onKeyDown={moveOnEnter(collegeRef)}
-                    placeholder="Rahul Sharma"
-                    autoComplete="name"
-                  />
-                </div>
-                <CollegeAutocomplete
-                  value={college}
-                  onChange={setCollege}
-                  inputRef={collegeRef}
-                  onNextField={() => phoneRef.current?.focus()}
-                  dropdownPosition="above"
-                />
-                <div>
-                  <Label htmlFor="phone">WhatsApp Number</Label>
-                  <Input
-                    id="phone"
-                    ref={phoneRef}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    onKeyDown={moveOnEnter(emailRef)}
-                    placeholder="919876543210"
-                    autoComplete="tel"
-                    inputMode="tel"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">Enter a valid 10-digit WhatsApp number so buyers can reach you.</p>
-                </div>
-              </>
-            )}
-
-            {(mode === "login" || (mode === "register" && registerStep === "profile")) && (
+            {(mode === "login" || (mode === "register" && registerStep === "form")) && (
               <div>
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -435,9 +433,9 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 ? "Please wait..."
                 : mode === "login"
                   ? "Sign In"
-                  : mode === "register"
-                    ? registerStep === "email"
-                      ? "Send OTP"
+                : mode === "register"
+                    ? registerStep === "form"
+                      ? "Create Account"
                     : registerStep === "otp"
                         ? "Verify OTP"
                         : "Create Account"
