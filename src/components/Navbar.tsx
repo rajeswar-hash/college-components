@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2, Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { getSavedListingsCount, onCartUpdated } from "@/lib/likes";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isAdmin, deleteAccount } = useAuth();
@@ -28,6 +29,7 @@ export function Navbar() {
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [showDeletePasswordMobile, setShowDeletePasswordMobile] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -61,6 +63,29 @@ export function Navbar() {
       document.body.style.overflow = "";
     };
   }, [mobileMenuMounted]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) {
+      setCartCount(0);
+      return;
+    }
+
+    const syncCartCount = async () => {
+      try {
+        const count = await getSavedListingsCount(user.id);
+        setCartCount(count);
+      } catch {
+        setCartCount(0);
+      }
+    };
+
+    void syncCartCount();
+    const unsubscribe = onCartUpdated(() => {
+      void syncCartCount();
+    });
+
+    return unsubscribe;
+  }, [isAuthenticated, user?.id]);
 
   const closeMobileMenu = () => {
     setMobileMenu(false);
@@ -167,6 +192,18 @@ export function Navbar() {
             <Link to="/privacy">
               <Button variant="ghost" size="sm" className={navButtonClass("/privacy")}>Privacy</Button>
             </Link>
+            {isAuthenticated && (
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className={`relative ${navButtonClass("/cart")}`}>
+                  <ShoppingCart className="w-4 h-4 mr-1" /> Cart
+                  {cartCount > 0 && (
+                    <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+            )}
             <Button
               size="sm"
               className="gradient-bg text-primary-foreground border-0 hover:opacity-90"
@@ -317,6 +354,18 @@ export function Navbar() {
                 <Link to="/privacy" onClick={() => setMobileMenu(false)}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/privacy")}`}>Privacy Policy</Button>
                 </Link>
+                {isAuthenticated && (
+                  <Link to="/cart" onClick={() => setMobileMenu(false)}>
+                    <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/cart")}`}>
+                      <ShoppingCart className="w-4 h-4 mr-2" /> Cart
+                      {cartCount > 0 && (
+                        <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                          {cartCount}
+                        </span>
+                      )}
+                    </Button>
+                  </Link>
+                )}
                 {isAuthenticated && (
                   <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out

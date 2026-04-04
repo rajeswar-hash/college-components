@@ -11,6 +11,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const HelpBotPage = lazy(() => import("./pages/HelpBotPage"));
 const SellPage = lazy(() => import("./pages/SellPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
@@ -42,6 +43,7 @@ const App = () => (
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/help-bot" element={<HelpBotPage />} />
         <Route path="/sell" element={<SellPage />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />

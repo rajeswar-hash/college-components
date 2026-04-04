@@ -192,9 +192,9 @@ const ProductDetail = () => {
       const result = await toggleListingLike(listing.id, listing.likes, liked);
       setLiked(result.liked);
       setListing((current) => current ? { ...current, likes: result.likes } : current);
-      toast.success(result.liked ? "Added to favorites" : "Removed from favorites");
+      toast.success(result.liked ? "Item added to cart" : "Item removed from cart");
     } catch {
-      toast.error("Could not update like right now");
+      toast.error("Could not update cart right now");
     } finally {
       setLiking(false);
     }
@@ -356,7 +356,7 @@ const ProductDetail = () => {
               <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" /> <span className="break-words">{listing.college}</span></div>
               <p className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Listed {dateStr}</p>
-              <p className="flex items-center gap-2"><Heart className="w-4 h-4" /> {listing.likes} likes</p>
+              <p className="flex items-center gap-2"><Heart className="w-4 h-4" /> Saved by {listing.likes} users</p>
               <p className="break-words">Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
             </div>
             </div>
@@ -378,7 +378,7 @@ const ProductDetail = () => {
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full">
                   <Heart className={`w-4 h-4 mr-1 ${liked ? "fill-destructive text-destructive" : ""}`} />
-                  {liked ? "Liked" : "Like"}
+                  {liked ? "Added to Cart" : "Add to Cart"}
                 </Button>
                 <Button variant="outline" size="lg" onClick={handleShare} className="w-full">
                   <Share2 className="w-4 h-4 mr-1" /> Share

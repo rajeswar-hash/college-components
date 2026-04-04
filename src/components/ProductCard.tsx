@@ -82,8 +82,9 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
       const result = await toggleListingLike(listing.id, likeCount, liked);
       setLiked(result.liked);
       setLikeCount(result.likes);
+      toast.success(result.liked ? "Item added to cart" : "Item removed from cart");
     } catch {
-      toast.error("Could not update like right now");
+      toast.error("Could not update cart right now");
     } finally {
       setLiking(false);
     }
@@ -170,8 +171,9 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{listing.college}</span>
             </span>
-            <span className="flex items-center gap-1">
-              <Heart className="w-3 h-3" /> {likeCount}
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${liked ? "bg-primary/10 text-primary" : "bg-muted/80"}`}>
+              <Heart className={`w-3 h-3 ${liked ? "fill-primary text-primary" : ""}`} />
+              {liked ? "Saved" : "Save"}
             </span>
           </div>
         </div>
