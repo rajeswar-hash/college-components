@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { getSavedListingIds, toggleListingLike } from "@/lib/likes";
 import { normalizeCategory, normalizeCondition, type Listing } from "@/lib/types";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 
 type SavedListing = Listing;
@@ -170,15 +170,6 @@ const CartPageCompact = () => {
                             </div>
                           </div>
 
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => handleRemove(item.id, item.likes)}
-                            disabled={removingId === item.id}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                         <p className="mt-2 line-clamp-1 text-sm text-muted-foreground">{item.description}</p>
                         <p className="mt-1 text-sm text-muted-foreground">{item.college}</p>
