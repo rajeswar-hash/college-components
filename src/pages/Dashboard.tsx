@@ -174,74 +174,75 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="animate-fade-in space-y-8">
-          <div className="glass rounded-2xl border border-primary/10 p-6 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
-            <div className="mb-4 flex justify-end">
+          <div className="space-y-3">
+            <div className="flex justify-start pl-1">
               <Badge className="border-0 bg-primary/10 px-3 py-1 text-primary shadow-sm">My Profile</Badge>
             </div>
-            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div className="flex min-w-0 items-center gap-4 md:items-center">
-                <div className="relative h-20 w-20 shrink-0">
-                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-md" />
-                  <div className="relative overflow-hidden rounded-full border border-white/80 bg-white shadow-[0_18px_32px_rgba(15,23,42,0.12)] ring-4 ring-white/75">
-                    <img
-                      src={selectedAvatar}
-                      alt="Profile avatar"
-                      className="h-20 w-20 object-cover"
-                      loading="lazy"
-                      decoding="async"
-                    />
+            <div className="glass rounded-2xl border border-primary/10 p-6 pt-4 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <div className="flex min-w-0 items-center gap-4 md:items-center">
+                  <div className="relative h-20 w-20 shrink-0">
+                    <div className="absolute inset-0 rounded-full bg-primary/10 blur-md" />
+                    <div className="relative overflow-hidden rounded-full border border-white/80 bg-white shadow-[0_18px_32px_rgba(15,23,42,0.12)] ring-4 ring-white/75">
+                      <img
+                        src={selectedAvatar}
+                        alt="Profile avatar"
+                        className="h-20 w-20 object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div className="min-w-0 self-center">
+                    <h1 className="font-display text-[1.9rem] font-bold leading-[1.05] text-foreground">{user?.name || "Loading..."}</h1>
+                    <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.email}</p>
+                    <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.college}</p>
                   </div>
                 </div>
-                <div className="min-w-0 self-center">
-                  <h1 className="font-display text-[1.9rem] font-bold leading-[1.05] text-foreground">{user?.name || "Loading..."}</h1>
-                  <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.email}</p>
-                  <p className="mt-0.5 text-sm leading-5 break-words text-muted-foreground">{user?.college}</p>
+                <div className="grid grid-cols-2 gap-3 md:w-auto md:min-w-[320px]">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingProfile((prev) => !prev)}
+                    className="h-11 w-full rounded-xl border-border/70 bg-background/90 px-4 font-medium shadow-sm hover:bg-background"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    {isEditingProfile ? "Close Edit" : "Edit Profile"}
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/sell")}
+                    className="gradient-bg h-11 w-full rounded-xl border-0 px-4 text-primary-foreground shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:opacity-90"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Listing
+                  </Button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 md:w-auto md:min-w-[320px]">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditingProfile((prev) => !prev)}
-                  className="h-11 w-full rounded-xl border-border/70 bg-background/90 px-4 font-medium shadow-sm hover:bg-background"
-                >
-                  <Pencil className="w-4 h-4 mr-2" />
-                  {isEditingProfile ? "Close Edit" : "Edit Profile"}
-                </Button>
-                <Button
-                  onClick={() => navigate("/sell")}
-                  className="gradient-bg h-11 w-full rounded-xl border-0 px-4 text-primary-foreground shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:opacity-90"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Listing
-                </Button>
-              </div>
-            </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
-              <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">Active</p>
-                <div className="mt-2 flex items-end justify-between gap-3">
-                  <p className="font-display text-2xl font-bold leading-none text-foreground">{activeListings}</p>
-                  <p className="text-right text-[11px] leading-4 text-muted-foreground">Live now</p>
+              <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
+                <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">Active</p>
+                  <div className="mt-2 flex items-end justify-between gap-3">
+                    <p className="font-display text-2xl font-bold leading-none text-foreground">{activeListings}</p>
+                    <p className="text-right text-[11px] leading-4 text-muted-foreground">Live now</p>
+                  </div>
                 </div>
-              </div>
-              <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/5 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-600">Delete After Sale</p>
-                <div className="mt-2 flex items-end justify-between gap-3">
-                  <p className="font-display text-2xl font-bold leading-none text-foreground">{soldListings}</p>
-                  <p className="text-right text-[11px] leading-4 text-muted-foreground">Remove sold items</p>
+                <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/5 px-4 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-600">Delete After Sale</p>
+                  <div className="mt-2 flex items-end justify-between gap-3">
+                    <p className="font-display text-2xl font-bold leading-none text-foreground">{soldListings}</p>
+                    <p className="text-right text-[11px] leading-4 text-muted-foreground">Remove sold items</p>
+                  </div>
                 </div>
-              </div>
-              <div className="rounded-2xl border border-sky-500/10 bg-sky-500/5 px-4 py-3 col-span-2 lg:col-span-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-600">Catalog Value</p>
-                <div className="mt-2 flex items-end justify-between gap-3">
-                  <p className="font-display text-xl font-bold leading-none text-foreground">Rs. {listingValue.toLocaleString()}</p>
-                  <p className="text-right text-[11px] leading-4 text-muted-foreground">Current total</p>
+                <div className="rounded-2xl border border-sky-500/10 bg-sky-500/5 px-4 py-3 col-span-2 lg:col-span-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-sky-600">Catalog Value</p>
+                  <div className="mt-2 flex items-end justify-between gap-3">
+                    <p className="font-display text-xl font-bold leading-none text-foreground">Rs. {listingValue.toLocaleString()}</p>
+                    <p className="text-right text-[11px] leading-4 text-muted-foreground">Current total</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
           {isEditingProfile && (
             <div className="glass rounded-2xl p-6 border border-primary/10">
               <div className="flex items-center gap-2 mb-4">
