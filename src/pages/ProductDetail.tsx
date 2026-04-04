@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -385,7 +385,14 @@ const ProductDetail = () => {
                 </Button>
               </div>
               {!isOwnListing && (
-                <Button variant="ghost" size="sm" onClick={handleReport} disabled={reporting} className="w-full text-destructive hover:text-destructive">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReport}
+                  disabled={reporting}
+                  className="w-full rounded-2xl border-destructive/20 bg-destructive/5 text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <ShieldAlert className="w-4 h-4 mr-1.5" />
                   {reporting ? "Reporting..." : `Report Listing${listing.report_count ? ` (${listing.report_count})` : ""}`}
                 </Button>
               )}
