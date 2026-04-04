@@ -476,6 +476,19 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                <div className="absolute inset-x-0 bottom-12 flex justify-center px-4">
+                  <div className="flex flex-wrap items-center justify-center gap-2.5">
+                    {["College-only listings", "Direct seller contact", "Better student prices"].map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-full border border-white/70 bg-white/78 px-3.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
