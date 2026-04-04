@@ -25,7 +25,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
+  const [registerStep, setRegisterStep] = useState<"email" | "otp" | "profile">("email");
+  const [forgotStep, setForgotStep] = useState<"email" | "otp" | "done">("email");
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -33,6 +36,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const otpRef = useRef<HTMLInputElement>(null);
   const collegeRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -48,47 +52,146 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   const resetForm = () => {
     setEmail("");
+    setOtp("");
     setPassword("");
     setName("");
     setPhone("");
     setCollege("");
     setResetLinkSent(false);
+    setRegisterStep("email");
+    setForgotStep("email");
+  };
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const sendOtp = async (target: "register" | "forgot") => {
+    if (!normalizedEmail) {
+      toast.error("Please enter your email.");
+      return false;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: {
+          shouldCreateUser: target === "register",
+        },
+      });
+      if (error) throw error;
+
+      setOtp("");
+      setResetLinkSent(false);
+      if (target === "register") {
+        setRegisterStep("otp");
+        toast.success("OTP sent to your email. Enter the code to continue.");
+      } else {
+        setForgotStep("otp");
+        toast.success("OTP sent to your email. Enter it to verify before reset.");
+      }
+      return true;
+    } catch (err: any) {
+      toast.error(err.message || "Could not send OTP.");
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const verifyRegisterOtp = async () => {
+    if (!otp.trim()) {
+      toast.error("Enter the OTP sent to your email.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: normalizedEmail,
+        token: otp.trim(),
+        type: "email",
+      });
+      if (error) throw error;
+
+      setRegisterStep("profile");
+      toast.success("Email verified. Complete your profile to finish signup.");
+    } catch (err: any) {
+      toast.error(err.message || "Incorrect OTP. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const verifyForgotOtpAndSendReset = async () => {
+    if (!otp.trim()) {
+      toast.error("Enter the OTP sent to your email.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: normalizedEmail,
+        token: otp.trim(),
+        type: "email",
+      });
+      if (verifyError) throw verifyError;
+
+      const redirectTo = `${window.location.origin}${window.location.pathname}#/reset-password`;
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+      if (resetError) throw resetError;
+
+      setResetLinkSent(true);
+      setForgotStep("done");
+      await supabase.auth.signOut();
+      toast.success("Email verified. A password reset link has been sent to your inbox.");
+    } catch (err: any) {
+      toast.error(err.message || "Could not verify OTP.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
 
-    if (!email.trim()) {
-      toast.error("Please enter your email.");
-      return;
-    }
-
     if (mode === "forgot") {
-      setSubmitting(true);
-      try {
-        const redirectTo = `${window.location.origin}${window.location.pathname}#/reset-password`;
-        const normalizedEmail = email.trim().toLowerCase();
-        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
-        if (error) throw error;
-
-        setResetLinkSent(true);
-        toast.success("Password reset email sent. Open the newest email link to create a new password.");
-      } catch (err: any) {
-        toast.error(err.message || "Could not send reset email.");
-      } finally {
-        setSubmitting(false);
+      if (forgotStep === "email") {
+        await sendOtp("forgot");
+      } else if (forgotStep === "otp") {
+        await verifyForgotOtpAndSendReset();
       }
       return;
     }
 
-    if (!password || password.length < 6) {
-      toast.error("Please enter email and password (min 6 chars)");
+    if (!normalizedEmail) {
+      toast.error("Please enter your email.");
       return;
     }
 
-    if (mode === "register" && (!name || !phone || !college)) {
-      toast.error("Please fill in all fields");
+    if (mode === "register") {
+      if (registerStep === "email") {
+        await sendOtp("register");
+        return;
+      }
+
+      if (registerStep === "otp") {
+        await verifyRegisterOtp();
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        toast.error("Please enter a password with at least 6 characters.");
+        return;
+      }
+
+      if (!name || !phone || !college) {
+        toast.error("Please fill in all fields");
+        return;
+      }
+    } else if (!password || password.length < 6) {
+      toast.error("Please enter email and password (min 6 chars)");
       return;
     }
 
@@ -102,7 +205,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         }
       } else {
         await register(email, password, name, phone, college);
-        toast.success("Account created. Check your inbox and verify your email before signing in.");
+        toast.success("Account created successfully. You can now sign in with your email and password.");
       }
       onClose();
       resetForm();
@@ -134,8 +237,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               {mode === "login"
                 ? "Sign in to publish listings, like products, and manage your dashboard."
                 : mode === "register"
-                  ? "Create your account to start selling, liking, and managing your listings."
-                  : "Enter your account email and we will send you a secure password reset link."}
+                  ? registerStep === "profile"
+                    ? "Your email is verified. Finish your profile and set your password."
+                    : "Enter your email, verify the OTP from your inbox, then complete your profile."
+                  : forgotStep === "done"
+                    ? "Your email was verified first. Use the reset link sent to your inbox to create a new password."
+                    : "Enter your account email, verify the OTP from your inbox, then receive your reset link."}
             </p>
           </DialogHeader>
 
@@ -145,7 +252,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 type="button"
                 variant={mode === "login" ? "default" : "ghost"}
                 className={mode === "login" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
-                onClick={() => setMode("login")}
+                onClick={() => {
+                  resetForm();
+                  setMode("login");
+                }}
               >
                 Sign In
               </Button>
@@ -153,7 +263,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 type="button"
                 variant={mode === "register" ? "default" : "ghost"}
                 className={mode === "register" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
-                onClick={() => setMode("register")}
+                onClick={() => {
+                  resetForm();
+                  setMode("register");
+                }}
               >
                 Register
               </Button>
@@ -161,7 +274,92 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           )}
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            {mode === "register" && (
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                ref={emailRef}
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (resetLinkSent) setResetLinkSent(false);
+                  if (mode === "register" && registerStep !== "email") {
+                    setRegisterStep("email");
+                    setOtp("");
+                  }
+                  if (mode === "forgot" && forgotStep !== "email") {
+                    setForgotStep("email");
+                    setOtp("");
+                  }
+                }}
+                onKeyDown={moveOnEnter(mode === "login" ? passwordRef : otpRef)}
+                placeholder="you@example.com"
+                autoComplete={mode === "login" ? "email" : "username"}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                disabled={
+                  (mode === "register" && registerStep === "profile") ||
+                  (mode === "forgot" && forgotStep === "done")
+                }
+              />
+              {mode === "register" && registerStep === "email" && (
+                <p className="mt-1 text-xs text-muted-foreground">We will send an OTP to this email before profile setup.</p>
+              )}
+            </div>
+
+            {mode === "register" && registerStep === "otp" && (
+              <div>
+                <Label htmlFor="register-otp">Email OTP</Label>
+                <Input
+                  id="register-otp"
+                  ref={otpRef}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                />
+                <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+                  <span className="text-muted-foreground">Enter the OTP from your email inbox.</span>
+                  <button
+                    type="button"
+                    onClick={() => void sendOtp("register")}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Resend OTP
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {mode === "forgot" && forgotStep === "otp" && (
+              <div>
+                <Label htmlFor="forgot-otp">Email OTP</Label>
+                <Input
+                  id="forgot-otp"
+                  ref={otpRef}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                />
+                <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+                  <span className="text-muted-foreground">Verify this OTP before we send the reset link.</span>
+                  <button
+                    type="button"
+                    onClick={() => void sendOtp("forgot")}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Resend OTP
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {mode === "register" && registerStep === "profile" && (
               <>
                 <div>
                   <Label htmlFor="name">Full Name</Label>
@@ -198,38 +396,15 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               </>
             )}
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                ref={emailRef}
-                type="email"
-                value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (resetLinkSent) setResetLinkSent(false);
-                  }}
-                onKeyDown={mode === "forgot" ? undefined : moveOnEnter(passwordRef)}
-                placeholder="you@example.com"
-                autoComplete={mode === "login" ? "email" : "username"}
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-              />
-              {mode === "register" && (
-                <p className="mt-1 text-xs text-muted-foreground">Use a real email address you can access for verification.</p>
-              )}
-            </div>
-
             {mode === "forgot" && resetLinkSent && (
               <Alert className="border-primary/20 bg-primary/5 text-left">
                 <AlertDescription>
-                  A fresh reset link was sent to this email. If needed, you can request another one and use the newest email only.
+                  Your email was verified first. A fresh reset link was sent to this inbox. Use the newest email only.
                 </AlertDescription>
               </Alert>
             )}
 
-            {mode !== "forgot" && (
+            {(mode === "login" || (mode === "register" && registerStep === "profile")) && (
               <div>
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -258,12 +433,15 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     <span />
                   )}
                   {mode === "login" && (
-                    <button
-                      type="button"
-                      onClick={() => setMode("forgot")}
-                      className="text-xs font-medium text-primary hover:underline"
-                    >
-                      Forgot password?
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetForm();
+                      setMode("forgot");
+                    }}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    Forgot password?
                     </button>
                   )}
                 </div>
@@ -271,7 +449,21 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             )}
 
             <Button type="submit" disabled={submitting} className="w-full gradient-bg text-primary-foreground border-0 hover:opacity-90">
-              {submitting ? "Please wait..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : resetLinkSent ? "Resend Reset Link" : "Send Reset Link"}
+              {submitting
+                ? "Please wait..."
+                : mode === "login"
+                  ? "Sign In"
+                  : mode === "register"
+                    ? registerStep === "email"
+                      ? "Send OTP"
+                      : registerStep === "otp"
+                        ? "Verify OTP"
+                        : "Create Account"
+                    : forgotStep === "email"
+                      ? "Send OTP"
+                      : forgotStep === "otp"
+                        ? "Verify OTP & Send Reset Link"
+                        : "Reset Link Sent"}
             </Button>
 
             <p className="pb-1 text-center text-sm text-muted-foreground">
@@ -280,7 +472,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   Remembered your password?{" "}
                   <button
                     type="button"
-                    onClick={() => setMode("login")}
+                    onClick={() => {
+                      resetForm();
+                      setMode("login");
+                    }}
                     className="text-primary font-medium hover:underline"
                   >
                     Sign In
@@ -291,7 +486,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   {mode === "login" ? "Don't have an account? " : "Already have an account? "}
                   <button
                     type="button"
-                    onClick={() => setMode(mode === "login" ? "register" : "login")}
+                    onClick={() => {
+                      resetForm();
+                      setMode(mode === "login" ? "register" : "login");
+                    }}
                     className="text-primary font-medium hover:underline"
                   >
                     {mode === "login" ? "Register" : "Sign In"}

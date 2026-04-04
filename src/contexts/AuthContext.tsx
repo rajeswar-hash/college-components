@@ -20,7 +20,7 @@ interface AuthContextType {
   user: Profile | null;
   supabaseUser: SupabaseUser | null;
   login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
-  register: (email: string, password: string, name: string, phone: string, college: string) => Promise<{ requiresEmailVerification: boolean }>;
+  register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
   logout: () => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
   updateProfile: (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => Promise<void>;
@@ -107,21 +107,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!hasValidWhatsappNumber(phone)) {
       throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
     }
-    const { data, error } = await supabase.auth.signUp({
-      email: normalizedEmail,
-      password,
-      options: {
-        data: { name, phone, college: normalizedCollege, email: normalizedEmail },
-      },
-    });
-    if (error) throw error;
+    const {
+      data: { user: currentUser },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError) throw userError;
 
-    if (data.session && !isEmailConfirmed(data.user)) {
-      await supabase.auth.signOut();
+    const verifiedUser = currentUser ?? supabaseUser;
+    if (!verifiedUser?.id || !verifiedUser.email || verifiedUser.email.trim().toLowerCase() !== normalizedEmail) {
+      throw new Error("Verify the OTP sent to your email before finishing signup.");
     }
 
-    return { requiresEmailVerification: true };
-  }, []);
+    const { data: existingProfile, error: existingProfileError } = await supabase
+      .from("profiles")
+      .select("name, phone, college")
+      .eq("id", verifiedUser.id)
+      .maybeSingle();
+    if (existingProfileError) throw existingProfileError;
+
+    const alreadyConfigured =
+      !!existingProfile &&
+      [existingProfile.name, existingProfile.phone, existingProfile.college].some((value) => value.trim().length > 0);
+    if (alreadyConfigured) {
+      throw new Error("An account with this email already exists. Sign in or use Forgot password instead.");
+    }
+
+    const { error: authUpdateError } = await supabase.auth.updateUser({
+      password,
+      data: {
+        name,
+        phone,
+        college: normalizedCollege,
+        email: normalizedEmail,
+      },
+    });
+    if (authUpdateError) throw authUpdateError;
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        name,
+        phone,
+        college: normalizedCollege,
+        email: normalizedEmail,
+      })
+      .eq("id", verifiedUser.id);
+    if (profileError) throw profileError;
+
+    await fetchProfile(verifiedUser.id);
+  }, [fetchProfile, supabaseUser]);
 
   const login = useCallback(async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
