@@ -28,9 +28,11 @@ export interface Listing {
 export type Category =
   | "Components"
   | "Gadgets"
+  | "Books"
   | "Notes"
   | "Tools"
   | "Projects"
+  | "Writing Service"
   | "Others";
 
 export type Condition = "New" | "Like New" | "Used" | "Old";
@@ -38,9 +40,11 @@ export type Condition = "New" | "Like New" | "Used" | "Old";
 export const CATEGORIES: Category[] = [
   "Components",
   "Gadgets",
+  "Books",
   "Notes",
   "Tools",
   "Projects",
+  "Writing Service",
   "Others",
 ];
 

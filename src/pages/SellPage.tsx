@@ -14,16 +14,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   ArrowLeft,
+  BookOpen,
   Cpu,
   FileText,
   ImagePlus,  MoreHorizontal,
   Rocket,
+  PenTool,
   Smartphone,
   Sparkles,
   Upload,
   Wrench,
   X,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MAX_IMAGE_BYTES = 600 * 1024;
 const MAX_IMAGE_DIMENSION = 1280;
@@ -37,9 +46,11 @@ function hasValidWhatsappNumber(phone: string) {
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
   { value: "Components", label: "Components", icon: Cpu },
   { value: "Gadgets", label: "Gadgets", icon: Smartphone },
+  { value: "Books", label: "Books", icon: BookOpen },
   { value: "Notes", label: "Notes", icon: FileText },
   { value: "Tools", label: "Tools", icon: Wrench },
   { value: "Projects", label: "Projects", icon: Rocket },
+  { value: "Writing Service", label: "Writing Service", icon: PenTool },
   { value: "Others", label: "Others", icon: MoreHorizontal },
 ];
 
@@ -238,6 +249,34 @@ const SellPage = () => {
           <form onSubmit={handleSubmit} className="space-y-5 rounded-[28px] border border-primary/10 bg-background/95 p-4 shadow-[0_20px_60px_rgba(15,118,110,0.10)] backdrop-blur-sm sm:p-6">
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div>
+                <Label className="text-base font-semibold">Category</Label>
+                <p className="mt-1 text-xs text-muted-foreground">Choose a category first so buyers find it faster</p>
+              </div>
+
+              <Select value={category} onValueChange={(value) => setCategory(value as Category)}>
+                <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  {categoryOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <SelectItem key={option.value} value={option.value} className="rounded-xl py-3">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span>{option.label}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </section>
+
+            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+              <div>
                 <Label className="text-base font-semibold text-foreground">Add Photos (Max 5)</Label>
                 <p className="mt-1 text-sm text-muted-foreground">First photo will be cover image</p>
                 <p className="mt-1 text-xs font-medium text-primary">Clear photos = faster sale</p>
@@ -324,36 +363,6 @@ const SellPage = () => {
                 className="rounded-2xl border-border/80 bg-background"
               />
               <p className="text-xs leading-5 text-muted-foreground">Share product details and why you are selling it.</p>
-            </section>
-
-            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
-              <div>
-                <Label className="text-base font-semibold">Category</Label>
-                <p className="mt-1 text-xs text-muted-foreground">Choose the best fit so buyers find it quickly</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {categoryOptions.map((option) => {
-                  const Icon = option.icon;
-                  const selected = category === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setCategory(option.value)}
-                      className={`rounded-2xl border px-4 py-4 text-left transition-all ${
-                        selected
-                          ? "border-primary bg-primary/5 shadow-[0_12px_30px_rgba(34,197,194,0.10)]"
-                          : "border-border bg-background hover:border-primary/40"
-                      }`}
-                    >
-                      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${selected ? "gradient-bg text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground"}`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <p className="text-sm font-semibold text-foreground">{option.label}</p>
-                    </button>
-                  );
-                })}
-              </div>
             </section>
 
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
