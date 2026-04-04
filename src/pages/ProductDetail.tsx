@@ -22,6 +22,7 @@ function formatPhone(phone: string): string | null {
 }
 
 interface ListingDetail {
+  ai_verification_status?: string | null;
   id: string;
   title: string;
   description: string;
@@ -33,6 +34,9 @@ interface ListingDetail {
   college: string;
   sold: boolean;
   likes: number;
+  moderation_status?: string;
+  report_count?: number;
+  resource_link?: string | null;
   created_at: string;
   seller_name: string;
   seller_phone: string;
@@ -47,6 +51,7 @@ const ProductDetail = () => {
   const [liked, setLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
@@ -233,6 +238,42 @@ const ProductDetail = () => {
     toast.success("Link copied to clipboard!");
   };
 
+  const handleReport = async () => {
+    if (!listing || reporting) return;
+
+    if (!isAuthenticated) {
+      setShowAuth(true);
+      return;
+    }
+
+    setReporting(true);
+    try {
+      const { data, error } = await supabase.rpc("submit_listing_report", {
+        p_listing_id: listing.id,
+        p_reason: "Community report from product page",
+      });
+      if (error) throw error;
+
+      const result = data?.[0];
+      const nextStatus = result?.moderation_status || "flagged";
+      const nextCount = result?.report_count || (listing.report_count || 0) + 1;
+      setListing((current) =>
+        current
+          ? {
+              ...current,
+              moderation_status: nextStatus,
+              report_count: nextCount,
+            }
+          : current
+      );
+      toast.success(nextStatus === "hidden" ? "Listing hidden for admin review." : "Listing reported for review.");
+    } catch (error: any) {
+      toast.error(error.message || "Could not report this listing right now");
+    } finally {
+      setReporting(false);
+    }
+  };
+
   const dateStr = new Date(listing.created_at).toLocaleDateString("en-IN", {
     day: "numeric", month: "short", year: "numeric",
   });
@@ -343,6 +384,11 @@ const ProductDetail = () => {
                   <Share2 className="w-4 h-4 mr-1" /> Share
                 </Button>
               </div>
+              {!isOwnListing && (
+                <Button variant="ghost" size="sm" onClick={handleReport} disabled={reporting} className="w-full text-destructive hover:text-destructive">
+                  {reporting ? "Reporting..." : `Report Listing${listing.report_count ? ` (${listing.report_count})` : ""}`}
+                </Button>
+              )}
             </div>
           </div>
         </div>

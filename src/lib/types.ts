@@ -14,7 +14,7 @@ export interface Listing {
   description: string;
   price: number;
   category: Category;
-  condition: Condition;
+  condition: Condition | "";
   images: string[];
   sellerId: string;
   sellerName: string;
@@ -23,28 +23,34 @@ export interface Listing {
   createdAt: string;
   sold: boolean;
   likes: number;
+  resourceLink?: string;
+  moderationStatus?: string;
+  reportCount?: number;
+  aiVerificationStatus?: string;
 }
 
 export type Category =
+  | "Handwriting Service"
+  | "Notes"
+  | "Question Papers"
   | "Components"
   | "Gadgets"
   | "Books"
-  | "Notes & Question Papers"
   | "Tools"
   | "Projects"
-  | "Hand Writing Service"
   | "Others";
 
 export type Condition = "New" | "Like New" | "Used" | "Old";
 
 export const CATEGORIES: Category[] = [
+  "Handwriting Service",
+  "Notes",
+  "Question Papers",
   "Components",
   "Gadgets",
   "Books",
-  "Notes & Question Papers",
   "Tools",
   "Projects",
-  "Hand Writing Service",
   "Others",
 ];
 
@@ -61,10 +67,11 @@ export function normalizeCategory(category: string): Category | string {
       return "Components";
     case "Misc":
       return "Others";
-    case "Notes":
-      return "Notes & Question Papers";
+    case "Hand Writing Service":
     case "Writing Service":
-      return "Hand Writing Service";
+      return "Handwriting Service";
+    case "Notes & Question Papers":
+      return "Notes";
     default:
       return category;
   }

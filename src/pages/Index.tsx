@@ -163,11 +163,28 @@ const Index = () => {
       setPriceRange([0, MAX_FILTER_PRICE]);
 
       const canonicalCollege = canonicalInstitutionName(selectedCollege);
-      const { data, error } = await supabase
+      let data: any[] | null = null;
+      let error: any = null;
+
+      const primaryResponse = await supabase
         .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
+        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
         .eq("college", canonicalCollege)
+        .neq("moderation_status", "hidden")
         .order("created_at", { ascending: false });
+
+      data = primaryResponse.data;
+      error = primaryResponse.error;
+
+      if (error) {
+        const fallbackResponse = await supabase
+          .from("listings")
+          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
+          .eq("college", canonicalCollege)
+          .order("created_at", { ascending: false });
+        data = fallbackResponse.data;
+        error = fallbackResponse.error;
+      }
 
       if (error || !data) {
         setListings([]);

@@ -1,13 +1,17 @@
 ﻿import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
+import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
+import { verifyListingImageWithQwen } from "@/lib/qwen";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +20,8 @@ import {
   ArrowLeft,
   BookOpen,
   Cpu,
+  ExternalLink,
+  FileQuestion,
   FileText,
   ImagePlus,  MoreHorizontal,
   Rocket,
@@ -36,7 +42,9 @@ import {
 
 const MAX_IMAGE_BYTES = 600 * 1024;
 const MAX_IMAGE_DIMENSION = 1280;
-const MAX_LISTING_PRICE = 10000;
+const MAX_FILES = 5;
+const MAX_DAILY_UPLOADS = 7;
+const UPLOAD_COOLDOWN_MS = 30 * 1000;
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -44,22 +52,30 @@ function hasValidWhatsappNumber(phone: string) {
 }
 
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
-  { value: "Hand Writing Service", label: "Hand Writing Service", icon: PenTool },
+  { value: "Handwriting Service", label: "Handwriting Service", icon: PenTool },
+  { value: "Notes", label: "Notes", icon: FileText },
+  { value: "Question Papers", label: "Question Papers", icon: FileQuestion },
   { value: "Components", label: "Components", icon: Cpu },
   { value: "Gadgets", label: "Gadgets", icon: Smartphone },
   { value: "Books", label: "Books", icon: BookOpen },
-  { value: "Notes & Question Papers", label: "Notes & Question Papers", icon: FileText },
   { value: "Tools", label: "Tools", icon: Wrench },
   { value: "Projects", label: "Projects", icon: Rocket },
   { value: "Others", label: "Others", icon: MoreHorizontal },
 ];
 
-const conditionOptions: { value: Condition; title: string; note: string }[] = [
-  { value: "New", title: "New", note: "Never used" },
-  { value: "Like New", title: "Like New", note: "Used once or twice" },
-  { value: "Used", title: "Used", note: "Regular use" },
-  { value: "Old", title: "Old", note: "Visible wear" },
-];
+const conditionLabelMap: Record<Condition, string> = {
+  New: "New",
+  "Like New": "Like New",
+  Used: "Used",
+  Old: "Old",
+};
+
+const conditionNoteMap: Record<Condition, string> = {
+  New: "Never used",
+  "Like New": "Used once or twice",
+  Used: "Regular use",
+  Old: "Visible wear",
+};
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -114,16 +130,72 @@ const SellPage = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<Category | "">("");
   const [condition, setCondition] = useState<Condition | "">("");
-  const [images, setImages] = useState<string[]>([]);  const [submitting, setSubmitting] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [resourceLink, setResourceLink] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
+  const [aiStatus, setAiStatus] = useState<"idle" | "checking" | "approved" | "rejected" | "low_confidence" | "skipped">("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
   const postingCollege = canonicalInstitutionName(user?.college || "");
+  const selectedRule = category ? CATEGORY_RULES[category] : null;
+  const descriptionWordCount = countWords(description);
+  const trimmedTitle = title.trim();
+  const normalizedTitle = normalizeListingTitle(trimmedTitle);
+  const parsedPrice = Number(price || 0);
+  const isDigitalCategory = category === "Notes" || category === "Question Papers";
+  const canUploadImages = !!selectedRule && !isDigitalCategory;
+  const conditionOptions = selectedRule?.allowsConditionOptions ?? [];
+
+  useEffect(() => {
+    if (!selectedRule?.requiresCondition) {
+      setCondition("");
+      return;
+    }
+    if (condition && !selectedRule.allowsConditionOptions.includes(condition)) {
+      setCondition("");
+    }
+  }, [condition, selectedRule]);
+
+  useEffect(() => {
+    if (isDigitalCategory) {
+      setImages([]);
+    }
+  }, [isDigitalCategory]);
+
+  const validationMessages = useMemo(() => {
+    const messages: string[] = [];
+
+    if (!category) {
+      messages.push("Select a category first.");
+      return messages;
+    }
+
+    if (trimmedTitle.length < 5) messages.push("Title must be at least 5 characters.");
+    if (descriptionWordCount < 20) messages.push("Description must be at least 20 words.");
+    if (!price || parsedPrice <= 0) messages.push("Enter a valid price.");
+    if (selectedRule && parsedPrice > selectedRule.maxPrice) messages.push(`Max allowed is ₹${selectedRule.maxPrice}.`);
+    if (selectedRule?.requiresCondition && !condition) messages.push("Select a condition.");
+    if (selectedRule?.requiresImages && images.length < selectedRule.imageMinimum) messages.push(selectedRule.imageHint);
+    if (selectedRule?.requiresDriveLink && !resourceLink.trim()) messages.push("Add a Google Drive link.");
+    if (selectedRule?.requiresDriveLink && resourceLink.trim() && !isGoogleDriveLink(resourceLink.trim())) messages.push("Use a valid Google Drive link.");
+    if (selectedRule?.requiresYearSubjectBranch && !hasYearSubjectBranch(description)) messages.push("Include year, subject, and branch info.");
+
+    return messages;
+  }, [category, condition, description, descriptionWordCount, images.length, parsedPrice, price, resourceLink, selectedRule, trimmedTitle]);
 
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
-    if (images.length + files.length > 5) {
-      toast.error("Maximum 5 images allowed");
+    if (!selectedRule) {
+      toast.error("Select a category first.");
+      return;
+    }
+    if (!canUploadImages) {
+      toast.error("This category uses a Google Drive link instead of images.");
+      return;
+    }
+    if (images.length + files.length > MAX_FILES) {
+      toast.error(`Maximum ${MAX_FILES} images allowed`);
       return;
     }
 
@@ -166,52 +238,123 @@ const SellPage = () => {
     );
   }
 
+  const runCommonChecks = async () => {
+    if (!supabaseUser?.id) {
+      throw new Error("Your session is not ready. Please sign out and sign back in.");
+    }
+    if (!hasValidSellerPhone) {
+      navigate("/dashboard");
+      throw new Error("Add a valid WhatsApp number in Edit Profile before posting an item.");
+    }
+    if (!postingCollege) {
+      navigate("/dashboard");
+      throw new Error("Add your college in Edit Profile before posting an item.");
+    }
+    if (!category || !selectedRule) {
+      throw new Error("Please select a category.");
+    }
+    if (trimmedTitle.length < 5) throw new Error("Title must be at least 5 characters.");
+    if (descriptionWordCount < 20) throw new Error("Description must be at least 20 words.");
+    if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
+    if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
+    if (selectedRule.requiresCondition && !condition) throw new Error("Select the condition before posting.");
+    if (selectedRule.requiresImages && images.length < selectedRule.imageMinimum) throw new Error(selectedRule.imageHint);
+    if (selectedRule.requiresDriveLink) {
+      if (!resourceLink.trim()) throw new Error("Add a Google Drive link.");
+      if (!isGoogleDriveLink(resourceLink.trim())) throw new Error("Use a valid Google Drive link.");
+    }
+    if (selectedRule.requiresYearSubjectBranch && !hasYearSubjectBranch(description)) {
+      throw new Error("Description must include year, subject, and branch info.");
+    }
+
+    const { data: sellerListings, error: sellerListingsError } = await supabase
+      .from("listings")
+      .select("title, created_at")
+      .eq("seller_id", supabaseUser.id)
+      .order("created_at", { ascending: false });
+
+    if (sellerListingsError) {
+      throw new Error("Could not validate your upload limits right now.");
+    }
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const todayListings = (sellerListings || []).filter((listing) => new Date(listing.created_at).getTime() >= startOfDay.getTime());
+    if (todayListings.length >= MAX_DAILY_UPLOADS) {
+      throw new Error(`You can post up to ${MAX_DAILY_UPLOADS} items per day.`);
+    }
+
+    const latestListing = sellerListings?.[0];
+    if (latestListing && Date.now() - new Date(latestListing.created_at).getTime() < UPLOAD_COOLDOWN_MS) {
+      throw new Error("Please wait 30 seconds before posting another item.");
+    }
+
+    const duplicateListing = sellerListings?.find((listing) => normalizeListingTitle(listing.title) === normalizedTitle);
+    if (duplicateListing) {
+      throw new Error("You already posted an item with the same title.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !price || !category || !condition) {
-      toast.error("Please fill in all fields");
-      return;
-    }
     if (processingImages > 0) {
       toast.error("Please wait for image processing to finish.");
       return;
     }
-    if (!supabaseUser?.id) {
-      toast.error("Your session is not ready. Please sign out and sign back in.");
-      return;
-    }
-    if (Number(price) > MAX_LISTING_PRICE) {
-      toast.error("CampusKart currently supports listings up to ₹10,000. Please post items within this range.");
-      return;
-    }
-    if (!hasValidSellerPhone) {
-      toast.error("Add a valid WhatsApp number in Edit Profile before posting an item.");
-      navigate("/dashboard");
-      return;
-    }
-    if (!postingCollege) {
-      toast.error("Add your college in Edit Profile before posting an item.");
-      navigate("/dashboard");
-      return;
-    }
 
     setSubmitting(true);
+    setAiStatus("idle");
     try {
+      await runCommonChecks();
+
+      let aiVerificationStatus = "not_checked";
+      let moderationStatus = "active";
+
+      if (selectedRule?.requiresAiCheck && images[0]) {
+        setAiStatus("checking");
+        const aiResult = await verifyListingImageWithQwen({
+          title: trimmedTitle,
+          category: selectedRule.aiCategoryLabel,
+          imageDataUrl: images[0],
+        });
+
+        if (aiResult.status === "rejected") {
+          setAiStatus("rejected");
+          throw new Error("Image does not match item.");
+        }
+
+        if (aiResult.status === "low_confidence") {
+          aiVerificationStatus = "low_confidence";
+          moderationStatus = "flagged";
+          setAiStatus("low_confidence");
+        } else if (aiResult.status === "approved") {
+          aiVerificationStatus = "approved";
+          setAiStatus("approved");
+        } else {
+          aiVerificationStatus = "skipped";
+          setAiStatus("skipped");
+        }
+      }
+
       const { error } = await supabase.from("listings").insert({
-        title,
+        title: trimmedTitle,
         description: description.trim(),
-        price: Number(price),
+        price: parsedPrice,
         category,
-        condition,
-        images,
+        condition: selectedRule?.requiresCondition ? condition : "",
+        images: canUploadImages ? images : [],
         seller_id: supabaseUser.id,
         college: postingCollege,
         sold: false,
         likes: 0,
+        resource_link: resourceLink.trim() || null,
+        moderation_status: moderationStatus,
+        report_count: 0,
+        ai_verification_status: aiVerificationStatus,
       });
 
       if (error) throw error;
-      toast.success("Listing created successfully!");
+      toast.success(aiVerificationStatus === "low_confidence" ? "Listing posted and marked for admin review." : "Listing created successfully!");
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Failed to create listing");
@@ -250,7 +393,7 @@ const SellPage = () => {
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div>
                 <Label className="text-base font-semibold">Category</Label>
-                <p className="mt-1 text-xs text-muted-foreground">Choose a category first so buyers find it faster</p>
+                <p className="mt-1 text-xs text-muted-foreground">Select a category first. The form updates instantly.</p>
               </div>
 
               <Select value={category} onValueChange={(value) => setCategory(value as Category)}>
@@ -273,13 +416,57 @@ const SellPage = () => {
                   })}
                 </SelectContent>
               </Select>
+
+              {selectedRule && (
+                <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+                  {selectedRule.helper}
+                </div>
+              )}
             </section>
 
+            {selectedRule?.requiresDriveLink && (
+              <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+                <Label htmlFor="resourceLink" className="text-base font-semibold">Google Drive link</Label>
+                <div className="relative">
+                  <ExternalLink className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="resourceLink"
+                    value={resourceLink}
+                    onChange={(e) => setResourceLink(e.target.value)}
+                    placeholder="https://drive.google.com/..."
+                    className="h-12 rounded-2xl border-border/80 bg-background pl-10"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Upload Google Drive link. Seller must grant access after payment.</p>
+              </section>
+            )}
+
+            {category === "Projects" && (
+              <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+                <Label htmlFor="resourceLink" className="text-base font-semibold">Optional demo / drive link</Label>
+                <Input
+                  id="resourceLink"
+                  value={resourceLink}
+                  onChange={(e) => setResourceLink(e.target.value)}
+                  placeholder="Optional demo, video, or drive link"
+                  className="h-12 rounded-2xl border-border/80 bg-background"
+                />
+                <p className="text-xs text-muted-foreground">Images or demo links are optional but recommended for projects.</p>
+              </section>
+            )}
+
+            {canUploadImages && (
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div>
-                <Label className="text-base font-semibold text-foreground">Add Photos (Max 5)</Label>
-                <p className="mt-1 text-sm text-muted-foreground">First photo will be cover image</p>
-                <p className="mt-1 text-xs font-medium text-primary">Clear photos = faster sale</p>
+                <Label className="text-base font-semibold text-foreground">{selectedRule?.imageLabel || "Upload images"}</Label>
+                <p className="mt-1 text-sm text-muted-foreground">{selectedRule?.imageHint || "Upload at least one image if required"}</p>
+                <p className="mt-1 text-xs font-medium text-primary">
+                  {category === "Handwriting Service"
+                    ? "Max ₹50 per page"
+                    : selectedRule
+                      ? `Max ₹${selectedRule.maxPrice} for this category`
+                      : ""}
+                </p>
               </div>
 
               <div
@@ -306,7 +493,9 @@ const SellPage = () => {
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-background shadow-sm ring-1 ring-primary/10">
                   <ImagePlus className="h-7 w-7 text-primary" />
                 </div>
-                <p className="text-sm font-semibold text-foreground">Tap to upload item photos</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {category === "Handwriting Service" ? "Tap to upload handwriting samples" : "Tap to upload item photos"}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB each. Photos are optimized automatically.</p>
               </div>
 
@@ -339,6 +528,7 @@ const SellPage = () => {
                 </div>
               )}
             </section>
+            )}
 
             <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <Label htmlFor="title" className="text-base font-semibold">Title</Label>
@@ -346,10 +536,18 @@ const SellPage = () => {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Arduino Uno R3 with USB Cable"
+                placeholder={
+                  category === "Handwriting Service"
+                    ? "e.g. Clean assignment handwriting service"
+                    : category === "Notes"
+                      ? "e.g. Signals & Systems Notes"
+                      : category === "Question Papers"
+                        ? "e.g. 2024 DBMS Midterm Papers"
+                        : "e.g. Arduino Uno R3 with USB Cable"
+                }
                 className="h-12 rounded-2xl border-border/80 bg-background"
               />
-              <p className="text-xs leading-5 text-muted-foreground">Include brand + model + key details</p>
+              <p className="text-xs leading-5 text-muted-foreground">Minimum 5 characters. Keep it clear and specific.</p>
             </section>
 
             <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
@@ -358,13 +556,24 @@ const SellPage = () => {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Product details and reason for selling..."
+                placeholder={
+                  category === "Handwriting Service"
+                    ? "Describe handwriting style, turnaround time, languages supported, and what writing work you provide..."
+                    : category === "Notes" || category === "Question Papers"
+                      ? "Mention year, subject, branch, semester, and exactly what files will be shared after payment..."
+                      : "Add clear product details, usage, what is included, and the reason for selling..."
+                }
                 rows={5}
                 className="rounded-2xl border-border/80 bg-background"
               />
-              <p className="text-xs leading-5 text-muted-foreground">Share product details and why you are selling it.</p>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {selectedRule?.requiresYearSubjectBranch
+                  ? "Minimum 20 words. Include year, subject, and branch info."
+                  : "Minimum 20 words. Explain the item or service clearly."}
+              </p>
             </section>
 
+            {selectedRule?.requiresCondition && (
             <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div>
                 <Label className="text-base font-semibold">Condition</Label>
@@ -376,34 +585,66 @@ const SellPage = () => {
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
                   {conditionOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="rounded-xl py-3">
+                    <SelectItem key={option} value={option} className="rounded-xl py-3">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-foreground">{option.title}</span>
-                        <span className="text-xs text-muted-foreground">{option.note}</span>
+                        <span className="text-sm font-semibold text-foreground">{conditionLabelMap[option]}</span>
+                        <span className="text-xs text-muted-foreground">{conditionNoteMap[option]}</span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </section>
+            )}
 
-                        <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
-              <Label htmlFor="price" className="text-base font-semibold">Price</Label>
+            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+              <Label htmlFor="price" className="text-base font-semibold">
+                {category === "Handwriting Service" ? "Price per page" : "Price"}
+              </Label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">₹</span>
                 <Input
                   id="price"
                   type="number"
                   min="0"
-                  max={MAX_LISTING_PRICE}
+                  max={selectedRule?.maxPrice || 5000}
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  placeholder="500"
+                  placeholder={category === "Handwriting Service" ? "20" : "500"}
                   className="h-12 rounded-2xl border-border/80 bg-background pl-9"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Set a fair price for faster sale. Items above ₹10,000 are not allowed on CampusKart.</p>
+              <p className="text-xs text-muted-foreground">
+                {category === "Handwriting Service"
+                  ? "Max ₹50 per page"
+                  : category === "Notes" || category === "Question Papers"
+                    ? "Max ₹100 for notes or question papers"
+                    : selectedRule
+                      ? `Max ₹${selectedRule.maxPrice} for this category`
+                      : "Choose a category to see the price rule."}
+              </p>
             </section>
+
+            <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <p className="text-sm font-semibold text-foreground">Live validation</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {validationMessages.length === 0 ? (
+                  <Badge className="gradient-bg border-0 text-primary-foreground">Ready to post</Badge>
+                ) : (
+                  validationMessages.map((message) => (
+                    <Badge key={message} variant="secondary" className="rounded-full bg-amber-500/10 px-3 py-1 text-amber-800">
+                      {message}
+                    </Badge>
+                  ))
+                )}
+                {aiStatus === "checking" && <Badge variant="secondary">Checking image with AI...</Badge>}
+                {aiStatus === "low_confidence" && <Badge variant="secondary">AI marked this listing low confidence</Badge>}
+              </div>
+            </section>
+
             <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
@@ -421,6 +662,9 @@ const SellPage = () => {
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     {category && <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">{category}</span>}
                     {condition && <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">{condition}</span>}
+                    {selectedRule?.requiresDriveLink && resourceLink && (
+                      <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">Drive link attached</span>
+                    )}
                   </div>
                   <p className="line-clamp-2 text-sm font-semibold text-foreground">{title || "Your item title will appear here"}</p>
                   <p className="mt-1 text-sm font-bold gradient-text">

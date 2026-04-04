@@ -13,13 +13,14 @@ interface ProductCardProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
+  "Handwriting Service": "bg-cyan-500/10 text-cyan-700",
+  Notes: "bg-amber-500/10 text-amber-700",
+  "Question Papers": "bg-orange-500/10 text-orange-700",
   Components: "bg-primary/10 text-primary",
   Gadgets: "bg-sky-500/10 text-sky-600",
   Books: "bg-emerald-500/10 text-emerald-700",
-  "Notes & Question Papers": "bg-amber-500/10 text-amber-700",
   Tools: "bg-destructive/10 text-destructive",
   Projects: "bg-violet-500/10 text-violet-600",
-  "Hand Writing Service": "bg-cyan-500/10 text-cyan-700",
   Others: "bg-muted text-muted-foreground",
 };
 

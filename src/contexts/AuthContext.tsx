@@ -10,6 +10,9 @@ interface Profile {
   phone: string;
   college: string;
   is_admin?: boolean;
+  is_banned?: boolean;
+  ban_reason?: string | null;
+  violation_count?: number;
   avatar_url?: string;
 }
 
@@ -23,6 +26,7 @@ interface AuthContextType {
   updateProfile: (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isBanned: boolean;
   loading: boolean;
 }
 
@@ -37,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
@@ -53,6 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: data.phone,
         college: data.college,
         is_admin: data.is_admin ?? false,
+        is_banned: data.is_banned ?? false,
+        ban_reason: data.ban_reason ?? null,
+        violation_count: data.violation_count ?? 0,
         avatar_url: data.avatar_url ?? undefined,
       });
     }
@@ -85,7 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setIsAdmin(!!profile?.is_admin);
-  }, [profile?.is_admin]);
+    setIsBanned(!!profile?.is_banned);
+  }, [profile?.is_admin, profile?.is_banned]);
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -114,9 +123,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, is_banned, ban_reason")
       .eq("id", userData.user.id)
       .single();
+
+    if (profileData?.is_banned) {
+      await supabase.auth.signOut();
+      throw new Error(profileData.ban_reason || "This account is restricted. Please contact support.");
+    }
 
     return { isAdmin: !!profileData?.is_admin };
   }, []);
@@ -196,6 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateProfile,
       isAuthenticated: isAdmin || !!supabaseUser,
       isAdmin,
+      isBanned,
       loading,
     }}>
       {children}

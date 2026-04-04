@@ -15,7 +15,12 @@ import { Activity, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee,
 import { toast } from "sonner";
 
 interface ListingAdminRow {
+  ai_verification_status: string | null;
   id: string;
+  moderation_status: string;
+  report_count: number;
+  resource_link: string | null;
+  seller_id: string;
   title: string;
   price: number;
   category: string;
@@ -26,11 +31,15 @@ interface ListingAdminRow {
 }
 
 interface ProfileAdminRow {
+  ban_reason: string | null;
+  banned_at: string | null;
   id: string;
+  is_banned: boolean;
   name: string;
   email: string;
   college: string;
   created_at: string;
+  violation_count: number;
 }
 
 interface CollegeRequestRow {
@@ -85,11 +94,11 @@ export default function AdminDashboard() {
       ] = await Promise.all([
         supabase
           .from("listings")
-          .select("id, title, price, category, college, sold, created_at, images")
+          .select("id, title, price, category, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
           .order("created_at", { ascending: false }),
         supabase
           .from("profiles")
-          .select("id, name, email, college, created_at")
+          .select("id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at")
           .order("created_at", { ascending: false }),
         supabase
           .from("college_requests")
@@ -161,6 +170,7 @@ export default function AdminDashboard() {
   const usagePercent = Math.min((databaseUsageBytes / DATABASE_LIMIT_BYTES) * 100, 100);
   const remainingBytes = Math.max(DATABASE_LIMIT_BYTES - databaseUsageBytes, 0);
   const activeListings = listings.filter((listing) => !listing.sold).length;
+  const flaggedListings = listings.filter((listing) => listing.moderation_status === "flagged" || listing.moderation_status === "hidden");
   const soldListings = listings.filter((listing) => listing.sold).length;
   const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
   const usageTone =
@@ -187,15 +197,64 @@ export default function AdminDashboard() {
     toast.success("Listing removed.");
   };
 
-  const handleMarkSold = async (id: string) => {
-    const { error } = await supabase.from("listings").update({ sold: true }).eq("id", id);
-    if (error) {
-      toast.error("Update failed. This project may still need stricter server-side admin permissions.");
+  const handleApproveListing = async (listingId: string) => {
+    const { error: listingError } = await supabase
+      .from("listings")
+      .update({
+        moderation_status: "active",
+        report_count: 0,
+        hidden_at: null,
+      })
+      .eq("id", listingId);
+
+    if (listingError) {
+      toast.error("Could not approve this listing.");
       return;
     }
 
-    setListings((current) => current.map((listing) => (listing.id === id ? { ...listing, sold: true } : listing)));
-    toast.success("Listing marked as sold.");
+    await supabase.from("listing_reports").delete().eq("listing_id", listingId);
+
+    setListings((current) =>
+      current.map((listing) =>
+        listing.id === listingId
+          ? { ...listing, moderation_status: "active", report_count: 0 }
+          : listing
+      )
+    );
+    toast.success("Listing approved and reports cleared.");
+  };
+
+  const handleBanUser = async (profileId: string) => {
+    const target = profiles.find((profile) => profile.id === profileId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        is_banned: true,
+        banned_at: new Date().toISOString(),
+        ban_reason: "Repeated listing violations",
+        violation_count: (target?.violation_count || 0) + 1,
+      })
+      .eq("id", profileId);
+
+    if (error) {
+      toast.error("Could not ban this user.");
+      return;
+    }
+
+    setProfiles((current) =>
+      current.map((profile) =>
+        profile.id === profileId
+          ? {
+              ...profile,
+              is_banned: true,
+              banned_at: new Date().toISOString(),
+              ban_reason: "Repeated listing violations",
+              violation_count: profile.violation_count + 1,
+            }
+          : profile
+      )
+    );
+    toast.success("User banned for repeated violations.");
   };
 
   const handleCollegeRequestStatus = async (id: string, status: "approved" | "rejected") => {
@@ -457,7 +516,7 @@ export default function AdminDashboard() {
                     onClick={() => handleSectionChange("listings")}
                   >
                     <span>Listing Moderation</span>
-                    <Badge variant="secondary" className="ml-2 text-[10px]">{listings.length}</Badge>
+                      <Badge variant="secondary" className="ml-2 text-[10px]">{flaggedListings.length}</Badge>
                   </Button>
                   <Button
                     variant={activeSection === "members" ? "default" : "outline"}
@@ -552,36 +611,40 @@ export default function AdminDashboard() {
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5 text-primary" /> Listing moderation
                   </CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Newest listings first, with compact moderation controls.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Flagged or auto-hidden listings needing admin review.</p>
                 </div>
-                <Badge variant="secondary">{listings.length} total</Badge>
+                <Badge variant="secondary">{flaggedListings.length} flagged</Badge>
               </div>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading admin data...</p>
-              ) : listings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No listings found yet.</p>
+              ) : flaggedListings.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No flagged listings right now.</p>
               ) : (
                 <div className="space-y-2">
-                  {listings.map((listing) => (
+                  {flaggedListings.map((listing) => (
                     <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="truncate text-sm font-medium text-foreground">{listing.title}</p>
-                          <Badge variant={listing.sold ? "secondary" : "outline"} className="text-[10px]">{listing.sold ? "Sold" : "Active"}</Badge>
+                          <Badge variant={listing.moderation_status === "hidden" ? "destructive" : "secondary"} className="text-[10px] capitalize">{listing.moderation_status}</Badge>
                           <Badge variant="secondary" className="text-[10px]">{listing.category}</Badge>
+                          {listing.ai_verification_status && (
+                            <Badge variant="outline" className="text-[10px]">{listing.ai_verification_status}</Badge>
+                          )}
                         </div>
                         <p className="truncate text-xs text-muted-foreground">
                           {listing.category} • {listing.college} • Rs. {Number(listing.price).toLocaleString("en-IN")}
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        {!listing.sold && (
-                          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleMarkSold(listing.id)}>
-                            Mark sold
-                          </Button>
-                        )}
+                        <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
+                          Approve
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                          Ban user
+                        </Button>
                         <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
                           <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
                         </Button>
@@ -621,9 +684,15 @@ export default function AdminDashboard() {
                           {profile.name?.charAt(0) || "U"}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">{profile.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-medium text-foreground">{profile.name}</p>
+                            {profile.is_banned && <Badge variant="destructive" className="text-[10px]">Banned</Badge>}
+                          </div>
                           <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
                           <p className="text-xs text-muted-foreground">{profile.college}</p>
+                          {profile.violation_count > 0 && (
+                            <p className="text-xs text-muted-foreground">{profile.violation_count} violation(s)</p>
+                          )}
                         </div>
                       </div>
                     </div>

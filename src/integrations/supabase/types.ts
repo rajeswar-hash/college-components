@@ -55,49 +55,88 @@ export type Database = {
       }
       listings: {
         Row: {
+          ai_verification_status: string | null
           category: string
           college: string
           condition: string
           created_at: string
           description: string
+          hidden_at: string | null
           id: string
           images: string[] | null
           likes: number
+          moderation_status: string
           price: number
+          report_count: number
+          resource_link: string | null
           seller_id: string
           sold: boolean
           title: string
           updated_at: string
         }
         Insert: {
+          ai_verification_status?: string | null
           category: string
           college?: string
           condition: string
           created_at?: string
           description?: string
+          hidden_at?: string | null
           id?: string
           images?: string[] | null
           likes?: number
+          moderation_status?: string
           price: number
+          report_count?: number
+          resource_link?: string | null
           seller_id: string
           sold?: boolean
           title: string
           updated_at?: string
         }
         Update: {
+          ai_verification_status?: string | null
           category?: string
           college?: string
           condition?: string
           created_at?: string
           description?: string
+          hidden_at?: string | null
           id?: string
           images?: string[] | null
           likes?: number
+          moderation_status?: string
           price?: number
+          report_count?: number
+          resource_link?: string | null
           seller_id?: string
           sold?: boolean
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      listing_reports: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          reason?: string
+          reporter_id?: string
         }
         Relationships: []
       }
@@ -122,36 +161,48 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          ban_reason: string | null
+          banned_at: string | null
           college: string
           created_at: string
           email: string
           id: string
           is_admin: boolean
+          is_banned: boolean
           name: string
           phone: string
           updated_at: string
+          violation_count: number
         }
         Insert: {
           avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           college?: string
           created_at?: string
           email: string
           id: string
           is_admin?: boolean
+          is_banned?: boolean
           name: string
           phone?: string
           updated_at?: string
+          violation_count?: number
         }
         Update: {
           avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           college?: string
           created_at?: string
           email?: string
           id?: string
           is_admin?: boolean
+          is_banned?: boolean
           name?: string
           phone?: string
           updated_at?: string
+          violation_count?: number
         }
         Relationships: []
       }
@@ -190,6 +241,16 @@ export type Database = {
           p_listing_id: string
         }
         Returns: boolean
+      }
+      submit_listing_report: {
+        Args: {
+          p_listing_id: string
+          p_reason: string
+        }
+        Returns: {
+          moderation_status: string
+          report_count: number
+        }[]
       }
       toggle_listing_like: {
         Args: {
