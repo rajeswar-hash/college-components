@@ -22,8 +22,8 @@ export interface CategoryRule {
 export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   "Handwriting Service": {
     category: "Handwriting Service",
-    helper: "Upload a handwriting sample and set a fair price per page.",
-    maxPrice: 50,
+    helper: "Offer neat handwritten files, notes, assignments, and record work with a fair per-page rate.",
+    maxPrice: 20,
     requiresCondition: false,
     allowsConditionOptions: [],
     requiresImages: true,

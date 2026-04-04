@@ -94,12 +94,12 @@ const categoryContentMap: Partial<Record<Category, {
   priceHint: string;
 }>> = {
   "Handwriting Service": {
-    titlePlaceholder: "e.g. Neat assignment handwriting per page",
-    titleHint: "Mention the service clearly so students know what writing help you offer.",
-    descriptionPlaceholder: "Describe handwriting style, page quality, language, turnaround time, and what kind of assignments, records, or notes you can write...",
-    descriptionHint: "Minimum 20 words. Explain the service, speed, and what the buyer will receive.",
-    pricePlaceholder: "25",
-    priceHint: "Max ₹50 per page. Keep the price fair and easy for students.",
+    titlePlaceholder: "e.g. Handwritten assignments, files, and notes service",
+    titleHint: "Make it clear that you can write assignments, files, records, or notes neatly on request.",
+    descriptionPlaceholder: "Explain the kind of files, notes, assignments, or record work you can complete, your handwriting quality, turnaround time, language, and how you charge according to the work...",
+    descriptionHint: "Minimum 20 words. Tell buyers what work you can do and how the service will be handled.",
+    pricePlaceholder: "15",
+    priceHint: "Max ₹20 per page. Keep the rate student-friendly and clear.",
   },
   Notes: {
     titlePlaceholder: "e.g. DBMS Semester 4 Notes PDF",
@@ -585,7 +585,7 @@ const SellPage = () => {
                 <p className="mt-1 text-sm text-muted-foreground">{selectedRule?.imageHint || "Upload at least one image if required"}</p>
                 <p className="mt-1 text-xs font-medium text-primary">
                   {category === "Handwriting Service"
-                    ? "Max ₹50 per page"
+                    ? "Max ₹20 per page"
                     : selectedRule
                       ? `Max ₹${selectedRule.maxPrice} for this category`
                       : ""}
