@@ -297,7 +297,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         onKeyDown={moveOnEnter(emailRef)}
-                        placeholder="919876543210"
+                        placeholder="9876543210"
                         autoComplete="tel"
                         inputMode="tel"
                       />
