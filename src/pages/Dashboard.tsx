@@ -133,21 +133,34 @@ const Dashboard = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!profileForm.name.trim()) {
+    const cleanName = profileForm.name.trim();
+    const cleanCollege = profileForm.college.trim();
+    const cleanPhone = profileForm.phone.trim();
+    const normalizedPhone = cleanPhone.replace(/\D/g, "");
+
+    if (!cleanName) {
       toast.error("Please enter your name");
       return;
     }
-    if (!profileForm.college.trim()) {
+    if (!cleanCollege) {
       toast.error("Please enter your college");
+      return;
+    }
+    if (!cleanPhone) {
+      toast.error("Please enter your WhatsApp number");
+      return;
+    }
+    if (normalizedPhone.length !== 10) {
+      toast.error("Please enter a valid 10-digit WhatsApp number");
       return;
     }
 
     try {
       setSavingProfile(true);
       await updateProfile({
-        name: profileForm.name.trim(),
-        phone: profileForm.phone.trim(),
-        college: profileForm.college.trim(),
+        name: cleanName,
+        phone: normalizedPhone,
+        college: cleanCollege,
         avatar_url: profileForm.avatar_url || getDefaultAvatar(profileForm.name, user?.email),
       });
       setIsEditingProfile(false);
