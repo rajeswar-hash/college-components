@@ -44,6 +44,7 @@ const MAX_IMAGE_DIMENSION = 1280;
 const MAX_FILES = 5;
 const MAX_DAILY_UPLOADS = 7;
 const UPLOAD_COOLDOWN_MS = 30 * 1000;
+const HANDWRITING_TITLE_EMOJI = "✍️";
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -225,6 +226,7 @@ const SellPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastAutoTitleRef = useRef("");
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
   const postingCollege = canonicalInstitutionName(user?.college || "");
   const selectedRule = category ? CATEGORY_RULES[category] : null;
@@ -237,6 +239,8 @@ const SellPage = () => {
   const conditionOptions = selectedRule?.allowsConditionOptions ?? [];
   const categoryContent = category ? categoryContentMap[category] : null;
   const formLocked = !category;
+  const firstName = (user?.name || "").trim().split(/\s+/)[0] || "Student";
+  const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service – ${firstName}`;
 
   useEffect(() => {
     if (!selectedRule?.requiresCondition) {
@@ -253,6 +257,17 @@ const SellPage = () => {
       setImages([]);
     }
   }, [isDigitalCategory]);
+
+  useEffect(() => {
+    if (category !== "Handwriting Service") return;
+
+    const currentTitle = title.trim();
+    const canAutofill = !currentTitle || currentTitle === lastAutoTitleRef.current;
+    if (!canAutofill) return;
+
+    setTitle(handwritingDefaultTitle);
+    lastAutoTitleRef.current = handwritingDefaultTitle;
+  }, [category, handwritingDefaultTitle, title]);
 
   const validationMessages = useMemo(() => {
     const messages: string[] = [];
