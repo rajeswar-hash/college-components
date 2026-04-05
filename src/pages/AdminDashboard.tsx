@@ -319,6 +319,34 @@ export default function AdminDashboard() {
     toast.success(status === "approved" ? "College request approved." : "College request rejected.");
   };
 
+  const handleDeleteCollegeRequest = async (id: string) => {
+    const target = collegeRequests.find((request) => request.id === id);
+    if (!target) return;
+
+    const confirmed = window.confirm(`Remove the college request for ${target.college_name}?`);
+    if (!confirmed) return;
+
+    const { error } = await supabase.from("college_requests").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Could not remove this college request yet.");
+      return;
+    }
+
+    setCollegeRequests((current) => current.filter((request) => request.id !== id));
+    setCollegeNameDrafts((current) => {
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+
+    if (target.status === "approved") {
+      invalidateInstitutionNamesCache();
+    }
+
+    toast.success("College request removed.");
+  };
+
   const handleSectionChange = (section: "requests" | "listings" | "members") => {
     setActiveSection((current) => (current === section ? null : section));
 
@@ -619,6 +647,14 @@ export default function AdminDashboard() {
                             Reject
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteCollegeRequest(request.id)}
+                        >
+                          <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
+                        </Button>
                       </div>
                     </div>
                   ))}
