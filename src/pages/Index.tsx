@@ -378,6 +378,15 @@ const Index = () => {
     }
   };
 
+  const handleCollegeSearchButtonClick = async () => {
+    collegeInputRef.current?.focus();
+    setCollegeDropdownOpen(true);
+
+    if (collegeQuery.trim().length >= 2) {
+      await handleCollegeInputSubmit();
+    }
+  };
+
   const resetCollegeRequestForm = () => {
     setRequestCollegeName("");
     setRequestState("");
@@ -532,13 +541,13 @@ const Index = () => {
                           >
                             <X className="h-3.5 w-3.5 text-primary hover:text-primary" />
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => void handleCollegeInputSubmit()}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full border border-primary/20 bg-primary/10 p-1.5"
-                            aria-label="Search college"
-                          >
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => void handleCollegeSearchButtonClick()}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full border border-primary/20 bg-primary/10 p-1.5"
+                              aria-label="Search college"
+                            >
                             <Search className="h-3.5 w-3.5 text-primary" />
                           </button>
                         )}
