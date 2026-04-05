@@ -213,6 +213,26 @@ const Index = () => {
     }
   }, [selectedCollege]);
 
+  const resetCollegeSelection = useCallback(() => {
+    setSelectedCollege(null);
+    setCollegeQuery("");
+    setCollegeResults([]);
+    setSearch("");
+    setSelectedCategory(null);
+    setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedCollege) {
+        resetCollegeSelection();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [resetCollegeSelection, selectedCollege]);
+
   useEffect(() => {
     const viewport = window.visualViewport;
     if (!viewport) return;
@@ -324,6 +344,9 @@ const Index = () => {
 
   const handleCollegeSelect = (college: string) => {
     const canonicalCollege = canonicalInstitutionName(college);
+    if (!selectedCollege) {
+      window.history.pushState({ campuskartCollegeView: canonicalCollege }, "", window.location.href);
+    }
     setSelectedCollege(canonicalCollege);
     setCollegeQuery(canonicalCollege);
     setCollegeDropdownOpen(false);
@@ -334,12 +357,7 @@ const Index = () => {
   };
 
   const handleChangeCollege = () => {
-    setSelectedCollege(null);
-    setCollegeQuery("");
-    setCollegeResults([]);
-    setSearch("");
-    setSelectedCategory(null);
-    setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+    resetCollegeSelection();
   };
 
   const handleCollegeInputFocus = () => {
