@@ -471,8 +471,8 @@ const Index = () => {
                   aria-hidden="true"
                 />
               </picture>
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_32%,rgba(255,255,255,0.38)_68%,rgba(255,255,255,0.92)_86%,rgb(255,255,255)_100%)]" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.58)_42%,rgba(255,255,255,0.9)_74%,rgb(255,255,255)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_30%,rgba(255,255,255,0.34)_62%,rgba(255,255,255,0.82)_80%,rgba(255,255,255,0.96)_90%,rgb(255,255,255)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.46)_28%,rgba(255,255,255,0.84)_62%,rgba(255,255,255,0.96)_82%,rgb(255,255,255)_100%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_28%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-55">
                 <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
@@ -576,7 +576,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="mx-auto max-w-5xl space-y-6 px-1 pb-8">
+            <div className="-mt-8 mx-auto max-w-5xl space-y-6 px-1 pb-8 sm:-mt-6">
               <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                   <div className="max-w-2xl">
