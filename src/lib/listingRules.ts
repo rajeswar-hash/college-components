@@ -194,3 +194,42 @@ export function hasYearSubjectBranch(value: string) {
   const hasBranch = /\b(cse|it|ece|eee|mech|civil|branch|engineering|cs|electrical|mechanical)\b/.test(text);
   return hasYear && hasSubject && hasBranch;
 }
+
+function isLikelyHumanWord(word: string) {
+  const cleaned = word.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!cleaned) return false;
+  if (cleaned.length <= 2) return true;
+  if (/^\d+$/.test(cleaned)) return true;
+
+  const vowelCount = (cleaned.match(/[aeiou]/g) || []).length;
+  const uniqueChars = new Set(cleaned).size;
+  const hasCommonBlend = /(ing|tion|ment|able|with|from|your|camp|book|note|wire|chip|used|good|clean|year|sem|calc|kit|set|pdf|drive)/.test(cleaned);
+  const longConsonantRun = /[^aeiou]{6,}/.test(cleaned);
+  const repeatedPattern = /(.)\1{3,}/.test(cleaned);
+
+  if (repeatedPattern || longConsonantRun) return false;
+  if (hasCommonBlend) return true;
+  if (cleaned.length >= 5 && vowelCount === 0) return false;
+  if (cleaned.length >= 6 && vowelCount <= 1 && uniqueChars >= 5) return false;
+  if (cleaned.length >= 10 && vowelCount <= 2) return false;
+
+  return true;
+}
+
+export function hasClearHumanDescription(value: string) {
+  const words = value
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+
+  if (words.length < 10) return false;
+
+  const humanWords = words.filter(isLikelyHumanWord);
+  const suspiciousWords = words.length - humanWords.length;
+  const humanRatio = humanWords.length / words.length;
+  const suspiciousRatio = suspiciousWords / words.length;
+  const hasMeaningfulPhrase = /[a-z]{3,}\s+[a-z]{3,}\s+[a-z]{3,}/i.test(value);
+
+  return humanRatio >= 0.6 && suspiciousRatio <= 0.4 && hasMeaningfulPhrase;
+}

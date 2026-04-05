@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
-import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
+import { CATEGORY_RULES, countWords, hasClearHumanDescription, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -264,6 +264,9 @@ const SellPage = () => {
 
     if (trimmedTitle.length < 5) messages.push("Title must be at least 5 characters.");
     if (descriptionWordCount < 10) messages.push("Description must be at least 10 words.");
+    if (description.trim() && descriptionWordCount >= 10 && !hasClearHumanDescription(description)) {
+      messages.push("Write a clear description with real item details, not random characters.");
+    }
     if (!price || parsedPrice <= 0) messages.push("Enter a valid price.");
     if (selectedRule && parsedPrice > selectedRule.maxPrice) messages.push(`Max allowed is ₹${selectedRule.maxPrice}.`);
     if (selectedRule?.requiresCondition && !condition) messages.push("Select a condition.");
@@ -365,6 +368,9 @@ const SellPage = () => {
     }
     if (trimmedTitle.length < 5) throw new Error("Title must be at least 5 characters.");
     if (descriptionWordCount < 10) throw new Error("Description must be at least 10 words.");
+    if (!hasClearHumanDescription(description)) {
+      throw new Error("Please write a clear human-readable description with real item details.");
+    }
     if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
     if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
     if (selectedRule.requiresCondition && !condition) throw new Error("Select the condition before posting.");
