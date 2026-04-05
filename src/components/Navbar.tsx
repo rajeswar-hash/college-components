@@ -25,6 +25,7 @@ export function Navbar() {
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [showDeletePasswordMobile, setShowDeletePasswordMobile] = useState(false);
@@ -120,9 +121,7 @@ export function Navbar() {
   };
 
   const handleLogout = async () => {
-    const confirmed = window.confirm("Are you sure you want to sign out of CampusKart?");
-    if (!confirmed) return;
-
+    setShowSignOutConfirm(false);
     setMobileMenu(false);
     await logout();
     navigate("/");
@@ -255,7 +254,7 @@ export function Navbar() {
                     {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} {isAdmin ? "Admin Panel" : "Dashboard"}
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <Button variant="ghost" size="sm" onClick={() => setShowSignOutConfirm(true)}>
                   <LogOut className="w-4 h-4" />
                 </Button>
               </>
@@ -399,7 +398,7 @@ export function Navbar() {
                   </Link>
                 )}
                 {isAuthenticated && (
-                  <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => setShowSignOutConfirm(true)}>
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
                   </Button>
                 )}
@@ -408,6 +407,21 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={showSignOutConfirm} onOpenChange={setShowSignOutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign out of CampusKart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will need to sign in again to access your dashboard, cart, and saved account features.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout}>Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </>
