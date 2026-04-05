@@ -463,7 +463,7 @@ const Index = () => {
                 <img
                   src={`${import.meta.env.BASE_URL}campus-hero-mobile.jpg`}
                   alt=""
-                    className="h-full w-full object-cover object-top opacity-100 sm:object-center"
+                    className="h-full w-full object-cover object-top opacity-100"
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
