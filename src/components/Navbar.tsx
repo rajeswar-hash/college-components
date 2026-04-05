@@ -144,12 +144,12 @@ export function Navbar() {
     <>
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg gradient-bg flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2 md:gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-bg md:h-10 md:w-10">
               <Cpu className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl text-foreground">
-            Campus<span className="gradient-text">Kart</span>
+            <span className="font-display text-xl font-bold leading-none text-foreground md:flex md:h-10 md:items-center">
+              Campus<span className="gradient-text">Kart</span>
             </span>
           </Link>
 
