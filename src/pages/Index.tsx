@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Search, Store, X } from "lucide-react";
+import { MapPin, Search, Store, X, ShieldCheck, MessageCircle, Wallet, ChevronRight } from "lucide-react";
 import { canonicalInstitutionName, loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -573,6 +573,125 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
+              </div>
+            </div>
+
+            <div className="mx-auto max-w-5xl space-y-6 px-1 pb-8">
+              <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div className="max-w-2xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Campus marketplace</p>
+                    <h2 className="mt-2 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                      A trusted way to buy and sell within your own college
+                    </h2>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-[15px]">
+                      CampusKart keeps listings focused on real student needs like electronics, gadgets, tools, notes, books, and project gear, with direct contact between buyer and seller.
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/85 px-4 py-2 text-sm font-medium text-foreground shadow-sm">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    Pick your college to unlock local listings
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-primary/10 bg-background/80 p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+                        <ShieldCheck className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">College-only listings</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">Focused on your own campus instead of a random public marketplace.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-primary/10 bg-background/80 p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+                        <MessageCircle className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Direct seller contact</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">Reach sellers quickly on WhatsApp without middlemen or extra steps.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-primary/10 bg-background/80 p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+                        <Wallet className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Better student prices</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">Useful college items move faster when students price them fairly.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-[0.95fr_1.05fr]">
+                <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">How it works</p>
+                  <div className="mt-4 space-y-3">
+                    {[
+                      {
+                        step: "01",
+                        title: "Select your college",
+                        body: "Start with your campus so every listing stays relevant to your college community.",
+                      },
+                      {
+                        step: "02",
+                        title: "Browse local items",
+                        body: "Explore notes, components, gadgets, books, tools, and project gear from students around you.",
+                      },
+                      {
+                        step: "03",
+                        title: "Contact the seller directly",
+                        body: "Use WhatsApp to ask, negotiate, and arrange pickup quickly.",
+                      },
+                    ].map((item) => (
+                      <div key={item.step} className="flex items-start gap-3 rounded-2xl border border-border/60 bg-background/70 p-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-sm font-semibold text-primary">
+                          {item.step}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.body}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-border/70 bg-card/80 p-5 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Why students use it</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {[
+                      "Faster same-campus deals",
+                      "No shipping confusion",
+                      "Useful for projects and coursework",
+                      "Cleaner than public marketplaces",
+                    ].map((point) => (
+                      <div key={point} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+                        <div className="rounded-full bg-primary/10 p-1.5 text-primary">
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">{point}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,rgba(20,184,166,0.08),rgba(59,130,246,0.08))] px-4 py-4">
+                    <p className="text-sm font-semibold text-foreground">Built for practical student buying and selling</p>
+                    <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                      Instead of searching through unrelated public listings, students can open their campus marketplace and find what actually matters faster.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
