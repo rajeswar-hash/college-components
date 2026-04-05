@@ -305,8 +305,8 @@ const SellPage = () => {
     return messages;
   }, [category, condition, description, descriptionWordCount, images.length, parsedPrice, price, resourceLink, selectedRule, trimmedTitle]);
 
-  const handleImageUpload = async (files: FileList | null) => {
-    if (!files) return;
+  const handleImageUpload = async (incomingFiles: File[] | FileList | null) => {
+    if (!incomingFiles) return;
     if (!selectedRule) {
       toast.error("Select a category first.");
       return;
@@ -315,13 +315,15 @@ const SellPage = () => {
       toast.error("This category uses a Google Drive link instead of images.");
       return;
     }
+    const files = Array.from(incomingFiles);
+    if (files.length === 0) return;
     if (images.length + files.length > MAX_FILES) {
       toast.error(`Maximum ${MAX_FILES} images allowed`);
       return;
     }
 
     setProcessingImages((count) => count + files.length);
-    for (const file of Array.from(files)) {
+    for (const file of files) {
       if (!file.type.startsWith("image/")) {
         setProcessingImages((count) => Math.max(0, count - 1));
         continue;
@@ -342,6 +344,24 @@ const SellPage = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if (!canUploadImages || formLocked) return;
+
+    const handlePaste = (event: ClipboardEvent) => {
+      const clipboardFiles = Array.from(event.clipboardData?.items || [])
+        .filter((item) => item.kind === "file")
+        .map((item) => item.getAsFile())
+        .filter((file): file is File => !!file && file.type.startsWith("image/"));
+
+      if (clipboardFiles.length === 0) return;
+      event.preventDefault();
+      void handleImageUpload(clipboardFiles);
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [canUploadImages, formLocked, images.length, selectedRule]);
 
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
@@ -631,6 +651,15 @@ const SellPage = () => {
               <div
                 className="cursor-pointer rounded-3xl border-2 border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(20,184,166,0.06),rgba(59,130,246,0.06))] p-6 text-center transition-all hover:border-primary/50 hover:shadow-[0_14px_30px_rgba(34,197,194,0.10)] sm:p-8"
                 onClick={() => fileInputRef.current?.click()}
+                onPaste={(e) => {
+                  const clipboardFiles = Array.from(e.clipboardData?.items || [])
+                    .filter((item) => item.kind === "file")
+                    .map((item) => item.getAsFile())
+                    .filter((file): file is File => !!file && file.type.startsWith("image/"));
+                  if (clipboardFiles.length === 0) return;
+                  e.preventDefault();
+                  void handleImageUpload(clipboardFiles);
+                }}
                 onDragOver={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -640,6 +669,9 @@ const SellPage = () => {
                   e.stopPropagation();
                   handleImageUpload(e.dataTransfer.files);
                 }}
+                tabIndex={0}
+                role="button"
+                aria-label="Upload listing images by click, drag and drop, or paste"
               >
                 <input
                   ref={fileInputRef}
