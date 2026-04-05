@@ -236,6 +236,7 @@ const SellPage = () => {
   const canUploadImages = !!selectedRule && !isDigitalCategory;
   const conditionOptions = selectedRule?.allowsConditionOptions ?? [];
   const categoryContent = category ? categoryContentMap[category] : null;
+  const formLocked = !category;
 
   useEffect(() => {
     if (!selectedRule?.requiresCondition) {
@@ -558,6 +559,7 @@ const SellPage = () => {
                     onChange={(e) => setResourceLink(e.target.value)}
                     placeholder="https://drive.google.com/..."
                     className="h-12 rounded-2xl border-border/80 bg-background pl-10"
+                    disabled={formLocked}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">Upload Google Drive link. Seller must grant access after payment.</p>
@@ -573,13 +575,14 @@ const SellPage = () => {
                   onChange={(e) => setResourceLink(e.target.value)}
                   placeholder="Optional demo, video, or drive link"
                   className="h-12 rounded-2xl border-border/80 bg-background"
+                  disabled={formLocked}
                 />
                 <p className="text-xs text-muted-foreground">Images or demo links are optional but recommended for projects.</p>
               </section>
             )}
 
             {canUploadImages && (
-            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className={`space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm ${formLocked ? "pointer-events-none opacity-60" : ""}`}>
               <div>
                 <Label className="text-base font-semibold text-foreground">{selectedRule?.imageLabel || "Upload images"}</Label>
                 <p className="mt-1 text-sm text-muted-foreground">{selectedRule?.imageHint || "Upload at least one image if required"}</p>
@@ -661,6 +664,7 @@ const SellPage = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={categoryContent?.titlePlaceholder || "Select a category to see a better title example"}
                 className="h-12 rounded-2xl border-border/80 bg-background"
+                disabled={formLocked}
               />
               <p className="text-xs leading-5 text-muted-foreground">
                 {categoryContent?.titleHint || "Minimum 5 characters. Keep it clear and specific."}
@@ -676,6 +680,7 @@ const SellPage = () => {
                 placeholder={categoryContent?.descriptionPlaceholder || "Select a category to see the right description format"}
                 rows={5}
                 className="rounded-2xl border-border/80 bg-background"
+                disabled={formLocked}
               />
               <p className="text-xs leading-5 text-muted-foreground">{categoryContent?.descriptionHint || "Minimum 10 words. Explain the item or service clearly."}</p>
             </section>
@@ -686,7 +691,7 @@ const SellPage = () => {
                 <Label className="text-base font-semibold">Condition</Label>
                 <p className="mt-1 text-xs text-muted-foreground">Choose honestly to build trust</p>
               </div>
-              <Select value={condition} onValueChange={(value) => setCondition(value as Condition)}>
+              <Select value={condition} onValueChange={(value) => setCondition(value as Condition)} disabled={formLocked}>
                 <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4">
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
@@ -719,6 +724,7 @@ const SellPage = () => {
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder={categoryContent?.pricePlaceholder || "Enter price"}
                   className="h-12 rounded-2xl border-border/80 bg-background pl-9"
+                  disabled={formLocked}
                 />
               </div>
               <p className="text-xs text-muted-foreground">{categoryContent?.priceHint || (selectedRule ? `Max ₹${selectedRule.maxPrice} for this category.` : "Choose a category to see the price rule.")}</p>
@@ -781,7 +787,7 @@ const SellPage = () => {
             <Button
               type="submit"
               size="lg"
-              disabled={submitting || processingImages > 0 || !hasValidSellerPhone}
+              disabled={formLocked || submitting || processingImages > 0 || !hasValidSellerPhone}
               className="h-12 w-full rounded-2xl border-0 bg-[linear-gradient(135deg,rgb(20,184,166),rgb(59,130,246))] text-base font-semibold text-primary-foreground shadow-[0_16px_40px_rgba(34,197,194,0.22)] hover:opacity-90"
             >
               {processingImages > 0 ? "Preparing Images..." : submitting ? "Posting..." : "Post Item 🚀"}
