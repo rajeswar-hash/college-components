@@ -120,6 +120,9 @@ export function Navbar() {
   };
 
   const handleLogout = async () => {
+    const confirmed = window.confirm("Are you sure you want to sign out of CampusKart?");
+    if (!confirmed) return;
+
     setMobileMenu(false);
     await logout();
     navigate("/");
