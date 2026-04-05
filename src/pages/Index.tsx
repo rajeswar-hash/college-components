@@ -488,9 +488,9 @@ const Index = () => {
                       <div className="inline-flex rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-3 py-2 text-center shadow-[0_10px_24px_rgba(20,184,166,0.08)]">
                         <p className="text-[12px] leading-4 text-foreground/68 sm:text-[13px]">
                           <span className="text-[14px] font-semibold uppercase tracking-[0.08em] text-foreground sm:text-[15px]">SELECT YOUR COLLEGE</span>{" "}
-                          to see listings from
+                          to see listings
                           <br />
-                          your college
+                          from your college
                         </p>
                       </div>
                       <div ref={collegeWrapperRef} className="mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
