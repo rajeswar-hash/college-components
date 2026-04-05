@@ -697,9 +697,9 @@ const SellPage = () => {
               )}
 
               {images.length > 0 && (
-                <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                   {images.map((img, i) => (
-                    <div key={i} className="group relative h-32 overflow-hidden rounded-2xl border border-border bg-muted/40 sm:h-36">
+                    <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted/40">
                       <img src={img} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" />
                       {i === 0 && (
                         <div className="absolute left-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-sm">
