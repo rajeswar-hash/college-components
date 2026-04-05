@@ -216,6 +216,18 @@ function isLikelyHumanWord(word: string) {
   return true;
 }
 
+const DESCRIPTION_KEYWORDS = new Set([
+  "assignment", "assignments", "available", "battery", "board", "book", "books", "box",
+  "branch", "brand", "calculator", "cable", "cables", "charger", "chip", "clean", "college",
+  "condition", "component", "components", "copy", "cover", "demo", "digital", "drive", "edition",
+  "electronics", "engineering", "exam", "fair", "file", "files", "folder", "gadgets", "good",
+  "handwriting", "included", "kit", "lab", "like", "manual", "mech", "model", "module", "new",
+  "note", "notes", "original", "paper", "papers", "page", "pages", "pdf", "practical", "price",
+  "project", "projects", "question", "record", "semester", "sem", "service", "selling", "set",
+  "subject", "tool", "tools", "unit", "uno", "used", "very", "wire", "wires", "working", "year",
+  "author", "edition", "topic", "language", "neat", "ready", "robot", "arduino", "booklet",
+]);
+
 export function hasClearHumanDescription(value: string) {
   const words = value
     .trim()
@@ -230,6 +242,18 @@ export function hasClearHumanDescription(value: string) {
   const humanRatio = humanWords.length / words.length;
   const suspiciousRatio = suspiciousWords / words.length;
   const hasMeaningfulPhrase = /[a-z]{3,}\s+[a-z]{3,}\s+[a-z]{3,}/i.test(value);
+  const normalizedWords = words.map((word) => word.toLowerCase().replace(/[^a-z0-9]/g, "")).filter(Boolean);
+  const keywordMatches = normalizedWords.filter((word) => DESCRIPTION_KEYWORDS.has(word)).length;
+  const averageWordLength =
+    normalizedWords.reduce((total, word) => total + word.length, 0) / Math.max(normalizedWords.length, 1);
+  const veryLongWordCount = normalizedWords.filter((word) => word.length >= 12).length;
 
-  return humanRatio >= 0.6 && suspiciousRatio <= 0.4 && hasMeaningfulPhrase;
+  return (
+    humanRatio >= 0.7 &&
+    suspiciousRatio <= 0.3 &&
+    hasMeaningfulPhrase &&
+    keywordMatches >= 2 &&
+    averageWordLength <= 9 &&
+    veryLongWordCount <= Math.max(2, Math.floor(normalizedWords.length * 0.2))
+  );
 }
