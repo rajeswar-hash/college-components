@@ -576,7 +576,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="-mt-8 mx-auto max-w-5xl space-y-6 px-1 pb-8 sm:-mt-6">
+            <div className="-mt-2 mx-auto max-w-5xl space-y-6 px-1 pb-8 sm:mt-0">
               <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                   <div className="max-w-2xl">
