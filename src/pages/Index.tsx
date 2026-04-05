@@ -487,7 +487,7 @@ const Index = () => {
                     <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                       <div className="inline-flex w-full max-w-[286px] rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-4 py-2.5 text-center shadow-[0_10px_24px_rgba(20,184,166,0.08)] sm:max-w-[332px]">
                         <p className="w-full text-[12px] leading-4 text-foreground/68 sm:text-[13px]">
-                          <span className="block text-[14px] font-semibold uppercase tracking-[0.08em] text-foreground sm:text-[15px]">SELECT YOUR COLLEGE</span>
+                          <span className="block text-[15px] font-bold uppercase tracking-[0.08em] text-foreground sm:text-[16px]">SELECT YOUR COLLEGE</span>
                           <span className="mt-0.5 block text-[11.5px] tracking-[0.01em] sm:text-[12.5px]">To See Listings From Your Campus</span>
                         </p>
                       </div>
