@@ -447,7 +447,8 @@ const Index = () => {
   };
 
   const showRequestCollegeButton =
-    !selectedCollege && collegeQuery.trim().length >= 2 && !searchingCollege && collegeResults.length === 0;
+      !selectedCollege && collegeQuery.trim().length >= 2 && !searchingCollege && collegeResults.length === 0;
+  const showCollegeDropdown = collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege);
   const collegeDropdownMaxHeight = Math.max(180, Math.min(320, viewportHeight - 260));
 
   return (
@@ -482,7 +483,7 @@ const Index = () => {
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
-              <div className={`relative ${collegeDropdownOpen ? "min-h-[540px] sm:min-h-[620px]" : "min-h-[380px] sm:min-h-[500px]"}`}>
+              <div className={`relative ${showCollegeDropdown ? "min-h-[540px] sm:min-h-[620px]" : "min-h-[380px] sm:min-h-[500px]"}`}>
                   <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
                     <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                       <div className="inline-flex w-full max-w-[292px] items-center justify-center gap-3 rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-4 py-2.5 text-left shadow-[0_10px_24px_rgba(20,184,166,0.08)] sm:max-w-[346px] sm:gap-3.5 sm:px-5">
@@ -543,7 +544,7 @@ const Index = () => {
                         )}
                       </div>
 
-                      {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
+                      {showCollegeDropdown && (
                         <div className="relative z-30 mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
                           <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
                             {searchingCollege ? (
