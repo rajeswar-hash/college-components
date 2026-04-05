@@ -485,12 +485,12 @@ const Index = () => {
               <div className={`relative ${collegeDropdownOpen ? "min-h-[540px] sm:min-h-[620px]" : "min-h-[380px] sm:min-h-[500px]"}`}>
                   <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
                     <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
-                      <div className="inline-flex items-center gap-2 rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-3 py-2 text-left shadow-[0_10px_24px_rgba(20,184,166,0.08)]">
-                        <div className="rounded-[12px] bg-primary/12 p-2 text-primary">
-                          <Store className="h-4 w-4" />
-                        </div>
-                        <p className="text-[12px] font-semibold leading-4 text-foreground sm:text-[13px]">
-                          Select your college to see listings from your college
+                      <div className="inline-flex rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-3 py-2 text-center shadow-[0_10px_24px_rgba(20,184,166,0.08)]">
+                        <p className="text-[12px] leading-4 text-foreground/68 sm:text-[13px]">
+                          <span className="text-[13px] font-semibold text-foreground sm:text-[14px]">Select your college</span>{" "}
+                          to see listings from
+                          <br />
+                          your college
                         </p>
                       </div>
                       <div ref={collegeWrapperRef} className="mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
