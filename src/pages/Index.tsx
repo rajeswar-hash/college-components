@@ -580,7 +580,9 @@ const Index = () => {
             </div>
 
             <div className="-mt-6 mx-auto max-w-5xl space-y-6 px-1 pb-8 sm:-mt-4">
-              <div className="relative rounded-[18px] border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 pt-7 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+              <div className="relative overflow-hidden rounded-[18px] border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 pt-7 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-white/82 blur-sm" />
+                <div className="pointer-events-none absolute left-0 top-0 h-28 w-10 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.42)_52%,rgba(255,255,255,0))]" />
                 <div className="absolute left-5 top-0 -translate-y-1/2 rounded-[10px] bg-[linear-gradient(135deg,rgba(20,184,166,1),rgba(59,130,246,0.95))] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(20,184,166,0.22)]">
                   Campus Marketplace
                 </div>
