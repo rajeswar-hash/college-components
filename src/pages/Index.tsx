@@ -489,7 +489,7 @@ const Index = () => {
                         <img
                           src={`${import.meta.env.BASE_URL}college-banner-icon.jpeg`}
                           alt="College icon"
-                          className="ml-1 h-9 w-9 shrink-0 rounded-[10px] object-cover sm:ml-0 sm:h-10 sm:w-10"
+                          className="ml-2 h-9 w-9 shrink-0 rounded-[10px] object-cover sm:ml-0 sm:h-10 sm:w-10"
                           loading="eager"
                         />
                         <p className="flex-1 text-center text-[12px] leading-4 text-foreground/68 sm:text-left sm:text-[13px] sm:leading-[1.1rem]">
