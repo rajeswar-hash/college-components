@@ -482,7 +482,7 @@ const Index = () => {
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
-              <div className={`relative ${collegeDropdownOpen ? "min-h-[540px] sm:min-h-[620px]" : "min-h-[380px] sm:min-h-[500px]"}`}>
+                <div className="relative min-h-[380px] sm:min-h-[500px]">
                   <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
                     <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                       <div className="inline-flex w-full max-w-[292px] items-center justify-center gap-3 rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-4 py-2.5 text-left shadow-[0_10px_24px_rgba(20,184,166,0.08)] sm:max-w-[346px] sm:gap-3.5 sm:px-5">
@@ -497,7 +497,7 @@ const Index = () => {
                           <span className="mt-0.5 block text-[11.5px] tracking-[0.01em] sm:text-[12.5px]">To See Listings From Your Campus</span>
                         </p>
                       </div>
-                      <div ref={collegeWrapperRef} className="mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
+                      <div ref={collegeWrapperRef} className="relative z-30 mx-auto text-left" style={{ scrollMarginTop: "6rem" }}>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
@@ -543,8 +543,8 @@ const Index = () => {
                         )}
                       </div>
 
-                      {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
-                        <div className="relative z-30 mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
+                        {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
+                          <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
                           <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
                             {searchingCollege ? (
                               <div className="px-4 py-3 text-sm text-muted-foreground">Searching colleges...</div>
