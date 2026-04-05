@@ -480,7 +480,7 @@ const Index = () => {
               </div>
 
               <div className="relative min-h-[420px] sm:min-h-[500px]">
-                <Card className="relative mx-auto mt-[74px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
+                <Card className="relative mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
                   <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary/75">SELECT YOUR COLLEGE</p>
