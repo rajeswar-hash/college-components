@@ -411,7 +411,7 @@ export function Navbar() {
       <AlertDialog open={showSignOutConfirm} onOpenChange={setShowSignOutConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sign out of CampusKart?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
             <AlertDialogDescription>
               You will need to sign in again to access your dashboard, cart, and saved account features.
             </AlertDialogDescription>
