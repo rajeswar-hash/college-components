@@ -240,7 +240,19 @@ const SellPage = () => {
   const categoryContent = category ? categoryContentMap[category] : null;
   const formLocked = !category;
   const firstName = (user?.name || "").trim().split(/\s+/)[0] || "Student";
-  const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service – ${firstName}`;
+  const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`;
+
+  const handleCategoryChange = (value: Category) => {
+    const nextCategory = value as Category;
+    setCategory(nextCategory);
+    setTitle("");
+    setDescription("");
+    setPrice("");
+    setCondition("");
+    setImages([]);
+    setResourceLink("");
+    lastAutoTitleRef.current = "";
+  };
 
   useEffect(() => {
     if (!selectedRule?.requiresCondition) {
@@ -541,7 +553,7 @@ const SellPage = () => {
                 <p className="mt-1 text-xs text-muted-foreground">Select a category first. The form updates instantly.</p>
               </div>
 
-              <Select value={category} onValueChange={(value) => setCategory(value as Category)}>
+              <Select value={category} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
