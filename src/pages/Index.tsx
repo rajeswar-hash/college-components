@@ -482,8 +482,8 @@ const Index = () => {
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
-              <div className="relative min-h-[380px] sm:min-h-[500px]">
-                <Card className="relative mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
+              <div className={`relative ${collegeDropdownOpen ? "min-h-[540px] sm:min-h-[620px]" : "min-h-[380px] sm:min-h-[500px]"}`}>
+                <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
                   <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary/75">SELECT YOUR COLLEGE</p>
@@ -537,7 +537,7 @@ const Index = () => {
                       </div>
 
                       {collegeDropdownOpen && (collegeResults.length > 0 || searchingCollege) && (
-                        <div className="mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
+                        <div className="relative z-30 mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
                           <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
                             {searchingCollege ? (
                               <div className="px-4 py-3 text-sm text-muted-foreground">Searching colleges...</div>
@@ -580,8 +580,8 @@ const Index = () => {
             </div>
 
             <div className="-mt-6 mx-auto max-w-5xl space-y-6 px-1 pb-8 sm:-mt-4">
-              <div className="relative rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 pt-7 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
-                <div className="absolute left-5 top-0 -translate-y-1/2 rounded-2xl bg-[linear-gradient(135deg,rgba(20,184,166,1),rgba(59,130,246,0.95))] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(20,184,166,0.22)]">
+              <div className="relative rounded-[24px] border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 pt-7 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+                <div className="absolute left-5 top-0 -translate-y-1/2 rounded-[16px] bg-[linear-gradient(135deg,rgba(20,184,166,1),rgba(59,130,246,0.95))] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(20,184,166,0.22)]">
                   Campus Marketplace
                 </div>
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
