@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pencil, Package, Plus, Save, Sparkles, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -71,6 +72,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [banState, setBanState] = useState<{ isBanned: boolean; reason: string | null }>({
+    isBanned: false,
+    reason: null,
+  });
   const [profileForm, setProfileForm] = useState({
     name: "",
     phone: "",
@@ -96,12 +101,23 @@ const Dashboard = () => {
     }
     if (!supabaseUser) return;
     const fetchListings = async () => {
-      const { data } = await supabase
+      const [{ data }, { data: profileRow }] = await Promise.all([
+        supabase
         .from("listings")
         .select("id, title, price, category, sold, images, moderation_status")
         .eq("seller_id", supabaseUser.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }),
+        supabase
+          .from("profiles")
+          .select("is_banned, ban_reason")
+          .eq("id", supabaseUser.id)
+          .maybeSingle(),
+      ]);
       setMyListings(data || []);
+      setBanState({
+        isBanned: !!profileRow?.is_banned,
+        reason: profileRow?.ban_reason || null,
+      });
       setLoading(false);
     };
     fetchListings();
@@ -203,6 +219,14 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="animate-fade-in space-y-8">
+          {banState.isBanned && (
+            <Alert className="border-destructive/20 bg-destructive/5">
+              <AlertTitle>Account Banned</AlertTitle>
+              <AlertDescription>
+                Your account has been banned. {banState.reason ? banState.reason : "Please contact CampusKart support if you think this is a mistake."}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="relative pt-8">
             <div className="absolute left-4 top-0 z-10">
               <Badge className="rounded-xl border-0 bg-[linear-gradient(135deg,rgb(45,212,191),rgb(59,130,246))] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(34,197,194,0.22)]">
@@ -411,10 +435,10 @@ const Dashboard = () => {
                       {listing.sold
                         ? "This sold listing should be deleted now."
                         : listing.moderation_status === "pending_review"
-                          ? "This listing is waiting for manual verification."
+                          ? "This listing is under verification and is waiting for moderator approval."
                           : listing.moderation_status === "rejected"
-                            ? "This listing was rejected and is not public."
-                            : "If this item gets sold, delete this listing immediately."}
+                            ? "This listing was rejected by moderation and is not public."
+                            : "This listing was approved and is visible to buyers."}
                     </p>
                   </div>
                   <div className="flex gap-2 shrink-0">
