@@ -865,7 +865,11 @@ export default function AdminDashboard() {
                             <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
-                            {!isPartnerModerator && (
+                            {isPartnerModerator ? (
+                              <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
+                                Reject
+                              </Button>
+                            ) : (
                               <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
                                 Remove
                               </Button>
