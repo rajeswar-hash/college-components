@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
 import { CATEGORY_RULES, countWords, hasClearHumanDescription, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
-import { verifyListingImageWithAI } from "@/lib/aiVerification";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -46,7 +45,6 @@ const MAX_FILES = 5;
 const MAX_DAILY_UPLOADS = 7;
 const UPLOAD_COOLDOWN_MS = 30 * 1000;
 const HANDWRITING_TITLE_EMOJI = "✍️";
-type ClipCheckState = "idle" | "checking" | "valid" | "warning" | "invalid" | "skipped";
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -227,9 +225,6 @@ const SellPage = () => {
   const [resourceLink, setResourceLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
-  const [clipCheckState, setClipCheckState] = useState<ClipCheckState>("idle");
-  const [clipSimilarity, setClipSimilarity] = useState<number | null>(null);
-  const [clipWarningConfirmed, setClipWarningConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastAutoTitleRef = useRef("");
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
@@ -246,7 +241,6 @@ const SellPage = () => {
   const formLocked = !category;
   const firstName = (user?.name || "").trim().split(/\s+/)[0] || "Student";
   const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`;
-  const needsClipValidation = !!selectedRule?.requiresAiCheck && !!images[0] && trimmedTitle.length >= 5;
 
   const handleCategoryChange = (value: Category) => {
     const nextCategory = value as Category;
@@ -287,40 +281,6 @@ const SellPage = () => {
     lastAutoTitleRef.current = handwritingDefaultTitle;
   }, [category, handwritingDefaultTitle, title]);
 
-  useEffect(() => {
-    setClipWarningConfirmed(false);
-  }, [trimmedTitle, category, images[0]]);
-
-  useEffect(() => {
-    if (!needsClipValidation || !category) {
-      setClipCheckState("idle");
-      setClipSimilarity(null);
-      return;
-    }
-
-    let cancelled = false;
-    setClipCheckState("checking");
-    setClipSimilarity(null);
-
-    const timer = window.setTimeout(async () => {
-      const result = await verifyListingImageWithAI({
-        title: trimmedTitle,
-        category,
-        imageDataUrl: images[0],
-      });
-
-      if (cancelled) return;
-
-      setClipSimilarity(result.similarity);
-      setClipCheckState(result.status);
-    }, 500);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [needsClipValidation, trimmedTitle, category, images]);
-
   const validationMessages = useMemo(() => {
     const messages: string[] = [];
 
@@ -333,17 +293,6 @@ const SellPage = () => {
     if (descriptionWordCount < 10) messages.push("Description must be at least 10 words.");
     if (description.trim() && descriptionWordCount >= 10 && !hasClearHumanDescription(description)) {
       messages.push("Write a clear description with real item details, not random characters.");
-    }
-    if (selectedRule?.requiresAiCheck) {
-      if (!images[0]) {
-        messages.push("Upload at least one image to run the title match check.");
-      } else if (clipCheckState === "checking") {
-        messages.push("Checking if the image matches the title...");
-      } else if (clipCheckState === "invalid") {
-        messages.push("Image does not match the title.");
-      } else if (clipCheckState === "warning" && !clipWarningConfirmed) {
-        messages.push("Please confirm the uncertain image match before posting.");
-      }
     }
     if (!price || parsedPrice <= 0) messages.push("Enter a valid price.");
     if (selectedRule && parsedPrice > selectedRule.maxPrice) messages.push(`Max allowed is ₹${selectedRule.maxPrice}.`);
@@ -468,14 +417,6 @@ const SellPage = () => {
     if (descriptionWordCount < 10) throw new Error("Description must be at least 10 words.");
     if (!hasClearHumanDescription(description)) {
       throw new Error("Please write a clear human-readable description with real item details.");
-    }
-    if (selectedRule.requiresAiCheck) {
-      if (!images[0]) throw new Error("Upload at least one image to verify that it matches the title.");
-      if (clipCheckState === "checking") throw new Error("Please wait while we check the image against the title.");
-      if (clipCheckState === "invalid") throw new Error("Image does not match the title.");
-      if (clipCheckState === "warning" && !clipWarningConfirmed) {
-        throw new Error("Please confirm the warning before posting this item.");
-      }
     }
     if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
     if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
@@ -753,39 +694,6 @@ const SellPage = () => {
                 <p className="text-xs text-muted-foreground">
                   Processing {processingImages} image{processingImages !== 1 ? "s" : ""}...
                 </p>
-              )}
-
-              {selectedRule?.requiresAiCheck && (
-                <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm shadow-sm">
-                  {clipCheckState === "checking" && (
-                    <p className="text-muted-foreground">Checking image against title...</p>
-                  )}
-                  {clipCheckState === "valid" && (
-                    <p className="text-emerald-700">✅ Image matches title{clipSimilarity !== null ? ` (${clipSimilarity.toFixed(2)})` : ""}</p>
-                  )}
-                  {clipCheckState === "warning" && (
-                    <div className="space-y-3">
-                      <p className="text-amber-700">⚠️ Not sure, please confirm{clipSimilarity !== null ? ` (${clipSimilarity.toFixed(2)})` : ""}</p>
-                      <Button
-                        type="button"
-                        variant={clipWarningConfirmed ? "secondary" : "outline"}
-                        className="rounded-xl"
-                        onClick={() => setClipWarningConfirmed(true)}
-                      >
-                        {clipWarningConfirmed ? "Warning confirmed" : "Use this image anyway"}
-                      </Button>
-                    </div>
-                  )}
-                  {clipCheckState === "invalid" && (
-                    <p className="text-destructive">❌ Image does not match title{clipSimilarity !== null ? ` (${clipSimilarity.toFixed(2)})` : ""}</p>
-                  )}
-                  {clipCheckState === "skipped" && (
-                    <p className="text-muted-foreground">Image match check is unavailable right now.</p>
-                  )}
-                  {clipCheckState === "idle" && (
-                    <p className="text-muted-foreground">Upload an image and add a clear title to run the image match check.</p>
-                  )}
-                </div>
               )}
 
               {images.length > 0 && (

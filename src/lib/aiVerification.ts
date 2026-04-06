@@ -1,10 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type AIVerificationResult =
-  | { status: "valid"; similarity: number }
-  | { status: "warning"; similarity: number }
-  | { status: "invalid"; similarity: number }
-  | { status: "skipped"; similarity: null; reason?: string };
+  | { status: "approved"; response: "YES" }
+  | { status: "rejected"; response: "NO" }
+  | { status: "low_confidence"; response: "UNSURE" }
+  | { status: "skipped"; response: "SKIPPED" };
 
 export async function verifyListingImageWithAI(params: {
   title: string;
@@ -17,16 +17,24 @@ export async function verifyListingImageWithAI(params: {
     });
 
     if (error) {
-      return { status: "skipped", similarity: null };
+      return { status: "skipped", response: "SKIPPED" };
     }
 
     const status = data?.status;
-    if (status === "valid" || status === "warning" || status === "invalid") {
-      return { status, similarity: Number(data?.similarity ?? 0) };
+    if (status === "approved" || status === "rejected" || status === "low_confidence") {
+      return {
+        status,
+        response:
+          status === "approved"
+            ? "YES"
+            : status === "rejected"
+              ? "NO"
+              : "UNSURE",
+      };
     }
 
-    return { status: "skipped", similarity: null, reason: data?.reason };
+    return { status: "skipped", response: "SKIPPED" };
   } catch {
-    return { status: "skipped", similarity: null };
+    return { status: "skipped", response: "SKIPPED" };
   }
 }
