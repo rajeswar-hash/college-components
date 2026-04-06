@@ -10,6 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Activity, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, Shield, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
@@ -81,6 +91,7 @@ export default function AdminDashboard() {
   const [profiles, setProfiles] = useState<ProfileAdminRow[]>([]);
   const [collegeRequests, setCollegeRequests] = useState<CollegeRequestRow[]>([]);
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
+  const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
   const sectionContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -207,14 +218,26 @@ export default function AdminDashboard() {
   };
 
   const handleRejectListing = async (listingId: string) => {
-    const { error } = await supabase.from("listings").delete().eq("id", listingId);
+    const { error } = await supabase
+      .from("listings")
+      .update({
+        moderation_status: "rejected",
+      })
+      .eq("id", listingId);
+
     if (error) {
       toast.error("Could not reject this listing.");
       return;
     }
 
-    setListings((current) => current.filter((listing) => listing.id !== listingId));
-    toast.success("Listing rejected and removed.");
+    setListings((current) =>
+      current.map((listing) =>
+        listing.id === listingId
+          ? { ...listing, moderation_status: "rejected" }
+          : listing
+      )
+    );
+    toast.success("Listing rejected.");
   };
 
   const handleApproveListing = async (listingId: string) => {
@@ -275,6 +298,7 @@ export default function AdminDashboard() {
       )
     );
     toast.success("User banned for repeated violations.");
+    setPendingBanProfileId(null);
   };
 
   const handleDeleteAccount = async (profileId: string) => {
@@ -477,6 +501,26 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={!!pendingBanProfileId} onOpenChange={(open) => !open && setPendingBanProfileId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to ban this user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently block the account from using CampusKart until you manually unban it later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => pendingBanProfileId && void handleBanUser(pendingBanProfileId)}
+            >
+              Ban forever
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="container mx-auto max-w-7xl px-4 py-6">
         <Alert className="mb-4 border-primary/20 bg-primary/5 py-3">
@@ -724,7 +768,7 @@ export default function AdminDashboard() {
                             <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
                               Approve
                             </Button>
-                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
                             <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
@@ -760,7 +804,7 @@ export default function AdminDashboard() {
                             <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
                               Approve
                             </Button>
-                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
                             <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
@@ -796,7 +840,7 @@ export default function AdminDashboard() {
                             <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
                               Approve
                             </Button>
-                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
                             <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>

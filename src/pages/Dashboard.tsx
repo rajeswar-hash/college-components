@@ -16,6 +16,7 @@ interface ListingRow {
   category: string;
   sold: boolean;
   images: string[] | null;
+  moderation_status?: string | null;
 }
 
 const PROFILE_AVATARS = [
@@ -97,7 +98,7 @@ const Dashboard = () => {
     const fetchListings = async () => {
       const { data } = await supabase
         .from("listings")
-        .select("id, title, price, category, sold, images")
+        .select("id, title, price, category, sold, images, moderation_status")
         .eq("seller_id", supabaseUser.id)
         .order("created_at", { ascending: false });
       setMyListings(data || []);
@@ -121,6 +122,21 @@ const Dashboard = () => {
   const soldListings = myListings.filter((listing) => listing.sold).length;
   const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
   const selectedAvatar = profileForm.avatar_url || user?.avatar_url || getDefaultAvatar(user?.name, user?.email);
+
+  const getListingStatusMeta = (status?: string | null, sold?: boolean) => {
+    if (sold) return { label: "Sold", className: "bg-success/10 text-success border-success/20" };
+    switch (status) {
+      case "pending_review":
+        return { label: "Under Verification", className: "bg-amber-500/10 text-amber-700 border-amber-500/20" };
+      case "rejected":
+        return { label: "Rejected", className: "bg-destructive/10 text-destructive border-destructive/20" };
+      case "flagged":
+      case "hidden":
+        return { label: "Reported", className: "bg-orange-500/10 text-orange-700 border-orange-500/20" };
+      default:
+        return { label: "Approved", className: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" };
+    }
+  };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("listings").delete().eq("id", id);
@@ -387,16 +403,18 @@ const Dashboard = () => {
                     <h3 className="font-display font-semibold text-foreground truncate">{listing.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="font-display font-bold gradient-text">Rs. {listing.price}</span>
-                      {listing.sold ? (
-                        <Badge className="bg-success/10 text-success">Sold</Badge>
-                      ) : (
-                        <Badge variant="outline">Active</Badge>
-                      )}
+                      <Badge variant="outline" className={getListingStatusMeta(listing.moderation_status, listing.sold).className}>
+                        {getListingStatusMeta(listing.moderation_status, listing.sold).label}
+                      </Badge>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {listing.sold
                         ? "This sold listing should be deleted now."
-                        : "If this item gets sold, delete this listing immediately."}
+                        : listing.moderation_status === "pending_review"
+                          ? "This listing is waiting for manual verification."
+                          : listing.moderation_status === "rejected"
+                            ? "This listing was rejected and is not public."
+                            : "If this item gets sold, delete this listing immediately."}
                     </p>
                   </div>
                   <div className="flex gap-2 shrink-0">

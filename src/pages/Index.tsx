@@ -118,7 +118,6 @@ const Index = () => {
         .from("listings")
         .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
         .eq("college", canonicalCollege)
-        .eq("moderation_status", "active")
         .order("created_at", { ascending: false });
 
       data = primaryResponse.data;
@@ -138,7 +137,9 @@ const Index = () => {
         return [];
       }
 
-      const nextListings: ListingRow[] = data.map((listing) => ({
+      const nextListings: ListingRow[] = data
+        .filter((listing) => !["pending_review", "rejected"].includes(listing.moderation_status || "active"))
+        .map((listing) => ({
         ...listing,
         images: [],
         college: canonicalInstitutionName(listing.college),

@@ -166,9 +166,9 @@ const ProductDetail = () => {
   }
 
   const isOwnListing = !!supabaseUser && supabaseUser.id === listing.seller_id;
-  const isPubliclyVisible = (listing.moderation_status || "active") === "active";
+  const hiddenFromPublic = ["pending_review", "rejected"].includes(listing.moderation_status || "active");
 
-  if (!isPubliclyVisible && !isOwnListing && !isAdmin) {
+  if (hiddenFromPublic && !isOwnListing && !isAdmin) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />

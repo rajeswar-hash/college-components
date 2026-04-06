@@ -31,6 +31,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -73,7 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         violation_count: data.violation_count ?? 0,
         avatar_url: data.avatar_url ?? undefined,
       };
-      setProfile(isProfileComplete(nextProfile) || nextProfile.is_admin ? nextProfile : null);
+      const isPartnerAdmin = nextProfile.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
+      setProfile(isProfileComplete(nextProfile) || nextProfile.is_admin || isPartnerAdmin ? nextProfile : null);
     }
   }, []);
 
@@ -103,9 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchProfile]);
 
   useEffect(() => {
-    setIsAdmin(!!profile?.is_admin);
+    setIsAdmin(!!profile?.is_admin || profile?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL);
     setIsBanned(!!profile?.is_banned);
-  }, [profile?.is_admin, profile?.is_banned]);
+  }, [profile?.email, profile?.is_admin, profile?.is_banned]);
 
   const profileComplete = isProfileComplete(profile);
 
@@ -198,7 +200,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(profileData.ban_reason || "This account is restricted. Please contact support.");
     }
 
-    return { isAdmin: !!profileData?.is_admin };
+    const isPartnerAdmin = normalizedEmail === PARTNER_ADMIN_EMAIL;
+    return { isAdmin: !!profileData?.is_admin || isPartnerAdmin };
   }, []);
 
   const logout = useCallback(async () => {
