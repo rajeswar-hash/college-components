@@ -5,12 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type VerifyResponse =
-  | { status: "approved"; response: "YES" }
-  | { status: "rejected"; response: "NO" }
-  | { status: "low_confidence"; response: "UNSURE" }
-  | { status: "skipped"; response: "SKIPPED" };
-
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {
     status,
@@ -21,21 +15,50 @@ function json(status: number, body: unknown) {
   });
 }
 
-function extractDecision(data: any): VerifyResponse {
-  const rawText =
-    data?.output_text ||
-    data?.output
-      ?.flatMap((item: any) => item?.content || [])
-      ?.map((content: any) => content?.text || content?.output_text || "")
-      ?.join(" ") ||
-    "";
+function cosineSimilarity(a: number[], b: number[]) {
+  if (a.length !== b.length || a.length === 0) return 0;
 
-  const text = String(rawText).trim().toUpperCase().replace(/[^A-Z]/g, "");
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
 
-  if (text === "YES") return { status: "approved", response: "YES" };
-  if (text === "NO") return { status: "rejected", response: "NO" };
-  if (text === "UNSURE") return { status: "low_confidence", response: "UNSURE" };
-  return { status: "skipped", response: "SKIPPED" };
+  for (let i = 0; i < a.length; i += 1) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+
+  if (!normA || !normB) return 0;
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+async function getEmbedding(
+  replicateApiToken: string,
+  input: Record<string, unknown>,
+  signal: AbortSignal,
+) {
+  const response = await fetch("https://api.replicate.com/v1/models/openai/clip/predictions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${replicateApiToken}`,
+      Prefer: "wait",
+    },
+    body: JSON.stringify({ input }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error("Replicate request failed");
+  }
+
+  const data = await response.json();
+  const output = data?.output;
+  if (!Array.isArray(output) || output.length === 0 || !output.every((value: unknown) => typeof value === "number")) {
+    throw new Error("Replicate output missing embedding");
+  }
+
+  return output as number[];
 }
 
 Deno.serve(async (req) => {
@@ -51,8 +74,7 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    const openaiModel = Deno.env.get("OPENAI_MODEL") || "gpt-4.1-mini";
+    const replicateApiToken = Deno.env.get("REPLICATE_API_TOKEN");
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return json(500, { error: "Supabase environment is not configured" });
@@ -80,70 +102,36 @@ Deno.serve(async (req) => {
       return json(400, { error: "Missing title, category, or image" });
     }
 
-    if (!openaiApiKey) {
-      return json(200, { status: "skipped", response: "SKIPPED", reason: "OPENAI_API_KEY missing" });
+    if (!replicateApiToken) {
+      return json(200, { status: "skipped", similarity: null, reason: "REPLICATE_API_TOKEN missing" });
     }
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
 
     try {
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${openaiApiKey}`,
-        },
-        body: JSON.stringify({
-          model: openaiModel,
-          input: [
-            {
-              role: "developer",
-              content: [
-                {
-                  type: "input_text",
-                  text: "You are a strict marketplace product image verifier. Reply with exactly one word: YES, NO, or UNSURE.",
-                },
-              ],
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "input_text",
-                  text:
-                    `Check whether the uploaded image clearly matches the product title and category.\n` +
-                    `Be strict.\n` +
-                    `If the image is a building, scenery, unrelated person, unrelated object, or does not clearly show the item/service in the title, answer NO.\n` +
-                    `If the match is unclear, answer UNSURE.\n` +
-                    `Title: ${title}\n` +
-                    `Category: ${category}`,
-                },
-                {
-                  type: "input_image",
-                  image_url: imageDataUrl,
-                  detail: "low",
-                },
-              ],
-            },
-          ],
-          max_output_tokens: 5,
-        }),
-        signal: controller.signal,
-      });
+      const [imageEmbedding, textEmbedding] = await Promise.all([
+        getEmbedding(replicateApiToken, { image: imageDataUrl }, controller.signal),
+        getEmbedding(replicateApiToken, { text: `${category}. ${title}` }, controller.signal),
+      ]);
 
-      if (!response.ok) {
-        return json(200, { status: "skipped", response: "SKIPPED", reason: "OpenAI request failed" });
+      const similarity = Number(cosineSimilarity(imageEmbedding, textEmbedding).toFixed(4));
+
+      if (similarity > 0.7) {
+        return json(200, { status: "valid", similarity });
       }
 
-      const data = await response.json();
-      return json(200, extractDecision(data));
+      if (similarity >= 0.5) {
+        return json(200, { status: "warning", similarity });
+      }
+
+      return json(200, { status: "invalid", similarity });
     } catch {
-      return json(200, { status: "skipped", response: "SKIPPED", reason: "OpenAI unavailable" });
+      return json(200, { status: "skipped", similarity: null, reason: "Replicate unavailable" });
     } finally {
       clearTimeout(timeout);
     }
   } catch {
-    return json(200, { status: "skipped", response: "SKIPPED", reason: "Unexpected error" });
+    return json(200, { status: "skipped", similarity: null, reason: "Unexpected error" });
   }
 });
