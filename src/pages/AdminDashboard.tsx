@@ -427,7 +427,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.80),rgba(255,255,255,0.92))]">
+      {!isPartnerModerator && <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.80),rgba(255,255,255,0.92))]">
         <div className="container mx-auto max-w-7xl px-4 py-6 md:py-8">
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -514,7 +514,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
         </div>
-      </div>
+      </div>}
 
       <AlertDialog open={!!pendingBanProfileId} onOpenChange={(open) => !open && setPendingBanProfileId(null)}>
         <AlertDialogContent>
@@ -865,9 +865,11 @@ export default function AdminDashboard() {
                             <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
-                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
-                              Remove
-                            </Button>
+                            {!isPartnerModerator && (
+                              <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
+                                Remove
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))}
