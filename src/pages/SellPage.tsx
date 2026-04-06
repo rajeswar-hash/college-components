@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
-import { CATEGORY_RULES, countWords, hasClearHumanDescription, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
+import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -412,9 +412,6 @@ const SellPage = () => {
     }
     if (trimmedTitle.length < 5) throw new Error("Title must be at least 5 characters.");
     if (descriptionWordCount < 10) throw new Error("Description must be at least 10 words.");
-    if (!hasClearHumanDescription(description)) {
-      throw new Error("Please write a clear human-readable description with real item details.");
-    }
     if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
     if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
     if (selectedRule.requiresCondition && !condition) throw new Error("Select the condition before posting.");
