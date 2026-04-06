@@ -70,6 +70,7 @@ interface CollegeRequestRow {
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const SUPABASE_BILLING_URL = "https://supabase.com/dashboard/org/ponqczgkbajoevlbqvny/billing";
+const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 
 function byteSize(value: string) {
   return new TextEncoder().encode(value).length;
@@ -83,7 +84,7 @@ function formatBytes(bytes: number) {
 }
 
 export default function AdminDashboard() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members" | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,6 +94,13 @@ export default function AdminDashboard() {
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
   const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
   const sectionContentRef = useRef<HTMLDivElement>(null);
+  const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
+
+  useEffect(() => {
+    if (isPartnerModerator) {
+      setActiveSection("listings");
+    }
+  }, [isPartnerModerator]);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) return;
@@ -109,10 +117,12 @@ export default function AdminDashboard() {
           .from("listings")
           .select("id, title, description, price, category, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
           .order("created_at", { ascending: false }),
-        supabase
-          .from("profiles")
-          .select("id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin")
-          .order("created_at", { ascending: false }),
+        isPartnerModerator
+          ? Promise.resolve({ data: [], error: null } as any)
+          : supabase
+              .from("profiles")
+              .select("id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin")
+              .order("created_at", { ascending: false }),
         supabase
           .from("college_requests")
           .select("id, college_name, city, state, note, requester_name, requester_email, status, created_at, reviewed_at")
@@ -127,13 +137,13 @@ export default function AdminDashboard() {
 
       if (profileError) {
         toast.error("Could not load profile data for the admin dashboard.");
-      } else {
+      } else if (!isPartnerModerator) {
         setProfiles((profileData as ProfileAdminRow[]) || []);
       }
 
       if (collegeRequestError) {
         toast.error("Could not load college requests.");
-      } else {
+      } else if (!isPartnerModerator) {
         const nextRequests = (collegeRequestData as CollegeRequestRow[]) || [];
         setCollegeRequests(nextRequests);
         setCollegeNameDrafts(
@@ -145,7 +155,7 @@ export default function AdminDashboard() {
     };
 
     fetchAdminData();
-  }, [isAdmin, isAuthenticated]);
+  }, [isAdmin, isAuthenticated, isPartnerModerator]);
 
   const totalListingValue = useMemo(
     () => listings.reduce((sum, listing) => sum + Number(listing.price || 0), 0),
@@ -422,14 +432,18 @@ export default function AdminDashboard() {
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary shadow-sm">
-                <Shield className="h-3.5 w-3.5" /> Admin control room
+                <Shield className="h-3.5 w-3.5" /> {isPartnerModerator ? "Listing review partner" : "Admin control room"}
               </div>
-              <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">Platform Command Center</h1>
+              <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">
+                {isPartnerModerator ? "Listing Moderation Desk" : "Platform Command Center"}
+              </h1>
               <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-                Compact, high-signal control for listings, users, storage pressure, and direct Supabase operations.
+                {isPartnerModerator
+                  ? "This partner account can only review listing submissions, reject bad posts, and ban repeat offenders."
+                  : "Compact, high-signal control for listings, users, storage pressure, and direct Supabase operations."}
               </p>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            {!isPartnerModerator && <div className="grid gap-2 sm:grid-cols-2">
               <Button variant="outline" className="h-10 justify-between bg-background/80 text-xs sm:text-sm" onClick={() => openSupabasePage("editor")}>
                 <span className="flex items-center">
                   <Database className="mr-2 h-4 w-4" /> Open database
@@ -442,7 +456,7 @@ export default function AdminDashboard() {
                 </span>
                 <ArrowUpRight className="h-4 w-4" />
               </Button>
-            </div>
+            </div>}
           </div>
 
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -523,15 +537,15 @@ export default function AdminDashboard() {
       </AlertDialog>
 
       <div className="container mx-auto max-w-7xl px-4 py-6">
-        <Alert className="mb-4 border-primary/20 bg-primary/5 py-3">
+        {!isPartnerModerator && <Alert className="mb-4 border-primary/20 bg-primary/5 py-3">
           <Wrench className="h-4 w-4" />
           <AlertTitle>Space monitoring note</AlertTitle>
           <AlertDescription>
             This dashboard estimates database footprint from frontend-readable data. Real quota and upgrades still happen in Supabase.
           </AlertDescription>
-        </Alert>
+        </Alert>}
 
-        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        {!isPartnerModerator && <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
@@ -607,17 +621,22 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div>}
 
         <div className="mt-4 space-y-4">
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <CardTitle>Admin sections</CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Open one section at a time so the panel stays compact as data grows.</p>
+                  <CardTitle>{isPartnerModerator ? "Moderation" : "Admin sections"}</CardTitle>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {isPartnerModerator
+                      ? "This partner account can only access listing moderation."
+                      : "Open one section at a time so the panel stays compact as data grows."}
+                  </p>
                 </div>
-                <div className="grid gap-2 sm:grid-cols-3">
+                <div className={`grid gap-2 ${isPartnerModerator ? "sm:grid-cols-1" : "sm:grid-cols-3"}`}>
+                  {!isPartnerModerator && (
                   <Button
                     variant={activeSection === "requests" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
@@ -626,6 +645,7 @@ export default function AdminDashboard() {
                     <span>College Requests</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
                   </Button>
+                  )}
                   <Button
                     variant={activeSection === "listings" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
@@ -634,6 +654,7 @@ export default function AdminDashboard() {
                     <span>Listing Moderation</span>
                       <Badge variant="secondary" className="ml-2 text-[10px]">{pendingListings.length + flaggedListings.length}</Badge>
                   </Button>
+                  {!isPartnerModerator && (
                   <Button
                     variant={activeSection === "members" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
@@ -642,6 +663,7 @@ export default function AdminDashboard() {
                     <span>Member Snapshot</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
                   </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
