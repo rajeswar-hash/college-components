@@ -66,7 +66,7 @@ function getDefaultAvatar(name?: string | null, email?: string | null) {
 }
 
 const Dashboard = () => {
-  const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile } = useAuth();
+  const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +99,10 @@ const Dashboard = () => {
       navigate("/admin", { replace: true });
       return;
     }
-    if (!supabaseUser) return;
+    if (!supabaseUser) {
+      setLoading(false);
+      return;
+    }
     const fetchListings = async () => {
       const [{ data }, { data: profileRow }] = await Promise.all([
         supabase
@@ -122,17 +125,6 @@ const Dashboard = () => {
     };
     fetchListings();
   }, [isAdmin, navigate, supabaseUser]);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <p className="text-muted-foreground text-lg">Please sign in to view your dashboard.</p>
-        </div>
-      </div>
-    );
-  }
 
   const activeListings = myListings.filter((listing) => !listing.sold).length;
   const soldListings = myListings.filter((listing) => listing.sold).length;
@@ -213,6 +205,28 @@ const Dashboard = () => {
     });
     setIsEditingProfile(false);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground text-lg">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground text-lg">Please sign in to view your dashboard.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
