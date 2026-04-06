@@ -176,3 +176,10 @@
     will-change: transform, opacity;
   }
 }
+
+@media (min-width: 1024px) {
+  [data-sonner-toast][data-styled="true"] [data-close-button="true"] {
+    left: auto !important;
+    right: 12px !important;
+  }
+}
