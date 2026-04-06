@@ -466,8 +466,8 @@ const SellPage = () => {
     try {
       await runCommonChecks();
 
-      let aiVerificationStatus = "skipped";
-      let moderationStatus = "active";
+      let aiVerificationStatus = "manual_review";
+      let moderationStatus = "pending_review";
 
       const listingPayload = {
         title: trimmedTitle,
@@ -526,8 +526,8 @@ const SellPage = () => {
 
       toast.success(
         usedLegacyFallback
-          ? "Listing created successfully. Advanced moderation checks will start after the latest database update is completed."
-          : "Listing created successfully!"
+          ? "Sent for manual review. It will go live after approval, usually within 12 hours."
+          : "Sent for manual review. It will go live after approval, usually within 12 hours."
       );
       navigate("/dashboard");
     } catch (err: any) {
@@ -561,6 +561,10 @@ const SellPage = () => {
 
           <div className="mb-5 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-foreground shadow-sm">
             This item will be listed only in: <span className="font-semibold">{postingCollege || "Add your college in profile"}</span>
+          </div>
+
+          <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-900 shadow-sm">
+            Put details correctly. Every listing goes under manual verification. If you post unwanted or misleading content, your account may be banned.
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 rounded-[28px] border border-primary/10 bg-background/95 p-4 shadow-[0_20px_60px_rgba(15,118,110,0.10)] backdrop-blur-sm sm:p-6">

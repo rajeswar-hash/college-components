@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 interface ListingAdminRow {
   ai_verification_status: string | null;
+  description: string;
   id: string;
   moderation_status: string;
   report_count: number;
@@ -95,7 +96,7 @@ export default function AdminDashboard() {
       ] = await Promise.all([
         supabase
           .from("listings")
-          .select("id, title, price, category, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
+          .select("id, title, description, price, category, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
           .order("created_at", { ascending: false }),
         supabase
           .from("profiles")
@@ -171,6 +172,13 @@ export default function AdminDashboard() {
   const usagePercent = Math.min((databaseUsageBytes / DATABASE_LIMIT_BYTES) * 100, 100);
   const remainingBytes = Math.max(DATABASE_LIMIT_BYTES - databaseUsageBytes, 0);
   const activeListings = listings.filter((listing) => !listing.sold).length;
+  const pendingListings = listings.filter((listing) => listing.moderation_status === "pending_review");
+  const overduePendingListings = pendingListings.filter(
+    (listing) => Date.now() - new Date(listing.created_at).getTime() >= 10 * 60 * 60 * 1000
+  );
+  const freshPendingListings = pendingListings.filter(
+    (listing) => Date.now() - new Date(listing.created_at).getTime() < 10 * 60 * 60 * 1000
+  );
   const flaggedListings = listings.filter((listing) => listing.moderation_status === "flagged" || listing.moderation_status === "hidden");
   const soldListings = listings.filter((listing) => listing.sold).length;
   const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
@@ -196,6 +204,17 @@ export default function AdminDashboard() {
 
     setListings((current) => current.filter((listing) => listing.id !== id));
     toast.success("Listing removed.");
+  };
+
+  const handleRejectListing = async (listingId: string) => {
+    const { error } = await supabase.from("listings").delete().eq("id", listingId);
+    if (error) {
+      toast.error("Could not reject this listing.");
+      return;
+    }
+
+    setListings((current) => current.filter((listing) => listing.id !== listingId));
+    toast.success("Listing rejected and removed.");
   };
 
   const handleApproveListing = async (listingId: string) => {
@@ -569,7 +588,7 @@ export default function AdminDashboard() {
                     onClick={() => handleSectionChange("listings")}
                   >
                     <span>Listing Moderation</span>
-                      <Badge variant="secondary" className="ml-2 text-[10px]">{flaggedListings.length}</Badge>
+                      <Badge variant="secondary" className="ml-2 text-[10px]">{pendingListings.length + flaggedListings.length}</Badge>
                   </Button>
                   <Button
                     variant={activeSection === "members" ? "default" : "outline"}
@@ -672,46 +691,122 @@ export default function AdminDashboard() {
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5 text-primary" /> Listing moderation
                   </CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Flagged or auto-hidden listings needing admin review.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Manual review queue, overdue items, and flagged listings.</p>
                 </div>
-                <Badge variant="secondary">{flaggedListings.length} flagged</Badge>
+                <Badge variant="secondary">{pendingListings.length + flaggedListings.length} total</Badge>
               </div>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading admin data...</p>
-              ) : flaggedListings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No flagged listings right now.</p>
+              ) : pendingListings.length === 0 && flaggedListings.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No listings are waiting for review right now.</p>
               ) : (
-                <div className="space-y-2">
-                  {flaggedListings.map((listing) => (
-                    <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-medium text-foreground">{listing.title}</p>
-                          <Badge variant={listing.moderation_status === "hidden" ? "destructive" : "secondary"} className="text-[10px] capitalize">{listing.moderation_status}</Badge>
-                          <Badge variant="secondary" className="text-[10px]">{listing.category}</Badge>
-                          {listing.ai_verification_status && (
-                            <Badge variant="outline" className="text-[10px]">{listing.ai_verification_status}</Badge>
-                          )}
+                <div className="space-y-5">
+                  {freshPendingListings.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Review queue</p>
+                      {freshPendingListings.map((listing) => (
+                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center">
+                          <div className="h-28 overflow-hidden rounded-2xl bg-muted">
+                            {listing.images?.[0] ? (
+                              <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
+                            )}
+                          </div>
+                          <div className="min-w-0 space-y-2">
+                            <p className="text-sm font-semibold text-foreground">{listing.title}</p>
+                            <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">{listing.description}</p>
+                            <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 md:flex-col">
+                            <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
+                              Approve
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                              Ban seller
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
+                              Reject
+                            </Button>
+                          </div>
                         </div>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {listing.category} - {listing.college} - Rs. {Number(listing.price).toLocaleString("en-IN")}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
-                          Approve
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
-                          Ban user
-                        </Button>
-                        <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
-                          <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
-                        </Button>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {overduePendingListings.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-destructive">Not reviewed items</p>
+                      {overduePendingListings.map((listing) => (
+                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center">
+                          <div className="h-28 overflow-hidden rounded-2xl bg-muted">
+                            {listing.images?.[0] ? (
+                              <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
+                            )}
+                          </div>
+                          <div className="min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">{listing.title}</p>
+                              <Badge variant="destructive" className="text-[10px]">10h+ pending</Badge>
+                            </div>
+                            <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">{listing.description}</p>
+                            <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 md:flex-col">
+                            <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
+                              Approve
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                              Ban seller
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
+                              Reject
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {flaggedListings.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Flagged listings</p>
+                      {flaggedListings.map((listing) => (
+                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center">
+                          <div className="h-28 overflow-hidden rounded-2xl bg-muted">
+                            {listing.images?.[0] ? (
+                              <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
+                            )}
+                          </div>
+                          <div className="min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">{listing.title}</p>
+                              <Badge variant={listing.moderation_status === "hidden" ? "destructive" : "secondary"} className="text-[10px] capitalize">{listing.moderation_status}</Badge>
+                            </div>
+                            <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">{listing.description}</p>
+                            <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 md:flex-col">
+                            <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
+                              Approve
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleBanUser(listing.seller_id)}>
+                              Ban seller
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteListing(listing.id)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

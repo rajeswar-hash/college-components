@@ -43,7 +43,7 @@ interface ListingDetail {
 }
 
 const ProductDetail = () => {
-  const { isAuthenticated, supabaseUser } = useAuth();
+  const { isAuthenticated, supabaseUser, isAdmin } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [listing, setListing] = useState<ListingDetail | null>(null);
@@ -165,6 +165,21 @@ const ProductDetail = () => {
     );
   }
 
+  const isOwnListing = !!supabaseUser && supabaseUser.id === listing.seller_id;
+  const isPubliclyVisible = (listing.moderation_status || "active") === "active";
+
+  if (!isPubliclyVisible && !isOwnListing && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground text-lg">This listing is under review and is not public yet.</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Go Home</Button>
+        </div>
+      </div>
+    );
+  }
+
   const hasImages = listing.images && listing.images.length > 0 && listing.images[0];
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
@@ -230,7 +245,6 @@ const ProductDetail = () => {
     }
   };
 
-  const isOwnListing = !!supabaseUser && supabaseUser.id === listing.seller_id;
   const whatsappPhone = formatPhone(listing.seller_phone);
 
   const buildWhatsappUrl = (phone: string) => {

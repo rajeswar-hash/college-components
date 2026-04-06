@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface ListingRow {
+  moderation_status?: string;
   id: string;
   title: string;
   description: string;
@@ -117,7 +118,7 @@ const Index = () => {
         .from("listings")
         .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
         .eq("college", canonicalCollege)
-        .neq("moderation_status", "hidden")
+        .eq("moderation_status", "active")
         .order("created_at", { ascending: false });
 
       data = primaryResponse.data;
@@ -143,6 +144,7 @@ const Index = () => {
         college: canonicalInstitutionName(listing.college),
         seller_name: "",
         seller_phone: "",
+        moderation_status: listing.moderation_status ?? "active",
       }));
 
       const visibleIds = nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id);
