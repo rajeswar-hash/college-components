@@ -291,9 +291,6 @@ const SellPage = () => {
 
     if (trimmedTitle.length < 5) messages.push("Title must be at least 5 characters.");
     if (descriptionWordCount < 10) messages.push("Description must be at least 10 words.");
-    if (description.trim() && descriptionWordCount >= 10 && !hasClearHumanDescription(description)) {
-      messages.push("Write a clear description with real item details, not random characters.");
-    }
     if (!price || parsedPrice <= 0) messages.push("Enter a valid price.");
     if (selectedRule && parsedPrice > selectedRule.maxPrice) messages.push(`Max allowed is ₹${selectedRule.maxPrice}.`);
     if (selectedRule?.requiresCondition && !condition) messages.push("Select a condition.");
