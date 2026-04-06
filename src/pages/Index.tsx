@@ -40,6 +40,7 @@ const MAX_FILTER_PRICE = 5000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
+const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
@@ -69,6 +70,8 @@ const Index = () => {
   const collegeInputRef = useRef<HTMLInputElement>(null);
   const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
   const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
+  const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
+  const canDeleteFromHome = isAdmin && !isPartnerModerator;
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
@@ -451,7 +454,7 @@ const Index = () => {
   };
 
   const handleAdminDeleteListing = async (listingId: string) => {
-    if (!isAdmin) return;
+    if (!canDeleteFromHome) return;
 
     const confirmed = window.confirm("Delete this listing from the marketplace?");
     if (!confirmed) return;
@@ -802,7 +805,7 @@ const Index = () => {
                     <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${index * 35}ms` }}>
                       <ProductCard
                         listing={listing}
-                        showAdminDelete={isAdmin}
+                        showAdminDelete={canDeleteFromHome}
                         onAdminDelete={handleAdminDeleteListing}
                         deleting={deletingListingId === listing.id}
                       />
