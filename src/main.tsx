@@ -32,6 +32,9 @@ function AppBootScreen() {
             <img
               src={brandLogoSrc}
               alt="CampusKart logo"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
               className="h-16 w-16 rounded-[20px] object-cover shadow-[0_14px_35px_hsla(210,78%,50%,0.18)] sm:h-20 sm:w-20 sm:rounded-[24px]"
             />
             <div className="text-left">
