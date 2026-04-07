@@ -452,14 +452,14 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/75 p-4 sm:grid-cols-3">
+              <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/75 p-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(180px,1fr)_minmax(160px,1fr)]">
                 <div className="flex items-start gap-3">
                   <div className="rounded-full bg-primary/10 p-2 text-primary">
                     <MapPin className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
-                    <p className="mt-1 break-words text-sm font-medium text-foreground">{listing.college}</p>
+                    <p className="mt-1 text-sm font-medium text-foreground lg:truncate">{listing.college}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
