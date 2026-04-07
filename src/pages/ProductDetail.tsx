@@ -444,7 +444,7 @@ const ProductDetail = () => {
               <p className="font-display font-extrabold text-3xl gradient-text mt-2">₹{listing.price}</p>
             </div>
 
-            <p className="break-words text-muted-foreground leading-relaxed">{listing.description}</p>
+            <p className="break-words whitespace-pre-line text-muted-foreground leading-relaxed">{listing.description}</p>
 
             <div className="rounded-2xl border border-border/70 bg-card/70 p-4 shadow-sm">
               <div className="space-y-3 text-sm text-muted-foreground">
