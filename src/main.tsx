@@ -21,11 +21,13 @@ function ResponsiveToaster() {
 }
 
 function AppBootScreen() {
+  const brandLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
+
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] flex select-none items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-5 text-center">
         <img
-          src="/campuskart-logo.jpeg"
+          src={brandLogoSrc}
           alt="CampusKart logo"
           className="h-20 w-20 rounded-3xl object-cover shadow-lg"
         />

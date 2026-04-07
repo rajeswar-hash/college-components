@@ -36,6 +36,7 @@ export function Navbar() {
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
+  const brandLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
   const navButtonClass = (path: string) =>
     isActive(path)
       ? "bg-primary/10 text-primary hover:bg-primary/15"
@@ -148,7 +149,7 @@ export function Navbar() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 md:gap-3">
             <img
-              src="/campuskart-logo.jpeg"
+              src={brandLogoSrc}
               alt="CampusKart logo"
               className="h-9 w-9 rounded-lg object-cover shadow-sm md:h-10 md:w-10"
             />
