@@ -26,7 +26,7 @@ function AppBootScreen() {
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] flex select-none items-center justify-center bg-background">
       <div className="relative px-6">
-        <div className="absolute left-1/2 top-1/2 -z-10 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,hsla(206,92%,60%,0.18)_0%,hsla(206,92%,60%,0.1)_28%,hsla(206,92%,60%,0.05)_48%,hsla(206,92%,60%,0.02)_66%,transparent_82%)] blur-2xl sm:h-80 sm:w-80" />
+        <div className="absolute left-1/2 top-1/2 -z-10 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,hsla(210,88%,46%,0.28)_0%,hsla(208,90%,56%,0.16)_24%,hsla(206,92%,60%,0.08)_46%,hsla(206,92%,60%,0.03)_66%,transparent_82%)] blur-2xl sm:h-80 sm:w-80" />
         <div className="glass flex min-w-[272px] max-w-[84vw] flex-col items-center rounded-[24px] border-white/50 px-5 py-5 shadow-[0_18px_50px_hsla(210,78%,50%,0.08)] sm:min-w-[352px] sm:px-7 sm:py-6">
           <div className="flex items-center gap-3.5 sm:gap-4">
             <img
