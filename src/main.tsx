@@ -25,17 +25,22 @@ function AppBootScreen() {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] flex select-none items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-5 text-center">
+      <div className="relative flex flex-col items-center gap-5 px-8 text-center">
+        <div className="absolute inset-x-0 top-1/2 -z-10 h-40 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
         <img
           src={brandLogoSrc}
           alt="CampusKart logo"
-          className="h-20 w-20 rounded-3xl object-cover shadow-lg"
+          className="h-24 w-24 rounded-[28px] object-cover shadow-[0_18px_45px_hsla(210,78%,50%,0.18)]"
         />
-        <div className="space-y-1">
-          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground">
+        <div className="space-y-2">
+          <h1 className="font-display text-[2.6rem] font-bold tracking-tight text-foreground">
             Campus<span className="gradient-text">Kart</span>
           </h1>
-          <p className="text-sm text-muted-foreground">Loading your campus marketplace...</p>
+          <div className="mx-auto flex items-center justify-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-primary/90 boot-dot-delay-1" />
+            <span className="h-2.5 w-2.5 rounded-full bg-primary/75 boot-dot-delay-2" />
+            <span className="h-2.5 w-2.5 rounded-full bg-primary/55 boot-dot-delay-3" />
+          </div>
         </div>
       </div>
     </div>

@@ -117,6 +117,19 @@
 }
 
 @layer utilities {
+  @keyframes boot-dot {
+    0%,
+    80%,
+    100% {
+      transform: translateY(0) scale(0.9);
+      opacity: 0.35;
+    }
+    40% {
+      transform: translateY(-5px) scale(1);
+      opacity: 1;
+    }
+  }
+
   @keyframes gallery-slide-left {
     from {
       opacity: 0;
@@ -174,6 +187,18 @@
   .gallery-slide-right {
     animation: gallery-slide-right 280ms ease;
     will-change: transform, opacity;
+  }
+
+  .boot-dot-delay-1 {
+    animation: boot-dot 0.95s ease-in-out infinite;
+  }
+
+  .boot-dot-delay-2 {
+    animation: boot-dot 0.95s ease-in-out 0.15s infinite;
+  }
+
+  .boot-dot-delay-3 {
+    animation: boot-dot 0.95s ease-in-out 0.3s infinite;
   }
 }
 
