@@ -95,6 +95,7 @@ export default function AdminDashboard() {
   const [collegeRequests, setCollegeRequests] = useState<CollegeRequestRow[]>([]);
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
   const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
+  const [pendingRejectListingId, setPendingRejectListingId] = useState<string | null>(null);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -251,6 +252,7 @@ export default function AdminDashboard() {
       )
     );
     setPreviewListing((current) => (current?.id === listingId ? null : current));
+    setPendingRejectListingId(null);
     toast.success("Listing rejected.");
   };
 
@@ -542,6 +544,26 @@ export default function AdminDashboard() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={!!pendingRejectListingId} onOpenChange={(open) => !open && setPendingRejectListingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to reject this listing?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will mark the item as rejected and keep it hidden from public listing pages until reviewed again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => pendingRejectListingId && void handleRejectListing(pendingRejectListingId)}
+            >
+              Reject listing
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Dialog open={!!previewListing} onOpenChange={(open) => !open && setPreviewListing(null)}>
         <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border-border/70 bg-background sm:max-w-3xl">
           {previewListing && (
@@ -598,7 +620,7 @@ export default function AdminDashboard() {
                     <Tag className="mr-2 h-4 w-4" />
                     Ban seller
                   </Button>
-                  <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => void handleRejectListing(previewListing.id)}>
+                  <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setPendingRejectListingId(previewListing.id)}>
                     Reject
                   </Button>
                   <Button onClick={() => void handleApproveListing(previewListing.id)}>
@@ -871,7 +893,7 @@ export default function AdminDashboard() {
                             <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
-                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
+                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => setPendingRejectListingId(listing.id)}>
                               Reject
                             </Button>
                           </div>
@@ -910,7 +932,7 @@ export default function AdminDashboard() {
                             <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPendingBanProfileId(listing.seller_id)}>
                               Ban seller
                             </Button>
-                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
+                            <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => setPendingRejectListingId(listing.id)}>
                               Reject
                             </Button>
                           </div>
@@ -950,7 +972,7 @@ export default function AdminDashboard() {
                               Ban seller
                             </Button>
                             {isPartnerModerator ? (
-                              <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => handleRejectListing(listing.id)}>
+                              <Button size="sm" variant="outline" className="h-8 text-xs text-destructive hover:text-destructive" onClick={() => setPendingRejectListingId(listing.id)}>
                                 Reject
                               </Button>
                             ) : (
