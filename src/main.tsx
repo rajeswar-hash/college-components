@@ -74,14 +74,11 @@ function BootstrappedApp() {
     };
   }, []);
 
-  if (showBootScreen) {
-    return <AppBootScreen />;
-  }
-
   return (
     <>
       <App />
       <ResponsiveToaster />
+      {showBootScreen && <AppBootScreen />}
     </>
   );
 }
