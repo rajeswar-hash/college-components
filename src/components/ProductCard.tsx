@@ -101,15 +101,15 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
     <>
     <Link to={`/product/${listing.id}`} className="group block h-full">
       <div className="glass flex h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:block">
-        <div className="relative w-[128px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
+        <div className="relative w-[104px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
             <img
               src={listing.images[0]}
               alt={listing.title}
               loading="lazy"
               decoding="async"
-              sizes="(max-width: 639px) 128px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="h-full min-h-[124px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
+              sizes="(max-width: 639px) 104px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="h-full min-h-[96px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -130,7 +130,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             onClick={handleLike}
             disabled={liking}
             aria-label={liked ? "Unlike listing" : "Like listing"}
-            className={`absolute w-9 h-9 rounded-full glass flex items-center justify-center transition-transform hover:scale-110 ${showAdminDelete ? "top-3 right-14" : "top-3 right-3"}`}
+            className={`absolute flex h-8 w-8 items-center justify-center rounded-full glass transition-transform hover:scale-110 sm:h-9 sm:w-9 ${showAdminDelete ? "top-2 right-12 sm:top-3 sm:right-14" : "top-2 right-2 sm:top-3 sm:right-3"}`}
           >
             <ShoppingCart
               className={`w-4 h-4 transition-colors ${liked ? "fill-primary text-primary" : "text-muted-foreground"}`}
@@ -141,14 +141,14 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               onClick={handleAdminDelete}
               disabled={deleting}
               aria-label="Delete listing as admin"
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center shadow-sm transition-transform hover:scale-110 disabled:opacity-60"
+              className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/90 text-destructive-foreground shadow-sm transition-transform hover:scale-110 disabled:opacity-60 sm:top-3 sm:right-3 sm:h-9 sm:w-9"
             >
               <Trash2 className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col p-3 space-y-2 sm:h-full sm:p-4">
+        <div className="flex min-w-0 flex-1 flex-col p-3 space-y-1.5 sm:h-full sm:space-y-2 sm:p-4">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
               {listing.title}
@@ -158,7 +158,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             </span>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="hidden items-center gap-2 flex-wrap sm:flex">
             <Badge variant="secondary" className={CATEGORY_COLORS[displayCategory] || ""}>
               {displayCategory}
             </Badge>
@@ -167,7 +167,13 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             </Badge>
           </div>
 
-          <div className="mt-auto flex items-center justify-between gap-3 pt-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 sm:hidden">
+            <Badge variant="outline" className="text-[10px]">
+              {displayCondition}
+            </Badge>
+          </div>
+
+          <div className="mt-auto flex items-center justify-between gap-3 pt-0.5 text-[11px] text-muted-foreground sm:pt-1 sm:text-xs">
             <span className="flex min-w-0 items-center gap-1">
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{listing.college}</span>
