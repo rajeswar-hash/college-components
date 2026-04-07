@@ -440,11 +440,11 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      {!isPartnerModerator && <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.80),rgba(255,255,255,0.92))]">
+      {!isPartnerModerator && <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.80),rgba(255,255,255,0.92))] dark:bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.12),transparent_30%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.94),rgba(2,6,23,0.98))]">
         <div className="container mx-auto max-w-7xl px-4 py-6 md:py-8">
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary shadow-sm">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary shadow-sm dark:bg-slate-900/80">
                 <Shield className="h-3.5 w-3.5" /> {isPartnerModerator ? "Listing review partner" : "Admin control room"}
               </div>
               <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">
@@ -457,7 +457,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             {!isPartnerModerator && <div className="grid gap-2 sm:grid-cols-2">
-              <Button variant="outline" className="h-10 justify-between bg-background/80 text-xs sm:text-sm" onClick={() => openSupabasePage("editor")}>
+              <Button variant="outline" className="h-10 justify-between bg-background/80 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" onClick={() => openSupabasePage("editor")}>
                 <span className="flex items-center">
                   <Database className="mr-2 h-4 w-4" /> Open database
                 </span>
@@ -473,7 +473,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-primary/10 p-2 text-primary">
@@ -486,7 +486,7 @@ export default function AdminDashboard() {
                 <p className="mt-1 text-[11px] text-muted-foreground">Published marketplace items</p>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-sky-500/10 p-2 text-sky-600">
@@ -499,7 +499,7 @@ export default function AdminDashboard() {
                 <p className="mt-1 text-[11px] text-muted-foreground">Profiles inside the platform</p>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600">
@@ -512,7 +512,7 @@ export default function AdminDashboard() {
                 <p className="mt-1 text-[11px] text-muted-foreground">{soldListings} sold items archived</p>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
@@ -570,14 +570,14 @@ export default function AdminDashboard() {
       </AlertDialog>
 
       <Dialog open={!!previewListing} onOpenChange={(open) => !open && setPreviewListing(null)}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border-border/70 bg-background sm:max-w-3xl">
+        <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border-border/70 bg-background sm:max-w-3xl dark:bg-slate-950">
           {previewListing && (
             <>
               <DialogHeader className="pb-2">
                 <DialogTitle className="text-left">Listing preview</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm">
+                <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm dark:bg-slate-900">
                   <div className="space-y-3 p-3">
                     <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
                       {previewListing.images?.length ? (
@@ -596,7 +596,7 @@ export default function AdminDashboard() {
                                     current === 0 ? previewListing.images!.length - 1 : current - 1
                                   )
                                 }
-                                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm"
+                                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm dark:bg-slate-950/90"
                                 aria-label="Previous preview image"
                               >
                                 <ArrowLeft className="h-4 w-4" />
@@ -608,7 +608,7 @@ export default function AdminDashboard() {
                                     current === previewListing.images!.length - 1 ? 0 : current + 1
                                   )
                                 }
-                                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm"
+                                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm dark:bg-slate-950/90"
                                 aria-label="Next preview image"
                               >
                                 <ArrowRight className="h-4 w-4" />
@@ -661,11 +661,11 @@ export default function AdminDashboard() {
                       <p className="text-3xl font-bold text-primary">₹{Number(previewListing.price).toLocaleString("en-IN")}</p>
                     </div>
 
-                    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <div className="rounded-2xl border border-border/70 bg-background/70 p-4 dark:bg-slate-900/80">
                       <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">{previewListing.description}</p>
                     </div>
 
-                    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <div className="rounded-2xl border border-border/70 bg-background/70 p-4 dark:bg-slate-900/80">
                       <div className="flex items-start gap-3">
                         <div className="rounded-full bg-primary/10 p-2 text-primary">
                           <MapPin className="h-4 w-4" />
@@ -701,7 +701,7 @@ export default function AdminDashboard() {
       </Dialog>
 
       <div className="container mx-auto max-w-7xl px-4 py-6">
-        {!isPartnerModerator && <Alert className="mb-4 border-primary/20 bg-primary/5 py-3">
+        {!isPartnerModerator && <Alert className="mb-4 border-primary/20 bg-primary/5 py-3 dark:bg-primary/10">
           <Wrench className="h-4 w-4" />
           <AlertTitle>Space monitoring note</AlertTitle>
           <AlertDescription>
@@ -710,7 +710,7 @@ export default function AdminDashboard() {
         </Alert>}
 
         {!isPartnerModerator && <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -746,7 +746,7 @@ export default function AdminDashboard() {
                 <Progress value={usagePercent} className="h-3" />
               </div>
 
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 text-xs text-muted-foreground shadow-sm">
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 text-xs text-muted-foreground shadow-sm dark:bg-slate-900/80">
                 {usagePercent >= 85
                   ? "Capacity is getting tight. Open billing and review add-ons before uploads start failing."
                   : usagePercent >= 60
@@ -756,24 +756,24 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <CardTitle>Admin actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
                 Open billing page <ExternalLink className="h-4 w-4" />
               </Button>
-              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
                 Open billing guide <ExternalLink className="h-4 w-4" />
               </Button>
-              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openSupabasePage("storage/buckets")}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openSupabasePage("storage/buckets")}>
                 Open storage settings <ExternalLink className="h-4 w-4" />
               </Button>
-              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm" variant="outline" onClick={() => openSupabasePage("auth/users")}>
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openSupabasePage("auth/users")}>
                 Open auth users <ExternalLink className="h-4 w-4" />
               </Button>
-              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm">
+              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Live now</p>
                   <p className="mt-1 text-sm font-semibold text-foreground">{activeListings} active listings</p>
@@ -788,7 +788,7 @@ export default function AdminDashboard() {
         </div>}
 
         <div className="mt-4 space-y-4">
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -854,7 +854,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="space-y-2">
                   {collegeRequests.map((request) => (
-                    <div key={request.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center">
+                    <div key={request.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center dark:bg-slate-900/80">
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge variant={request.status === "approved" ? "default" : request.status === "rejected" ? "destructive" : "secondary"} className="text-[10px] capitalize">
@@ -914,7 +914,7 @@ export default function AdminDashboard() {
           )}
 
           {activeSection === "listings" && (
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -937,7 +937,7 @@ export default function AdminDashboard() {
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Review queue</p>
                       {freshPendingListings.map((listing) => (
-                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center">
+                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-slate-900/80">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
                             {listing.images?.[0] ? (
                               <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
@@ -973,7 +973,7 @@ export default function AdminDashboard() {
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-destructive">Not reviewed items</p>
                       {overduePendingListings.map((listing) => (
-                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center">
+                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-destructive/10">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
                             {listing.images?.[0] ? (
                               <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
@@ -1012,7 +1012,7 @@ export default function AdminDashboard() {
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Flagged listings</p>
                       {flaggedListings.map((listing) => (
-                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center">
+                        <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-slate-900/80">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
                             {listing.images?.[0] ? (
                               <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
@@ -1059,7 +1059,7 @@ export default function AdminDashboard() {
           )}
 
           {activeSection === "members" && (
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -1079,7 +1079,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="max-h-[560px] space-y-2 overflow-y-auto pr-1">
                   {profiles.map((profile) => (
-                    <div key={profile.id} className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm">
+                    <div key={profile.id} className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3 min-w-0">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-xs font-bold text-primary">
