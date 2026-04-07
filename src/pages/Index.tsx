@@ -497,29 +497,32 @@ const Index = () => {
                   aria-hidden="true"
                 />
               </picture>
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_30%,rgba(255,255,255,0.26)_58%,rgba(255,255,255,0.66)_76%,rgba(255,255,255,0.9)_88%,rgb(255,255,255)_100%)]" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.34)_24%,rgba(255,255,255,0.78)_56%,rgba(255,255,255,0.95)_82%,rgb(255,255,255)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 dark:hidden bg-[linear-gradient(180deg,rgba(240,253,255,0.08),rgba(255,255,255,0.05)_30%,rgba(255,255,255,0.26)_58%,rgba(255,255,255,0.66)_76%,rgba(255,255,255,0.9)_88%,rgb(255,255,255)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 hidden dark:block bg-[linear-gradient(180deg,rgba(2,6,23,0.02),rgba(2,6,23,0.06)_30%,rgba(2,6,23,0.24)_58%,rgba(2,6,23,0.58)_76%,rgba(2,6,23,0.84)_88%,rgb(2,6,23)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 dark:hidden bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.34)_24%,rgba(255,255,255,0.78)_56%,rgba(255,255,255,0.95)_82%,rgb(255,255,255)_100%)]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-32 dark:block bg-[linear-gradient(180deg,rgba(2,6,23,0)_0%,rgba(2,6,23,0.26)_24%,rgba(2,6,23,0.66)_56%,rgba(2,6,23,0.9)_82%,rgb(2,6,23)_100%)]" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
-                <div className="h-20 w-[118%] rounded-t-[46px] bg-white/78 blur-[10px] sm:h-24 sm:w-[108%] sm:rounded-t-[54px]" />
+                <div className="h-20 w-[118%] rounded-t-[46px] bg-white/78 blur-[10px] dark:bg-slate-950/88 sm:h-24 sm:w-[108%] sm:rounded-t-[54px]" />
               </div>
-              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_28%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 dark:hidden bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_28%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 hidden dark:block bg-[radial-gradient(circle_at_top_left,rgba(15,23,42,0.22),transparent_34%),radial-gradient(circle_at_top_right,rgba(30,41,59,0.2),transparent_28%)]" />
               <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 opacity-55">
                 <div className="absolute -left-10 bottom-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
                 <div className="absolute -right-8 top-8 h-28 w-28 rounded-full bg-sky-400/10 blur-2xl" />
               </div>
 
               <div className={`relative ${showCollegeDropdown ? "min-h-[540px] sm:min-h-[620px]" : "min-h-[380px] sm:min-h-[500px]"}`}>
-                  <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:mt-[108px] sm:max-w-[430px]">
+                  <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] dark:border-white/10 dark:bg-slate-950/90 dark:shadow-[0_22px_50px_rgba(2,6,23,0.5)] sm:mt-[108px] sm:max-w-[430px]">
                     <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
-                      <div className="inline-flex w-full max-w-[292px] items-center justify-center gap-3 rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-4 py-2.5 text-left shadow-[0_10px_24px_rgba(20,184,166,0.08)] sm:max-w-[346px] sm:justify-center sm:gap-4 sm:px-5">
+                      <div className="inline-flex w-full max-w-[292px] items-center justify-center gap-3 rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-4 py-2.5 text-left shadow-[0_10px_24px_rgba(20,184,166,0.08)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(20,184,166,0.16),rgba(30,41,59,0.9),rgba(59,130,246,0.2))] dark:shadow-[0_10px_24px_rgba(2,6,23,0.28)] sm:max-w-[346px] sm:justify-center sm:gap-4 sm:px-5">
                         <img
                           src={`${import.meta.env.BASE_URL}college-banner-icon.jpeg`}
                           alt="College icon"
                           className="ml-2 h-9 w-9 shrink-0 rounded-[10px] object-cover sm:ml-0 sm:h-10 sm:w-10"
                           loading="eager"
                         />
-                        <p className="flex-1 text-center text-[12px] leading-4 text-foreground/68 sm:flex-none sm:text-center sm:text-[13px] sm:leading-[1.1rem]">
-                          <span className="block text-[15px] font-bold uppercase tracking-[0.08em] text-foreground sm:text-[16px]">SELECT YOUR COLLEGE</span>
+                        <p className="flex-1 text-center text-[12px] leading-4 text-foreground/68 dark:text-slate-300/78 sm:flex-none sm:text-center sm:text-[13px] sm:leading-[1.1rem]">
+                          <span className="block text-[15px] font-bold uppercase tracking-[0.08em] text-foreground dark:text-slate-50 sm:text-[16px]">SELECT YOUR COLLEGE</span>
                           <span className="mt-0.5 block text-[11.5px] tracking-[0.01em] sm:text-[12.5px]">To See Listings From Your Campus</span>
                         </p>
                       </div>
@@ -530,7 +533,7 @@ const Index = () => {
                           ref={collegeInputRef}
                           value={collegeQuery}
                           placeholder="Search your college..."
-                          className="h-11 rounded-full border-border/60 bg-white pl-10 pr-14 text-sm shadow-[0_8px_20px_rgba(20,184,166,0.10)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/45"
+                          className="h-11 rounded-full border-border/60 bg-white pl-10 pr-14 text-sm shadow-[0_8px_20px_rgba(20,184,166,0.10)] transition-shadow focus-visible:ring-2 focus-visible:ring-primary/45 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_8px_20px_rgba(2,6,23,0.34)] dark:placeholder:text-slate-400"
                           onChange={(e) => {
                             const value = e.target.value;
                             setCollegeQuery(value);
@@ -570,7 +573,7 @@ const Index = () => {
                       </div>
 
                       {showCollegeDropdown && (
-                        <div className="relative z-30 mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl">
+                        <div className="relative z-30 mt-2 overflow-hidden rounded-2xl border border-border/80 bg-popover shadow-xl dark:border-white/10 dark:bg-slate-950">
                           <div className="overflow-auto py-1" style={{ maxHeight: `${collegeDropdownMaxHeight}px` }}>
                             {searchingCollege ? (
                               <div className="px-4 py-3 text-sm text-muted-foreground">Searching colleges...</div>
@@ -613,7 +616,7 @@ const Index = () => {
             </div>
 
             <div className="-mt-6 mx-auto max-w-5xl space-y-6 px-1 pb-8 sm:-mt-4">
-              <div className="relative rounded-[18px] border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 pt-7 shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
+              <div className="relative rounded-[18px] border border-primary/10 bg-[linear-gradient(135deg,rgba(240,253,250,0.9),rgba(255,255,255,0.96),rgba(239,246,255,0.92))] p-5 pt-7 shadow-[0_18px_40px_rgba(20,184,166,0.08)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.95),rgba(2,6,23,0.98),rgba(15,23,42,0.94))] dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)]">
                 <div className="absolute left-5 top-0 -translate-y-1/2 rounded-[10px] bg-[linear-gradient(135deg,rgba(20,184,166,1),rgba(59,130,246,0.95))] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(20,184,166,0.22)]">
                   Campus Marketplace
                 </div>
