@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart } from "lucide-react";
+import { ArrowLeft, MapPin, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -452,32 +452,14 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/75 p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(180px,1fr)_minmax(160px,1fr)]">
-                <div className="flex items-start gap-3 sm:col-span-2 lg:col-span-1">
+              <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+                <div className="flex items-start gap-3">
                   <div className="rounded-full bg-primary/10 p-2 text-primary">
                     <MapPin className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
                     <p className="mt-1 text-sm font-medium leading-6 text-foreground">{listing.college}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-primary/10 p-2 text-primary">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Listed</p>
-                    <p className="mt-1 text-sm font-medium text-foreground">{dateStr}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-primary/10 p-2 text-primary">
-                    <ShoppingCart className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Saved</p>
-                    <p className="mt-1 text-sm font-medium text-foreground">{listing.likes} users</p>
                   </div>
                 </div>
               </div>
