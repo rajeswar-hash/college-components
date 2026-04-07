@@ -184,7 +184,6 @@ const ProductDetail = () => {
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
   const hasMultipleImages = !!listing.images && listing.images.length > 1;
-  const shortDescription = listing.description.replace(/\s+/g, " ").trim();
 
   const changeImage = (direction: "left" | "right", nextIndex: number) => {
     setImageAnimationClass(direction === "left" ? "gallery-slide-left" : "gallery-slide-right");
@@ -449,9 +448,6 @@ const ProductDetail = () => {
                   </h1>
                   <p className="text-3xl font-extrabold leading-none text-primary sm:text-4xl">
                     ₹{Number(listing.price).toLocaleString("en-IN")}
-                  </p>
-                  <p className="line-clamp-2 text-sm leading-6 text-muted-foreground sm:text-[15px]">
-                    {shortDescription}
                   </p>
                 </div>
               </div>
