@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Activity, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
+import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 
 interface ListingAdminRow {
@@ -97,6 +97,7 @@ export default function AdminDashboard() {
   const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
   const [pendingRejectListingId, setPendingRejectListingId] = useState<string | null>(null);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
+  const [previewImageIndex, setPreviewImageIndex] = useState(0);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
 
@@ -105,6 +106,10 @@ export default function AdminDashboard() {
       setActiveSection("listings");
     }
   }, [isPartnerModerator]);
+
+  useEffect(() => {
+    setPreviewImageIndex(0);
+  }, [previewListing]);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) return;
@@ -573,11 +578,73 @@ export default function AdminDashboard() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm">
-                  <div className="aspect-[16/9] overflow-hidden bg-muted">
-                    {previewListing.images?.[0] ? (
-                      <img src={previewListing.images[0]} alt={previewListing.title} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No image uploaded</div>
+                  <div className="space-y-3 p-3">
+                    <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+                      {previewListing.images?.length ? (
+                        <>
+                          <img
+                            src={previewListing.images[previewImageIndex]}
+                            alt={`${previewListing.title} image ${previewImageIndex + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          {previewListing.images.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPreviewImageIndex((current) =>
+                                    current === 0 ? previewListing.images!.length - 1 : current - 1
+                                  )
+                                }
+                                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm"
+                                aria-label="Previous preview image"
+                              >
+                                <ArrowLeft className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPreviewImageIndex((current) =>
+                                    current === previewListing.images!.length - 1 ? 0 : current + 1
+                                  )
+                                }
+                                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm"
+                                aria-label="Next preview image"
+                              >
+                                <ArrowRight className="h-4 w-4" />
+                              </button>
+                              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+                                {previewListing.images.map((image, index) => (
+                                  <button
+                                    key={`${image}-${index}`}
+                                    type="button"
+                                    onClick={() => setPreviewImageIndex(index)}
+                                    className={`h-2.5 rounded-full transition-all ${index === previewImageIndex ? "w-6 bg-primary" : "w-2.5 bg-background/70"}`}
+                                    aria-label={`Open preview image ${index + 1}`}
+                                  />
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No image uploaded</div>
+                      )}
+                    </div>
+
+                    {previewListing.images && previewListing.images.length > 1 && (
+                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                        {previewListing.images.map((image, index) => (
+                          <button
+                            key={`${image}-thumb-${index}`}
+                            type="button"
+                            onClick={() => setPreviewImageIndex(index)}
+                            className={`overflow-hidden rounded-xl border ${index === previewImageIndex ? "border-primary ring-2 ring-primary/20" : "border-border/70"}`}
+                          >
+                            <img src={image} alt={`Preview thumbnail ${index + 1}`} className="aspect-square h-full w-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <div className="space-y-4 p-5">
