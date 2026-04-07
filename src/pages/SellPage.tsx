@@ -190,18 +190,29 @@ function loadImage(dataUrl: string) {
 async function compressImage(file: File) {
   const originalDataUrl = await readFileAsDataUrl(file);
   const image = await loadImage(originalDataUrl);
-  const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
-  const width = Math.max(1, Math.round(image.width * scale));
-  const height = Math.max(1, Math.round(image.height * scale));
+  const sourceSize = Math.min(image.width, image.height);
+  const cropX = Math.max(0, Math.floor((image.width - sourceSize) / 2));
+  const cropY = Math.max(0, Math.floor((image.height - sourceSize) / 2));
+  const outputSize = Math.max(1, Math.round(Math.min(sourceSize, MAX_IMAGE_DIMENSION)));
 
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = outputSize;
+  canvas.height = outputSize;
 
   const context = canvas.getContext("2d");
   if (!context) return originalDataUrl;
 
-  context.drawImage(image, 0, 0, width, height);
+  context.drawImage(
+    image,
+    cropX,
+    cropY,
+    sourceSize,
+    sourceSize,
+    0,
+    0,
+    outputSize,
+    outputSize
+  );
 
   let quality = 0.82;
   let compressed = canvas.toDataURL("image/jpeg", quality);
