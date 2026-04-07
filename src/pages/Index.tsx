@@ -151,23 +151,6 @@ const Index = () => {
         moderation_status: listing.moderation_status ?? "active",
       }));
 
-      const visibleIds = nextListings.slice(0, INITIAL_VISIBLE_IMAGE_BATCH).map((listing) => listing.id);
-      if (visibleIds.length > 0) {
-        const { data: imageRows } = await supabase
-          .from("listings")
-          .select("id, images")
-          .in("id", visibleIds);
-
-        if (imageRows) {
-          const imageMap = new Map(imageRows.map((row) => [row.id, row.images || []]));
-          nextListings.forEach((listing) => {
-            if (imageMap.has(listing.id)) {
-              listing.images = imageMap.get(listing.id);
-            }
-          });
-        }
-      }
-
       listingsCacheRef.current.set(canonicalCollege, nextListings);
       return nextListings;
     })();
@@ -287,11 +270,20 @@ const Index = () => {
   useEffect(() => {
     if (collegeResults.length === 0) return;
 
-    const collegesToWarm = collegeResults.slice(0, 2);
+    const collegesToWarm = collegeResults.slice(0, 4);
     collegesToWarm.forEach((college) => {
-      void fetchCollegeListingsData(college);
+      void fetchCollegeListingsData(college).then((warmedListings) => {
+        const warmedImageIds = warmedListings
+          .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
+          .filter((listing) => !listing.images || listing.images.length === 0)
+          .map((listing) => listing.id);
+
+        if (warmedImageIds.length > 0) {
+          void fetchListingImages(warmedImageIds);
+        }
+      });
     });
-  }, [collegeResults, fetchCollegeListingsData]);
+  }, [collegeResults, fetchCollegeListingsData, fetchListingImages]);
 
   useEffect(() => {
     const missingVisibleImages = listings
