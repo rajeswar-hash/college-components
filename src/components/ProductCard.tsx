@@ -100,16 +100,16 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   return (
     <>
     <Link to={`/product/${listing.id}`} className="group block h-full">
-      <div className="glass h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated">
-        <div className="aspect-[4/3] bg-muted relative overflow-hidden">
+      <div className="glass flex h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:block">
+        <div className="relative w-[128px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
             <img
               src={listing.images[0]}
               alt={listing.title}
               loading="lazy"
               decoding="async"
-              sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 639px) 128px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="h-full min-h-[124px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -148,12 +148,12 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
           )}
         </div>
 
-        <div className="flex h-full flex-col p-4 space-y-2">
+        <div className="flex min-w-0 flex-1 flex-col p-3 space-y-2 sm:h-full sm:p-4">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
-            <span className="font-display font-bold text-lg gradient-text whitespace-nowrap">
+            <span className="font-display font-bold text-base gradient-text whitespace-nowrap sm:text-lg">
               {"\u20B9"}{listing.price}
             </span>
           </div>
