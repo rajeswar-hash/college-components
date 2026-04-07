@@ -378,7 +378,7 @@ const ProductDetail = () => {
 
         <div className="animate-fade-in space-y-6">
           <div
-            className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
+            className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:mx-auto lg:max-w-[820px]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
