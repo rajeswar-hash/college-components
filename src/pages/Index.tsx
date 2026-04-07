@@ -35,8 +35,8 @@ interface ListingRow {
 }
 
 const INITIAL_VISIBLE_IMAGE_BATCH = 8;
-const MIN_FILTER_PRICE = 5;
-const MAX_FILTER_PRICE = 5000;
+const MIN_FILTER_PRICE = 4;
+const MAX_FILTER_PRICE = 40000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
