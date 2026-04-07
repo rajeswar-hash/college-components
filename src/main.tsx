@@ -3,10 +3,12 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
+import { ThemeProvider, useThemeMode } from "./contexts/ThemeContext.tsx";
 import { Toaster } from "sonner";
 
 function ResponsiveToaster() {
   const [showCloseButton, setShowCloseButton] = useState(false);
+  const { theme } = useThemeMode();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -17,7 +19,7 @@ function ResponsiveToaster() {
     return () => mediaQuery.removeEventListener("change", sync);
   }, []);
 
-  return <Toaster richColors position="top-right" closeButton={showCloseButton} />;
+  return <Toaster richColors theme={theme} position="top-right" closeButton={showCloseButton} />;
 }
 
 function AppBootScreen() {
@@ -82,7 +84,9 @@ function BootstrappedApp() {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <AuthProvider>
-    <BootstrappedApp />
-  </AuthProvider>
+  <ThemeProvider>
+    <AuthProvider>
+      <BootstrappedApp />
+    </AuthProvider>
+  </ThemeProvider>
 );

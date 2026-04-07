@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useThemeMode } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Pencil, Package, Plus, Save, Sparkles, Trash2, User, X } from "lucide-react";
+import { Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ListingRow {
@@ -67,6 +68,7 @@ function getDefaultAvatar(name?: string | null, email?: string | null) {
 
 const Dashboard = () => {
   const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile, loading: authLoading } = useAuth();
+  const { theme, setTheme } = useThemeMode();
   const navigate = useNavigate();
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -308,6 +310,35 @@ const Dashboard = () => {
                   <div className="mt-2 flex items-end justify-between gap-3">
                     <p className="font-display text-xl font-bold leading-none text-foreground">Rs. {listingValue.toLocaleString()}</p>
                     <p className="text-right text-[11px] leading-4 text-muted-foreground">Current total</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 px-4 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Website Theme</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Choose how CampusKart looks for you.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:w-auto">
+                    <Button
+                      type="button"
+                      variant={theme === "light" ? "default" : "outline"}
+                      onClick={() => setTheme("light")}
+                      className={theme === "light" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : ""}
+                    >
+                      <Sun className="mr-2 h-4 w-4" />
+                      Light
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={theme === "dark" ? "default" : "outline"}
+                      onClick={() => setTheme("dark")}
+                      className={theme === "dark" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : ""}
+                    >
+                      <Moon className="mr-2 h-4 w-4" />
+                      Dark
+                    </Button>
                   </div>
                 </div>
               </div>
