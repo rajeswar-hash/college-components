@@ -45,6 +45,7 @@ const MAX_FILES = 5;
 const MAX_DAILY_UPLOADS = 7;
 const UPLOAD_COOLDOWN_MS = 30 * 1000;
 const HANDWRITING_TITLE_EMOJI = "✍️";
+const MAX_TITLE_LENGTH = 52;
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -240,7 +241,7 @@ const SellPage = () => {
   const categoryContent = category ? categoryContentMap[category] : null;
   const formLocked = !category;
   const firstName = (user?.name || "").trim().split(/\s+/)[0] || "Student";
-  const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`;
+  const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`.slice(0, MAX_TITLE_LENGTH);
 
   const handleCategoryChange = (value: Category) => {
     const nextCategory = value as Category;
@@ -290,6 +291,7 @@ const SellPage = () => {
     }
 
     if (trimmedTitle.length < 5) messages.push("Title must be at least 5 characters.");
+    if (title.length > MAX_TITLE_LENGTH) messages.push(`Title cannot exceed ${MAX_TITLE_LENGTH} characters.`);
     if (descriptionWordCount < 10) messages.push("Description must be at least 10 words.");
     if (!price || parsedPrice <= 0) messages.push("Enter a valid price.");
     if (selectedRule && parsedPrice > selectedRule.maxPrice) messages.push(`Max allowed is ₹${selectedRule.maxPrice}.`);
@@ -411,6 +413,7 @@ const SellPage = () => {
       throw new Error("Please select a category.");
     }
     if (trimmedTitle.length < 5) throw new Error("Title must be at least 5 characters.");
+    if (title.length > MAX_TITLE_LENGTH) throw new Error(`Title cannot exceed ${MAX_TITLE_LENGTH} characters including spaces.`);
     if (descriptionWordCount < 10) throw new Error("Description must be at least 10 words.");
     if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
     if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
@@ -724,13 +727,14 @@ const SellPage = () => {
               <Input
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE_LENGTH))}
                 placeholder={categoryContent?.titlePlaceholder || "Select a category to see a better title example"}
                 className="h-12 rounded-2xl border-border/80 bg-background dark:border-white/10 dark:bg-slate-950"
+                maxLength={MAX_TITLE_LENGTH}
                 disabled={formLocked}
               />
               <p className="text-xs leading-5 text-muted-foreground">
-                {categoryContent?.titleHint || "Minimum 5 characters. Keep it clear and specific."}
+                {categoryContent?.titleHint || "Minimum 5 characters. Keep it clear and specific."} Max {MAX_TITLE_LENGTH} characters.
               </p>
             </section>
 
