@@ -535,7 +535,7 @@ const SellPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.9),rgba(255,255,255,1))]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.9),rgba(255,255,255,1))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]">
       <Navbar />
       <div className="container mx-auto max-w-3xl px-4 py-6 sm:py-8">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-5 rounded-xl px-2 text-muted-foreground hover:text-foreground">
@@ -551,28 +551,28 @@ const SellPage = () => {
           </div>
 
           {!hasValidSellerPhone && (
-            <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 shadow-sm">
+            <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 shadow-sm dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-200">
               Add a valid WhatsApp number in your dashboard profile before posting. Buyers contact sellers directly through WhatsApp.
             </div>
           )}
 
-          <div className="mb-5 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-foreground shadow-sm">
+          <div className="mb-5 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-foreground shadow-sm dark:border-primary/20 dark:bg-primary/10 dark:text-slate-100">
             This item will be listed only in: <span className="font-semibold">{postingCollege || "Add your college in profile"}</span>
           </div>
 
-          <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-900 shadow-sm">
+          <div className="mb-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-900 shadow-sm dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100">
             Put details correctly. Every listing goes under manual verification. If you post unwanted or misleading content, your account may be banned.
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5 rounded-[28px] border border-primary/10 bg-background/95 p-4 shadow-[0_20px_60px_rgba(15,118,110,0.10)] backdrop-blur-sm sm:p-6">
-            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+          <form onSubmit={handleSubmit} className="space-y-5 rounded-[28px] border border-primary/10 bg-background/95 p-4 shadow-[0_20px_60px_rgba(15,118,110,0.10)] backdrop-blur-sm dark:border-white/10 dark:bg-slate-950/92 dark:shadow-[0_24px_70px_rgba(2,6,23,0.45)] sm:p-6">
+            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <div>
                 <Label className="text-base font-semibold">Category</Label>
                 <p className="mt-1 text-xs text-muted-foreground">Select a category first. The form updates instantly.</p>
               </div>
 
               <Select value={category} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4">
+                <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4 dark:border-white/10 dark:bg-slate-950">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
@@ -593,14 +593,14 @@ const SellPage = () => {
               </Select>
 
               {selectedRule && (
-                <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-muted-foreground dark:border-primary/20 dark:bg-primary/10 dark:text-slate-300">
                   {selectedRule.helper}
                 </div>
               )}
             </section>
 
             {selectedRule?.requiresDriveLink && (
-              <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+              <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
                 <Label htmlFor="resourceLink" className="text-base font-semibold">Google Drive link</Label>
                 <div className="relative">
                   <ExternalLink className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -609,7 +609,7 @@ const SellPage = () => {
                     value={resourceLink}
                     onChange={(e) => setResourceLink(e.target.value)}
                     placeholder="https://drive.google.com/..."
-                    className="h-12 rounded-2xl border-border/80 bg-background pl-10"
+                    className="h-12 rounded-2xl border-border/80 bg-background pl-10 dark:border-white/10 dark:bg-slate-950"
                     disabled={formLocked}
                   />
                 </div>
@@ -618,14 +618,14 @@ const SellPage = () => {
             )}
 
             {category === "Projects" && (
-              <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+              <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
                 <Label htmlFor="resourceLink" className="text-base font-semibold">Optional demo / drive link</Label>
                 <Input
                   id="resourceLink"
                   value={resourceLink}
                   onChange={(e) => setResourceLink(e.target.value)}
                   placeholder="Optional demo, video, or drive link"
-                  className="h-12 rounded-2xl border-border/80 bg-background"
+                  className="h-12 rounded-2xl border-border/80 bg-background dark:border-white/10 dark:bg-slate-950"
                   disabled={formLocked}
                 />
                 <p className="text-xs text-muted-foreground">Images or demo links are optional but recommended for projects.</p>
@@ -633,7 +633,7 @@ const SellPage = () => {
             )}
 
             {canUploadImages && (
-            <section className={`space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm ${formLocked ? "pointer-events-none opacity-60" : ""}`}>
+            <section className={`space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80 ${formLocked ? "pointer-events-none opacity-60" : ""}`}>
               <div>
                 <Label className="text-base font-semibold text-foreground">{selectedRule?.imageLabel || "Upload images"}</Label>
                 <p className="mt-1 text-sm text-muted-foreground">{selectedRule?.imageHint || "Upload at least one image if required"}</p>
@@ -647,7 +647,7 @@ const SellPage = () => {
               </div>
 
               <div
-                className="cursor-pointer rounded-3xl border-2 border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(20,184,166,0.06),rgba(59,130,246,0.06))] p-6 text-center transition-all hover:border-primary/50 hover:shadow-[0_14px_30px_rgba(34,197,194,0.10)] sm:p-8"
+                className="cursor-pointer rounded-3xl border-2 border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(20,184,166,0.06),rgba(59,130,246,0.06))] p-6 text-center transition-all hover:border-primary/50 hover:shadow-[0_14px_30px_rgba(34,197,194,0.10)] dark:border-primary/20 dark:bg-[linear-gradient(135deg,rgba(20,184,166,0.08),rgba(15,23,42,0.96),rgba(59,130,246,0.08))] dark:hover:shadow-[0_14px_30px_rgba(2,6,23,0.3)] sm:p-8"
                 onClick={() => fileInputRef.current?.click()}
                 onPaste={(e) => {
                   const clipboardFiles = Array.from(e.clipboardData?.items || [])
@@ -679,7 +679,7 @@ const SellPage = () => {
                   className="hidden"
                   onChange={(e) => handleImageUpload(e.target.files)}
                 />
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-background shadow-sm ring-1 ring-primary/10">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-background shadow-sm ring-1 ring-primary/10 dark:bg-slate-950 dark:ring-white/10">
                   <ImagePlus className="h-7 w-7 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
@@ -697,10 +697,10 @@ const SellPage = () => {
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                   {images.map((img, i) => (
-                    <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted/40">
+                    <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted/40 dark:border-white/10 dark:bg-slate-950/70">
                       <img src={img} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" />
                       {i === 0 && (
-                        <div className="absolute left-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-sm">
+                          <div className="absolute left-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-sm dark:bg-slate-950/90">
                           Cover
                         </div>
                       )}
@@ -719,14 +719,14 @@ const SellPage = () => {
             </section>
             )}
 
-            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <Label htmlFor="title" className="text-base font-semibold">Title</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={categoryContent?.titlePlaceholder || "Select a category to see a better title example"}
-                className="h-12 rounded-2xl border-border/80 bg-background"
+                className="h-12 rounded-2xl border-border/80 bg-background dark:border-white/10 dark:bg-slate-950"
                 disabled={formLocked}
               />
               <p className="text-xs leading-5 text-muted-foreground">
@@ -734,7 +734,7 @@ const SellPage = () => {
               </p>
             </section>
 
-            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <Label htmlFor="description" className="text-base font-semibold">Description</Label>
               <Textarea
                 id="description"
@@ -742,20 +742,20 @@ const SellPage = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={categoryContent?.descriptionPlaceholder || "Select a category to see the right description format"}
                 rows={5}
-                className="rounded-2xl border-border/80 bg-background"
+                className="rounded-2xl border-border/80 bg-background dark:border-white/10 dark:bg-slate-950"
                 disabled={formLocked}
               />
               <p className="text-xs leading-5 text-muted-foreground">{categoryContent?.descriptionHint || "Minimum 10 words. Explain the item or service clearly."}</p>
             </section>
 
             {selectedRule?.requiresCondition && (
-            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className="space-y-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <div>
                 <Label className="text-base font-semibold">Condition</Label>
                 <p className="mt-1 text-xs text-muted-foreground">Choose honestly to build trust</p>
               </div>
               <Select value={condition} onValueChange={(value) => setCondition(value as Condition)} disabled={formLocked}>
-                <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4">
+                <SelectTrigger className="h-12 rounded-2xl border-border/80 bg-background px-4 dark:border-white/10 dark:bg-slate-950">
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
@@ -772,7 +772,7 @@ const SellPage = () => {
             </section>
             )}
 
-            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className="space-y-2 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <Label htmlFor="price" className="text-base font-semibold">
                 {category === "Handwriting Service" ? "Price per page" : "Price"}
               </Label>
@@ -786,14 +786,14 @@ const SellPage = () => {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder={categoryContent?.pricePlaceholder || "Enter price"}
-                  className="h-12 rounded-2xl border-border/80 bg-background pl-9"
+                  className="h-12 rounded-2xl border-border/80 bg-background pl-9 dark:border-white/10 dark:bg-slate-950"
                   disabled={formLocked}
                 />
               </div>
               <p className="text-xs text-muted-foreground">{categoryContent?.priceHint || (selectedRule ? `Max ₹${selectedRule.maxPrice} for this category.` : "Choose a category to see the price rule.")}</p>
             </section>
 
-            <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <p className="text-sm font-semibold text-foreground">Live validation</p>
@@ -803,7 +803,7 @@ const SellPage = () => {
                   <Badge className="gradient-bg border-0 text-primary-foreground">Ready to post</Badge>
                 ) : (
                   validationMessages.map((message) => (
-                    <Badge key={message} variant="secondary" className="rounded-full bg-amber-500/10 px-3 py-1 text-amber-800">
+                    <Badge key={message} variant="secondary" className="rounded-full bg-amber-500/10 px-3 py-1 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
                       {message}
                     </Badge>
                   ))
@@ -811,13 +811,13 @@ const SellPage = () => {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+            <section className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <p className="text-sm font-semibold text-foreground">Preview</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted dark:bg-slate-950/80">
                   {images[0] ? (
                     <img src={images[0]} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
@@ -827,9 +827,9 @@ const SellPage = () => {
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     {category && <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">{category}</span>}
-                    {condition && <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">{condition}</span>}
+                      {condition && <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">{condition}</span>}
                     {selectedRule?.requiresDriveLink && resourceLink && (
-                      <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">Drive link attached</span>
+                      <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">Drive link attached</span>
                     )}
                   </div>
                   <p className="line-clamp-2 text-sm font-semibold text-foreground">{title || "Your item title will appear here"}</p>
@@ -839,11 +839,11 @@ const SellPage = () => {
               </div>
             </section>
 
-            <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm text-muted-foreground dark:border-primary/20 dark:bg-primary/10 dark:text-slate-300">
               Only visible to students in your college
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground shadow-sm">
+            <div className="rounded-2xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground shadow-sm dark:border-white/10 dark:bg-slate-900/80 dark:text-slate-300">
               Buyers will contact you directly through WhatsApp
             </div>
 
