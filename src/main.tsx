@@ -25,21 +25,31 @@ function AppBootScreen() {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] flex select-none items-center justify-center bg-background">
-      <div className="relative flex flex-col items-center gap-3 px-8 text-center sm:gap-4">
-        <div className="absolute inset-x-0 top-1/2 -z-10 h-40 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
-        <img
-          src={brandLogoSrc}
-          alt="CampusKart logo"
-          className="h-20 w-20 rounded-[24px] object-cover shadow-[0_18px_45px_hsla(210,78%,50%,0.18)] sm:h-24 sm:w-24 sm:rounded-[28px]"
-        />
-        <div className="space-y-1">
-          <h1 className="font-display text-[2.15rem] font-bold leading-none tracking-tight text-foreground sm:text-[2.6rem]">
-            Campus<span className="gradient-text">Kart</span>
-          </h1>
-          <div className="mx-auto flex items-center justify-center gap-1.5 pt-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-primary/90 boot-dot-delay-1" />
-            <span className="h-2.5 w-2.5 rounded-full bg-primary/75 boot-dot-delay-2" />
-            <span className="h-2.5 w-2.5 rounded-full bg-primary/55 boot-dot-delay-3" />
+      <div className="relative px-6">
+        <div className="absolute left-1/2 top-1/2 -z-10 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/12 blur-3xl sm:h-72 sm:w-72" />
+        <div className="glass flex min-w-[290px] max-w-[88vw] flex-col items-center rounded-[28px] border-white/50 px-6 py-6 shadow-[0_24px_70px_hsla(210,78%,50%,0.12)] sm:min-w-[380px] sm:px-8 sm:py-7">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <img
+              src={brandLogoSrc}
+              alt="CampusKart logo"
+              className="h-16 w-16 rounded-[20px] object-cover shadow-[0_14px_35px_hsla(210,78%,50%,0.18)] sm:h-20 sm:w-20 sm:rounded-[24px]"
+            />
+            <div className="text-left">
+              <h1 className="font-display text-[1.95rem] font-bold leading-none tracking-tight text-foreground sm:text-[2.45rem]">
+                Campus<span className="gradient-text">Kart</span>
+              </h1>
+              <p className="mt-1 text-[0.76rem] font-semibold tracking-[0.14em] text-muted-foreground/80 sm:text-[0.82rem]">
+                CAMPUS MARKETPLACE
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-primary/12 sm:mt-6 sm:w-48">
+            <div className="boot-progress-bar h-full w-1/2 rounded-full gradient-bg" />
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary/85 boot-dot-delay-1" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary/65 boot-dot-delay-2" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary/45 boot-dot-delay-3" />
           </div>
         </div>
       </div>
