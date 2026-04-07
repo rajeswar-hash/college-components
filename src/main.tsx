@@ -23,7 +23,7 @@ function ResponsiveToaster() {
 
 function AppBootScreen() {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background">
+    <div className="pointer-events-none fixed inset-0 z-[100] flex select-none items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-5 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl gradient-bg shadow-lg">
           <Cpu className="h-10 w-10 text-primary-foreground" />
@@ -44,33 +44,15 @@ function BootstrappedApp() {
 
   useEffect(() => {
     let isMounted = true;
-    let pageReady = document.readyState === "complete";
-    let minDelayElapsed = false;
-
-    const finishIfReady = () => {
-      if (isMounted && pageReady && minDelayElapsed) {
+    const minDelayTimer = window.setTimeout(() => {
+      if (isMounted) {
         setShowBootScreen(false);
       }
-    };
-
-    const minDelayTimer = window.setTimeout(() => {
-      minDelayElapsed = true;
-      finishIfReady();
-    }, 1800);
-
-    const handlePageReady = () => {
-      pageReady = true;
-      finishIfReady();
-    };
-
-    if (!pageReady) {
-      window.addEventListener("load", handlePageReady, { once: true });
-    }
+    }, 1100);
 
     return () => {
       isMounted = false;
       window.clearTimeout(minDelayTimer);
-      window.removeEventListener("load", handlePageReady);
     };
   }, []);
 
