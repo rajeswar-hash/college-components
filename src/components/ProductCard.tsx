@@ -100,7 +100,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   return (
     <>
     <Link to={`/product/${listing.id}`} className="group block h-full">
-      <div className="glass flex h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:block">
+      <div className="glass flex min-h-[116px] h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:block">
         <div className="relative w-[104px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
             <img
@@ -148,14 +148,25 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col p-3 space-y-1.5 sm:h-full sm:space-y-2 sm:p-4">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
-              {listing.title}
-            </h3>
-            <span className="font-display font-bold text-base gradient-text whitespace-nowrap sm:text-lg">
+        <div className="flex min-w-0 flex-1 flex-col justify-between p-3 sm:h-full sm:space-y-2 sm:p-4">
+          <div className="space-y-1.5">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
+                {listing.title}
+              </h3>
+              <div className="flex shrink-0 items-center gap-2 sm:hidden">
+                <Badge variant="outline" className="text-[10px]">
+                  {displayCondition}
+                </Badge>
+              </div>
+              <span className="hidden font-display font-bold text-base gradient-text whitespace-nowrap sm:inline sm:text-lg">
+                {"\u20B9"}{listing.price}
+              </span>
+            </div>
+
+            <p className="font-display text-lg font-bold leading-none gradient-text sm:hidden">
               {"\u20B9"}{listing.price}
-            </span>
+            </p>
           </div>
 
           <div className="hidden items-center gap-2 flex-wrap sm:flex">
@@ -163,12 +174,6 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               {displayCategory}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              {displayCondition}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2 sm:hidden">
-            <Badge variant="outline" className="text-[10px]">
               {displayCondition}
             </Badge>
           </div>
