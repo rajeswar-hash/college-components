@@ -376,9 +376,9 @@ const ProductDetail = () => {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
 
-        <div className="animate-fade-in space-y-6">
+        <div className="animate-fade-in grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
           <div
-            className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:mx-auto lg:max-w-[820px]"
+            className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:sticky lg:top-24"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
