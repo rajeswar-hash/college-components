@@ -100,7 +100,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   return (
     <>
     <Link to={`/product/${listing.id}`} className="group block h-full">
-      <div className="glass flex min-h-[116px] h-full overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:block">
+      <div className="glass flex h-[114px] overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:h-full sm:min-h-[116px] sm:block">
         <div className="relative w-[104px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
             <img
@@ -148,8 +148,8 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-between p-3 sm:min-h-[132px] sm:justify-start sm:space-y-2 sm:p-4">
-          <div className="space-y-1.5">
+        <div className="flex min-w-0 flex-1 flex-col p-3 sm:min-h-[132px] sm:justify-start sm:space-y-2 sm:p-4">
+          <div className="min-h-[40px] space-y-1 sm:min-h-0 sm:space-y-1.5">
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
                 {listing.title}
@@ -178,7 +178,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             </Badge>
           </div>
 
-          <div className="mt-auto flex items-center justify-between gap-3 pt-0.5 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
+          <div className="mt-1 flex items-center justify-between gap-3 pt-0 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
             <span className="flex min-w-0 items-center gap-1">
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{listing.college}</span>
