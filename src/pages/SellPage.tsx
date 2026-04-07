@@ -700,6 +700,7 @@ const SellPage = () => {
                   {category === "Handwriting Service" ? "Tap to upload handwriting samples" : "Tap to upload item photos"}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB each. Photos are optimized automatically.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Non-square photos are automatically center-cropped to a 1:1 square for cleaner listings.</p>
               </div>
 
               {processingImages > 0 && (
