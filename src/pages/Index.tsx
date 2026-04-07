@@ -803,7 +803,6 @@ const Index = () => {
                         showAdminDelete={canDeleteFromHome}
                         onAdminDelete={handleAdminDeleteListing}
                         deleting={deletingListingId === listing.id}
-                        showCollege={false}
                       />
                     </div>
                   ))}
