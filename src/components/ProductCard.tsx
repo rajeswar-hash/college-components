@@ -13,6 +13,7 @@ interface ProductCardProps {
   showAdminDelete?: boolean;
   onAdminDelete?: (listingId: string) => void;
   deleting?: boolean;
+  showCollege?: boolean;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -27,7 +28,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Others: "bg-muted text-muted-foreground",
 };
 
-export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, deleting = false }: ProductCardProps) {
+export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, deleting = false, showCollege = true }: ProductCardProps) {
   const { isAuthenticated, supabaseUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
@@ -178,12 +179,14 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             </Badge>
           </div>
 
-          <div className="mt-auto flex items-center justify-between gap-3 pt-0.5 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
-            <span className="flex min-w-0 items-center gap-1">
-              <MapPin className="w-3 h-3 shrink-0" />
-              <span className="truncate">{listing.college}</span>
-            </span>
-          </div>
+          {showCollege && (
+            <div className="mt-auto flex items-center justify-between gap-3 pt-0.5 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
+              <span className="flex min-w-0 items-center gap-1">
+                <MapPin className="w-3 h-3 shrink-0" />
+                <span className="truncate">{listing.college}</span>
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Link>
