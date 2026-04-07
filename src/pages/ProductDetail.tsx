@@ -443,10 +443,10 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <h1 className="break-words text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+                  <h1 className="break-words text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                     {listing.title}
                   </h1>
-                  <p className="text-3xl font-extrabold leading-none text-primary sm:text-4xl">
+                  <p className="text-2xl font-extrabold leading-none text-primary sm:text-3xl">
                     ₹{Number(listing.price).toLocaleString("en-IN")}
                   </p>
                 </div>
