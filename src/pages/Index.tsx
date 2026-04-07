@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Category } from "@/lib/types";
+import { Category, Condition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ProductCard } from "@/components/ProductCard";
@@ -47,6 +47,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCondition, setSelectedCondition] = useState<Condition | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   const [collegeQuery, setCollegeQuery] = useState("");
@@ -208,6 +209,7 @@ const Index = () => {
     setCollegeResults([]);
     setSearch("");
     setSelectedCategory(null);
+    setSelectedCondition(null);
     setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   }, []);
 
@@ -257,6 +259,7 @@ const Index = () => {
       setLoading(true);
       setSearch("");
       setSelectedCategory(null);
+      setSelectedCondition(null);
       setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
 
       const nextListings = await fetchCollegeListingsData(selectedCollege);
@@ -303,6 +306,10 @@ const Index = () => {
       items = items.filter((listing) => listing.category === selectedCategory);
     }
 
+    if (selectedCondition) {
+      items = items.filter((listing) => listing.condition === selectedCondition);
+    }
+
     if (priceRange[0] > MIN_FILTER_PRICE || priceRange[1] < MAX_FILTER_PRICE) {
       items = items.filter((listing) => listing.price >= priceRange[0] && listing.price <= priceRange[1]);
     }
@@ -321,7 +328,7 @@ const Index = () => {
       if (b.likes !== a.likes) return b.likes - a.likes;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [listings, priceRange, search, selectedCategory]);
+  }, [listings, priceRange, search, selectedCategory, selectedCondition]);
 
   const adaptedListings = filteredListings.map((listing) => ({
     id: listing.id,
@@ -351,6 +358,7 @@ const Index = () => {
     setCollegeResults([]);
     setSearch("");
     setSelectedCategory(null);
+    setSelectedCondition(null);
     setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   };
 
@@ -758,6 +766,8 @@ const Index = () => {
               onSearchChange={setSearch}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
+              selectedCondition={selectedCondition}
+              onConditionChange={setSelectedCondition}
               priceRange={priceRange}
               onPriceRangeChange={setPriceRange}
               minPrice={MIN_FILTER_PRICE}

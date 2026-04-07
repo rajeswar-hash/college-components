@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Category, CATEGORIES } from "@/lib/types";
+import { Category, CATEGORIES, Condition, CONDITIONS } from "@/lib/types";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
 interface CollegeListingsFilterBarProps {
@@ -11,6 +11,8 @@ interface CollegeListingsFilterBarProps {
   onSearchChange: (value: string) => void;
   selectedCategory: Category | null;
   onCategoryChange: (value: Category | null) => void;
+  selectedCondition: Condition | null;
+  onConditionChange: (value: Condition | null) => void;
   priceRange: [number, number];
   onPriceRangeChange: (value: [number, number]) => void;
   minPrice: number;
@@ -22,6 +24,8 @@ export function CollegeListingsFilterBar({
   onSearchChange,
   selectedCategory,
   onCategoryChange,
+  selectedCondition,
+  onConditionChange,
   priceRange,
   onPriceRangeChange,
   minPrice,
@@ -31,10 +35,12 @@ export function CollegeListingsFilterBar({
 
   const activeFilterCount =
     (selectedCategory ? 1 : 0) +
+    (selectedCondition ? 1 : 0) +
     (priceRange[0] > minPrice || priceRange[1] < maxPrice ? 1 : 0);
 
   const clearAll = () => {
     onCategoryChange(null);
+    onConditionChange(null);
     onPriceRangeChange([minPrice, maxPrice]);
   };
 
@@ -82,6 +88,14 @@ export function CollegeListingsFilterBar({
               </button>
             </Badge>
           )}
+          {selectedCondition && (
+            <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
+              {selectedCondition}
+              <button onClick={() => onConditionChange(null)}>
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </Badge>
+          )}
           {(priceRange[0] > minPrice || priceRange[1] < maxPrice) && (
             <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
               ₹{priceRange[0]} – ₹{priceRange[1]}
@@ -118,6 +132,31 @@ export function CollegeListingsFilterBar({
                   className={`h-7 px-2.5 text-xs ${selectedCategory === category ? "gradient-bg border-0 text-primary-foreground" : ""}`}
                 >
                   {category}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Condition</p>
+            <div className="flex flex-wrap gap-1.5">
+              <Button
+                size="sm"
+                variant={selectedCondition === null ? "default" : "outline"}
+                onClick={() => onConditionChange(null)}
+                className={`h-7 px-2.5 text-xs ${selectedCondition === null ? "gradient-bg border-0 text-primary-foreground" : ""}`}
+              >
+                All
+              </Button>
+              {CONDITIONS.map((condition) => (
+                <Button
+                  key={condition}
+                  size="sm"
+                  variant={selectedCondition === condition ? "default" : "outline"}
+                  onClick={() => onConditionChange(condition)}
+                  className={`h-7 px-2.5 text-xs ${selectedCondition === condition ? "gradient-bg border-0 text-primary-foreground" : ""}`}
+                >
+                  {condition}
                 </Button>
               ))}
             </div>

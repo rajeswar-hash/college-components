@@ -20,8 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Activity, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, Shield, Trash2, Users, Wallet, Wrench } from "lucide-react";
+import { Activity, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 
 interface ListingAdminRow {
@@ -35,6 +36,7 @@ interface ListingAdminRow {
   title: string;
   price: number;
   category: string;
+  condition: string;
   college: string;
   sold: boolean;
   created_at: string;
@@ -93,6 +95,7 @@ export default function AdminDashboard() {
   const [collegeRequests, setCollegeRequests] = useState<CollegeRequestRow[]>([]);
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
   const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
+  const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
 
@@ -115,7 +118,7 @@ export default function AdminDashboard() {
       ] = await Promise.all([
         supabase
           .from("listings")
-          .select("id, title, description, price, category, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
+          .select("id, title, description, price, category, condition, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
           .order("created_at", { ascending: false }),
         isPartnerModerator
           ? Promise.resolve({ data: [], error: null } as any)
@@ -247,6 +250,7 @@ export default function AdminDashboard() {
           : listing
       )
     );
+    setPreviewListing((current) => (current?.id === listingId ? null : current));
     toast.success("Listing rejected.");
   };
 
@@ -274,6 +278,7 @@ export default function AdminDashboard() {
           : listing
       )
     );
+    setPreviewListing((current) => (current?.id === listingId ? null : current));
     toast.success("Listing approved and reports cleared.");
   };
 
@@ -307,6 +312,7 @@ export default function AdminDashboard() {
           : profile
       )
     );
+    setPreviewListing((current) => (current?.seller_id === profileId ? null : current));
     toast.success("User banned for repeated violations.");
     setPendingBanProfileId(null);
   };
@@ -535,6 +541,75 @@ export default function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!previewListing} onOpenChange={(open) => !open && setPreviewListing(null)}>
+        <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border-border/70 bg-background sm:max-w-3xl">
+          {previewListing && (
+            <>
+              <DialogHeader className="pb-2">
+                <DialogTitle className="text-left">Listing preview</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm">
+                  <div className="aspect-[16/9] overflow-hidden bg-muted">
+                    {previewListing.images?.[0] ? (
+                      <img src={previewListing.images[0]} alt={previewListing.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No image uploaded</div>
+                    )}
+                  </div>
+                  <div className="space-y-4 p-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary">{previewListing.category}</Badge>
+                      <Badge variant="outline">{previewListing.condition}</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {previewListing.moderation_status.replaceAll("_", " ")}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold tracking-tight text-foreground">{previewListing.title}</h3>
+                      <p className="text-3xl font-bold text-primary">₹{Number(previewListing.price).toLocaleString("en-IN")}</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                      <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">{previewListing.description}</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-primary/10 p-2 text-primary">
+                          <MapPin className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{previewListing.college}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Button variant="outline" onClick={() => setPreviewListing(null)}>
+                    Close
+                  </Button>
+                  <Button variant="outline" onClick={() => setPendingBanProfileId(previewListing.seller_id)}>
+                    <Tag className="mr-2 h-4 w-4" />
+                    Ban seller
+                  </Button>
+                  <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => void handleRejectListing(previewListing.id)}>
+                    Reject
+                  </Button>
+                  <Button onClick={() => void handleApproveListing(previewListing.id)}>
+                    Approve
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="container mx-auto max-w-7xl px-4 py-6">
         {!isPartnerModerator && <Alert className="mb-4 border-primary/20 bg-primary/5 py-3">
@@ -787,6 +862,9 @@ export default function AdminDashboard() {
                             <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
                           </div>
                           <div className="flex flex-wrap gap-2 md:flex-col">
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPreviewListing(listing)}>
+                              Preview
+                            </Button>
                             <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
                               Approve
                             </Button>
@@ -823,6 +901,9 @@ export default function AdminDashboard() {
                             <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
                           </div>
                           <div className="flex flex-wrap gap-2 md:flex-col">
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPreviewListing(listing)}>
+                              Preview
+                            </Button>
                             <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
                               Approve
                             </Button>
@@ -859,6 +940,9 @@ export default function AdminDashboard() {
                             <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
                           </div>
                           <div className="flex flex-wrap gap-2 md:flex-col">
+                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setPreviewListing(listing)}>
+                              Preview
+                            </Button>
                             <Button size="sm" className="h-8 text-xs" onClick={() => handleApproveListing(listing.id)}>
                               Approve
                             </Button>
