@@ -75,7 +75,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Components: {
     category: "Components",
     helper: "Clear product images help buyers trust the exact part faster.",
-    maxPrice: 5000,
+    maxPrice: 10000,
     requiresCondition: true,
     allowsConditionOptions: ["New", "Like New", "Fair", "Used"],
     requiresImages: true,
@@ -91,7 +91,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Gadgets: {
     category: "Gadgets",
     helper: "Use clear gadget photos so buyers can verify the model quickly.",
-    maxPrice: 5000,
+    maxPrice: 10000,
     requiresCondition: true,
     allowsConditionOptions: ["New", "Like New", "Fair", "Used"],
     requiresImages: true,
@@ -107,7 +107,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Tools: {
     category: "Tools",
     helper: "Show the actual tool condition clearly so buyers know what to expect.",
-    maxPrice: 5000,
+    maxPrice: 10000,
     requiresCondition: true,
     allowsConditionOptions: ["New", "Like New", "Fair", "Used"],
     requiresImages: true,
@@ -123,7 +123,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Books: {
     category: "Books",
     helper: "Show the book cover clearly and mention edition, branch, or semester when relevant.",
-    maxPrice: 500,
+    maxPrice: 1000,
     requiresCondition: true,
     allowsConditionOptions: ["New", "Like New", "Fair", "Used"],
     requiresImages: true,
@@ -139,7 +139,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Projects: {
     category: "Projects",
     helper: "Images are optional but recommended. A demo or drive link helps buyers understand the project faster.",
-    maxPrice: 5000,
+    maxPrice: 40000,
     requiresCondition: false,
     allowsConditionOptions: [],
     requiresImages: false,
@@ -155,7 +155,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Others: {
     category: "Others",
     helper: "Clear photos and a specific title help buyers understand unusual items quickly.",
-    maxPrice: 5000,
+    maxPrice: 30000,
     requiresCondition: true,
     allowsConditionOptions: ["New", "Like New", "Fair", "Used"],
     requiresImages: true,

@@ -125,7 +125,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Mention working condition, brand, quantity, included wires/modules, usage history, and reason for selling...",
     descriptionHint: "Minimum 10 words. Explain the exact component condition and what is included.",
     pricePlaceholder: "450",
-    priceHint: "Max ₹5000 for components.",
+    priceHint: "Max ₹10000 for components.",
   },
   Gadgets: {
     titlePlaceholder: "e.g. Casio scientific calculator fx-991ES",
@@ -133,7 +133,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Mention brand, model, condition, battery or charger details, usage history, and reason for selling...",
     descriptionHint: "Minimum 10 words. Explain the gadget condition and accessories clearly.",
     pricePlaceholder: "1200",
-    priceHint: "Max ₹5000 for gadgets.",
+    priceHint: "Max ₹10000 for gadgets.",
   },
   Tools: {
     titlePlaceholder: "e.g. Soldering iron kit with stand",
@@ -141,7 +141,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Mention tool condition, brand, included bits or stand, how often it was used, and reason for selling...",
     descriptionHint: "Minimum 10 words. Help buyers understand the working condition and kit contents.",
     pricePlaceholder: "850",
-    priceHint: "Max ₹5000 for tools.",
+    priceHint: "Max ₹10000 for tools.",
   },
   Books: {
     titlePlaceholder: "e.g. Engineering Mathematics textbook by B.S. Grewal",
@@ -149,7 +149,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Mention author, edition, semester relevance, page condition, highlighting or notes, and reason for selling...",
     descriptionHint: "Minimum 10 words. Explain the book condition and academic relevance clearly.",
     pricePlaceholder: "250",
-    priceHint: "Max ₹500 for books.",
+    priceHint: "Max ₹1000 for books.",
   },
   Projects: {
     titlePlaceholder: "e.g. Line follower robot project kit",
@@ -157,7 +157,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Mention project type, components included, working status, documentation availability, and why you are selling it...",
     descriptionHint: "Minimum 10 words. Explain what the buyer gets and the current project status.",
     pricePlaceholder: "2500",
-    priceHint: "Max ₹5000 for projects.",
+    priceHint: "Max ₹40000 for projects.",
   },
   Others: {
     titlePlaceholder: "e.g. Lab coat and drawing sheet set",
@@ -165,7 +165,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Describe the item clearly, mention condition, quantity, what is included, and why you are selling it...",
     descriptionHint: "Minimum 10 words. Help buyers quickly understand the item and condition.",
     pricePlaceholder: "300",
-    priceHint: "Max ₹5000 for this category.",
+    priceHint: "Max ₹30000 for this category.",
   },
 };
 
