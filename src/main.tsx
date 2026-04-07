@@ -21,27 +21,17 @@ function ResponsiveToaster() {
 }
 
 function AppBootScreen() {
-  const brandLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
+  const splashLogoSrc = `${import.meta.env.BASE_URL}campuskart-splash.jpeg`;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] flex select-none items-center justify-center bg-background">
-      <div className="relative flex flex-col items-center gap-3 px-8 text-center sm:gap-4">
-        <div className="absolute inset-x-0 top-1/2 -z-10 h-40 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
+      <div className="relative flex items-center justify-center px-8">
+        <div className="absolute inset-x-0 top-1/2 -z-10 h-32 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
         <img
-          src={brandLogoSrc}
+          src={splashLogoSrc}
           alt="CampusKart logo"
-          className="h-20 w-20 rounded-[24px] object-cover shadow-[0_18px_45px_hsla(210,78%,50%,0.18)] sm:h-24 sm:w-24 sm:rounded-[28px]"
+          className="w-[230px] max-w-[78vw] object-contain sm:w-[310px]"
         />
-        <div className="space-y-1">
-          <h1 className="font-display text-[2.15rem] font-bold leading-none tracking-tight text-foreground sm:text-[2.6rem]">
-            Campus<span className="gradient-text">Kart</span>
-          </h1>
-          <div className="mx-auto flex items-center justify-center gap-1.5 pt-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-primary/90 boot-dot-delay-1" />
-            <span className="h-2.5 w-2.5 rounded-full bg-primary/75 boot-dot-delay-2" />
-            <span className="h-2.5 w-2.5 rounded-full bg-primary/55 boot-dot-delay-3" />
-          </div>
-        </div>
       </div>
     </div>
   );
