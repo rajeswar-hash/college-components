@@ -149,7 +149,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col p-3 sm:min-h-[132px] sm:justify-start sm:space-y-2 sm:p-4">
-          <div className="min-h-[40px] space-y-1 sm:min-h-0 sm:space-y-1.5">
+          <div className="flex min-h-[66px] flex-col sm:min-h-0 sm:space-y-1.5">
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 text-card-foreground group-hover:text-primary transition-colors">
                 {listing.title}
@@ -164,9 +164,10 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               </span>
             </div>
 
-            <p className="font-display text-lg font-bold leading-none gradient-text sm:hidden">
+            <p className="mt-1 font-display text-lg font-bold leading-none gradient-text sm:hidden">
               {"\u20B9"}{listing.price}
             </p>
+            <div className="h-4 sm:hidden" />
           </div>
 
           <div className="hidden items-center gap-2 flex-wrap sm:flex">
@@ -178,7 +179,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             </Badge>
           </div>
 
-          <div className="mt-1 flex items-center justify-between gap-3 pt-0 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
+          <div className="flex items-center justify-between gap-3 pt-0 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
             <span className="flex min-w-0 items-center gap-1">
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{listing.college}</span>
