@@ -46,11 +46,6 @@ function AppBootScreen() {
           <div className="mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-primary/12 sm:mt-6 sm:w-48">
             <div className="boot-progress-bar h-full w-1/2 rounded-full gradient-bg" />
           </div>
-          <div className="mt-3 flex items-center justify-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary/85 boot-dot-delay-1" />
-            <span className="h-1.5 w-1.5 rounded-full bg-primary/65 boot-dot-delay-2" />
-            <span className="h-1.5 w-1.5 rounded-full bg-primary/45 boot-dot-delay-3" />
-          </div>
         </div>
       </div>
     </div>
