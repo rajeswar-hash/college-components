@@ -452,18 +452,6 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-primary/10 p-2 text-primary">
-                    <MapPin className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
-                    <p className="mt-1 text-sm font-medium leading-6 text-foreground">{listing.college}</p>
-                  </div>
-                </div>
-              </div>
-
               <div className="space-y-3 border-t border-border/70 pt-5">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Description</p>
@@ -518,6 +506,18 @@ const ProductDetail = () => {
                     {reporting ? (hasReported ? "Undoing..." : "Reporting...") : hasReported ? "Undo Report" : "Report Listing"}
                   </Button>
                 )}
+
+                <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-full bg-primary/10 p-2 text-primary">
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
+                      <p className="mt-1 text-sm font-medium leading-6 text-foreground">{listing.college}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
