@@ -43,8 +43,8 @@ function AppBootScreen() {
               </p>
             </div>
           </div>
-          <div className="mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-primary/12 sm:mt-6 sm:w-48">
-            <div className="boot-progress-bar h-full w-1/2 rounded-full gradient-bg" />
+          <div className="mt-5 h-2 w-40 overflow-hidden rounded-full bg-primary/10 sm:mt-6 sm:w-48">
+            <div className="boot-progress-bar h-full w-20 rounded-full gradient-bg sm:w-24" />
           </div>
         </div>
       </div>
