@@ -133,7 +133,7 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionPlaceholder: "Mention brand, model, condition, battery or charger details, usage history, and reason for selling...",
     descriptionHint: "Minimum 10 words. Explain the gadget condition and accessories clearly.",
     pricePlaceholder: "1200",
-    priceHint: "Max ₹10000 for gadgets.",
+    priceHint: "Max ₹20000 for gadgets.",
   },
   Tools: {
     titlePlaceholder: "e.g. Soldering iron kit with stand",

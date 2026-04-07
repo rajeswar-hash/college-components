@@ -91,7 +91,7 @@ export const CATEGORY_RULES: Record<Category, CategoryRule> = {
   Gadgets: {
     category: "Gadgets",
     helper: "Use clear gadget photos so buyers can verify the model quickly.",
-    maxPrice: 10000,
+    maxPrice: 20000,
     requiresCondition: true,
     allowsConditionOptions: ["New", "Like New", "Fair", "Used"],
     requiresImages: true,
