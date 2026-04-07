@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Heart, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -184,6 +184,7 @@ const ProductDetail = () => {
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
   const hasMultipleImages = !!listing.images && listing.images.length > 1;
+  const shortDescription = listing.description.replace(/\s+/g, " ").trim();
 
   const changeImage = (direction: "left" | "right", nextIndex: number) => {
     setImageAnimationClass(direction === "left" ? "gallery-slide-left" : "gallery-slide-right");
@@ -373,12 +374,12 @@ const ProductDetail = () => {
       <Navbar />
       <div className="container mx-auto max-w-4xl overflow-x-hidden px-4 py-8">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
 
-        <div className="grid animate-fade-in gap-8 md:grid-cols-2">
+        <div className="animate-fade-in space-y-6">
           <div
-            className="relative aspect-square max-w-full overflow-hidden rounded-xl bg-muted glass"
+            className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -393,28 +394,28 @@ const ProductDetail = () => {
                   decoding="async"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 896px"
-                  className={`h-full w-full max-w-full object-cover ${imageAnimationClass}`}
+                  className={`h-full w-full object-cover ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (
                   <>
                     <button
                       onClick={showPreviousImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform"
+                      className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/88 text-foreground shadow-lg transition-transform hover:scale-105"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
                       onClick={showNextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform"
+                      className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/88 text-foreground shadow-lg transition-transform hover:scale-105"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="h-4 w-4" />
                     </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
                       {listing.images.map((_, i) => (
                         <button
                           key={i}
                           onClick={() => changeImage(i > currentImage ? "left" : "right", i)}
-                          className={`w-2 h-2 rounded-full transition-colors ${i === currentImage ? "bg-primary" : "bg-background/60"}`}
+                          className={`h-2.5 rounded-full transition-all ${i === currentImage ? "w-6 bg-primary" : "w-2.5 bg-background/70"}`}
                         />
                       ))}
                     </div>
@@ -422,78 +423,124 @@ const ProductDetail = () => {
                 )}
               </>
             ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="w-24 h-24 rounded-xl gradient-bg opacity-20" />
-                <span className="absolute text-muted-foreground font-medium">{displayCategory}</span>
+              <div className="flex h-full items-center justify-center">
+                <div className="h-24 w-24 rounded-2xl gradient-bg opacity-20" />
+                <span className="absolute text-sm font-medium text-muted-foreground">{displayCategory}</span>
               </div>
             )}
             {listing.sold && (
-              <div className="absolute inset-0 bg-foreground/60 flex items-center justify-center">
-                <span className="font-display font-bold text-4xl text-background rotate-[-12deg]">SOLD</span>
+              <div className="absolute inset-0 flex items-center justify-center bg-foreground/60">
+                <span className="font-display text-4xl font-bold text-background rotate-[-12deg]">SOLD</span>
               </div>
             )}
           </div>
 
-          <div className="min-w-0 space-y-5">
-            <div className="min-w-0">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{displayCategory}</Badge>
-                <Badge variant="outline">{displayCondition}</Badge>
+          <div className="rounded-[18px] border border-border/70 bg-card px-4 py-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:px-5">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary">{displayCategory}</Badge>
+                  <Badge variant="outline">{displayCondition}</Badge>
+                </div>
+
+                <div className="space-y-3">
+                  <h1 className="break-words text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+                    {listing.title}
+                  </h1>
+                  <p className="text-3xl font-extrabold leading-none text-primary sm:text-4xl">
+                    ₹{Number(listing.price).toLocaleString("en-IN")}
+                  </p>
+                  <p className="line-clamp-2 text-sm leading-6 text-muted-foreground sm:text-[15px]">
+                    {shortDescription}
+                  </p>
+                </div>
               </div>
-              <h1 className="break-words font-display font-bold text-2xl text-foreground md:text-3xl">{listing.title}</h1>
-              <p className="font-display font-extrabold text-3xl gradient-text mt-2">₹{listing.price}</p>
-            </div>
 
-            <p className="break-words whitespace-pre-line text-muted-foreground leading-relaxed">{listing.description}</p>
+              <div className="grid gap-3 rounded-2xl border border-border/70 bg-background/75 p-4 sm:grid-cols-3">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 text-primary">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
+                    <p className="mt-1 break-words text-sm font-medium text-foreground">{listing.college}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 text-primary">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Listed</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">{dateStr}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2 text-primary">
+                    <ShoppingCart className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Saved</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">{listing.likes} users</p>
+                  </div>
+                </div>
+              </div>
 
-            <div className="rounded-2xl border border-border/70 bg-card/70 p-4 shadow-sm">
-              <div className="space-y-3 text-sm text-muted-foreground">
-              <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0" /> <span className="break-words">{listing.college}</span></div>
-              <p className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Listed {dateStr}</p>
-              <p className="flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Saved by {listing.likes} users</p>
-              <p className="break-words">Sold by <span className="font-medium text-foreground">{listing.seller_name}</span></p>
-            </div>
-            </div>
+              <div className="space-y-3 border-t border-border/70 pt-5">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Description</p>
+                  <div className="mt-3 rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
+                      {listing.description}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Sold by <span className="font-medium text-foreground">{listing.seller_name}</span>
+                </p>
+              </div>
 
-            <div className="space-y-3 pt-2">
-              {!listing.sold && (
-                isOwnListing ? (
-                  <Button className="w-full bg-muted text-muted-foreground border-0" size="lg" disabled>
-                    <MessageCircle className="w-4 h-4 mr-2" /> Your Listing
+              <div className="space-y-3 border-t border-border/70 pt-5">
+                {!listing.sold && (
+                  isOwnListing ? (
+                    <Button className="h-12 w-full rounded-xl border-0 bg-muted text-muted-foreground" disabled>
+                      <MessageCircle className="mr-2 h-4 w-4" /> Your Listing
+                    </Button>
+                  ) : (
+                    <Button
+                      className="h-12 w-full rounded-xl border-0 bg-primary text-primary-foreground shadow-sm hover:opacity-90"
+                      onClick={handleWhatsappContact}
+                      disabled={openingWhatsapp || (!whatsappPhone && !listing.seller_phone)}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      {openingWhatsapp ? "Opening WhatsApp..." : "Contact Seller"}
+                    </Button>
+                  )
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="h-12 rounded-xl">
+                    <ShoppingCart className={`mr-2 h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} />
+                    {liked ? "Added to Cart" : "Add to Cart"}
                   </Button>
-                ) : (
+                  <Button variant="outline" size="lg" onClick={handleShare} className="h-12 rounded-xl">
+                    <Share2 className="mr-2 h-4 w-4" /> Share
+                  </Button>
+                </div>
+
+                {!isOwnListing && (
                   <Button
-                    className="w-full bg-success text-success-foreground hover:opacity-90 border-0"
-                    size="lg"
-                    onClick={handleWhatsappContact}
-                    disabled={openingWhatsapp || (!whatsappPhone && !listing.seller_phone)}
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReport}
+                    disabled={reporting}
+                    className="h-11 w-full rounded-xl border-destructive/20 bg-destructive/5 text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    {openingWhatsapp ? "Opening WhatsApp..." : "Contact on WhatsApp"}
+                    <ShieldAlert className="mr-2 h-4 w-4" />
+                    {reporting ? (hasReported ? "Undoing..." : "Reporting...") : hasReported ? "Undo Report" : "Report Listing"}
                   </Button>
-                )
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="w-full">
-                  <ShoppingCart className={`w-4 h-4 mr-1 ${liked ? "fill-primary text-primary" : ""}`} />
-                  {liked ? "Added to Cart" : "Add to Cart"}
-                </Button>
-                <Button variant="outline" size="lg" onClick={handleShare} className="w-full">
-                  <Share2 className="w-4 h-4 mr-1" /> Share
-                </Button>
+                )}
               </div>
-              {!isOwnListing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReport}
-                  disabled={reporting}
-                  className="w-full rounded-2xl border-destructive/20 bg-destructive/5 text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <ShieldAlert className="w-4 h-4 mr-1.5" />
-                  {reporting ? (hasReported ? "Undoing..." : "Reporting...") : hasReported ? "Undo Report" : "Report Listing"}
-                </Button>
-              )}
             </div>
           </div>
         </div>
