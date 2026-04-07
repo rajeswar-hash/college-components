@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, User, LogOut, Menu, X, Cpu, Shield, Trash2, Eye, EyeOff, ShoppingCart } from "lucide-react";
+import { Plus, User, LogOut, Menu, X, Shield, Trash2, Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
 import { Input } from "@/components/ui/input";
@@ -147,9 +147,11 @@ export function Navbar() {
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 md:gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-bg md:h-10 md:w-10">
-              <Cpu className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img
+              src="/campuskart-logo.jpeg"
+              alt="CampusKart logo"
+              className="h-9 w-9 rounded-lg object-cover shadow-sm md:h-10 md:w-10"
+            />
             <span className="font-display text-xl font-bold leading-none text-foreground md:flex md:h-10 md:items-center">
               Campus<span className="gradient-text">Kart</span>
             </span>
