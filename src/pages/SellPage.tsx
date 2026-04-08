@@ -20,7 +20,6 @@ import {
   BookOpen,
   Cpu,
   ExternalLink,
-  FileQuestion,
   FileText,
   ImagePlus,  MoreHorizontal,
   Rocket,
@@ -64,7 +63,6 @@ function isSchemaCacheColumnError(message: string) {
 const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = [
   { value: "Handwriting Service", label: "Handwriting Service", icon: PenTool },
   { value: "Notes", label: "Notes", icon: FileText },
-  { value: "Question Papers", label: "Question Papers", icon: FileQuestion },
   { value: "Components", label: "Components", icon: Cpu },
   { value: "Gadgets", label: "Gadgets", icon: Smartphone },
   { value: "Books", label: "Books", icon: BookOpen },
@@ -110,14 +108,6 @@ const categoryContentMap: Partial<Record<Category, {
     descriptionHint: "Minimum 10 words. Include year, subject, and branch info clearly.",
     pricePlaceholder: "79",
     priceHint: "Max ₹100 for digital notes.",
-  },
-  "Question Papers": {
-    titlePlaceholder: "e.g. 2023-2024 OOP Question Papers",
-    titleHint: "Mention year, subject, and exam type clearly.",
-    descriptionPlaceholder: "Mention subject, branch, semester, year, exam type, and how many papers are included in the drive folder...",
-    descriptionHint: "Minimum 10 words. Include year, subject, and branch info clearly.",
-    pricePlaceholder: "79",
-    priceHint: "Max ₹100 for question papers.",
   },
   Components: {
     titlePlaceholder: "e.g. Arduino Uno with jumper wires",
@@ -246,7 +236,7 @@ const SellPage = () => {
   const trimmedTitle = title.trim();
   const normalizedTitle = normalizeListingTitle(trimmedTitle);
   const parsedPrice = Number(price || 0);
-  const isDigitalCategory = category === "Notes" || category === "Question Papers";
+  const isDigitalCategory = category === "Notes";
   const canUploadImages = !!selectedRule && !isDigitalCategory;
   const conditionOptions = selectedRule?.allowsConditionOptions ?? [];
   const categoryContent = category ? categoryContentMap[category] : null;

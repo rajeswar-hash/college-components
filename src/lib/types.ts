@@ -32,7 +32,6 @@ export interface Listing {
 export type Category =
   | "Handwriting Service"
   | "Notes"
-  | "Question Papers"
   | "Components"
   | "Gadgets"
   | "Books"
@@ -45,7 +44,6 @@ export type Condition = "New" | "Like New" | "Fair" | "Used";
 export const CATEGORIES: Category[] = [
   "Handwriting Service",
   "Notes",
-  "Question Papers",
   "Components",
   "Gadgets",
   "Books",
@@ -70,6 +68,7 @@ export function normalizeCategory(category: string): Category | string {
     case "Hand Writing Service":
     case "Writing Service":
       return "Handwriting Service";
+    case "Question Papers":
     case "Notes & Question Papers":
       return "Notes";
     default:

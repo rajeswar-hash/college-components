@@ -19,7 +19,6 @@ interface ProductCardProps {
 const CATEGORY_COLORS: Record<string, string> = {
   "Handwriting Service": "bg-cyan-500/10 text-cyan-700",
   Notes: "bg-amber-500/10 text-amber-700",
-  "Question Papers": "bg-orange-500/10 text-orange-700",
   Components: "bg-primary/10 text-primary",
   Gadgets: "bg-sky-500/10 text-sky-600",
   Books: "bg-emerald-500/10 text-emerald-700",
