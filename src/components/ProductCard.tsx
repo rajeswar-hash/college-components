@@ -35,6 +35,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   const [showAuth, setShowAuth] = useState(false);
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
+  const displayPrice = displayCategory === "Handwriting Service" ? `₹${listing.price}/page` : `₹${listing.price}`;
   const previewImage = getListingCoverImage(listing.category, listing.images);
   const hasImage = Boolean(previewImage);
 
@@ -161,12 +162,12 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
                 </Badge>
               </div>
               <span className="hidden font-display font-bold text-base gradient-text whitespace-nowrap sm:inline sm:text-lg">
-                {"\u20B9"}{listing.price}
+                {displayPrice}
               </span>
             </div>
 
             <p className="mt-1 font-display text-lg font-bold leading-none gradient-text sm:hidden">
-              {"\u20B9"}{listing.price}
+              {displayPrice}
             </p>
             <div className="h-4 sm:hidden" />
           </div>
