@@ -47,7 +47,6 @@ const HANDWRITING_TITLE_EMOJI = "✍️";
 const MAX_TITLE_LENGTH = 52;
 const HANDWRITING_DEFAULT_DESCRIPTION = [
   "✍️ Handwritten Service:",
-  "",
   "I. Neat, high-quality handwritten work as per your requirements ✍️",
   "II. Suitable for assignments, homework 📚, files, notes completion, and other writing tasks",
   "III. Writing sample is available in the image 🖼️ for quality reference",
