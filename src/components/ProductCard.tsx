@@ -33,9 +33,11 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   const [likeCount, setLikeCount] = useState(listing.likes);
   const [liking, setLiking] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const hasImage = listing.images && listing.images.length > 0 && listing.images[0];
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
+  const isNotesListing = displayCategory === "Notes";
+  const previewImage = listing.images?.[0] || (isNotesListing ? `${import.meta.env.BASE_URL}notes-preview-default.jpeg` : "");
+  const hasImage = Boolean(previewImage);
 
   useEffect(() => {
     setLikeCount(listing.likes);
@@ -104,7 +106,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
         <div className="relative w-[104px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
             <img
-              src={listing.images[0]}
+              src={previewImage}
               alt={listing.title}
               loading="lazy"
               decoding="async"
