@@ -45,6 +45,17 @@ const MAX_DAILY_UPLOADS = 7;
 const UPLOAD_COOLDOWN_MS = 30 * 1000;
 const HANDWRITING_TITLE_EMOJI = "✍️";
 const MAX_TITLE_LENGTH = 52;
+const HANDWRITING_DEFAULT_DESCRIPTION = [
+  "I. Neat, high-quality handwritten work as per your requirements",
+  "II. Suitable for assignments, homework, files, notes completion, and all writing tasks",
+  "III. Writing sample is available in the image for reference",
+  "IV. Buyer should provide content and writing materials (paper, notebook, etc.)",
+  "V. Listed price is only for copying/writing the provided content",
+  "VI. If content or materials are not provided, they can be arranged at additional cost",
+  "VII. Work involving creativity, formatting, or understanding may have extra charges per page",
+  "VIII. Deadline and delivery time can be discussed after connecting with the seller",
+  "IX. Final pricing depends on the type and complexity of work",
+].join("\n");
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -229,6 +240,7 @@ const SellPage = () => {
   const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastAutoTitleRef = useRef("");
+  const lastAutoDescriptionRef = useRef("");
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
   const postingCollege = canonicalInstitutionName(user?.college || "");
   const selectedRule = category ? CATEGORY_RULES[category] : null;
@@ -254,6 +266,7 @@ const SellPage = () => {
     setImages([]);
     setResourceLink("");
     lastAutoTitleRef.current = "";
+    lastAutoDescriptionRef.current = "";
   };
 
   useEffect(() => {
@@ -282,6 +295,17 @@ const SellPage = () => {
     setTitle(handwritingDefaultTitle);
     lastAutoTitleRef.current = handwritingDefaultTitle;
   }, [category, handwritingDefaultTitle, title]);
+
+  useEffect(() => {
+    if (category !== "Handwriting Service") return;
+
+    const currentDescription = description.trim();
+    const canAutofill = !currentDescription || description === lastAutoDescriptionRef.current;
+    if (!canAutofill) return;
+
+    setDescription(HANDWRITING_DEFAULT_DESCRIPTION);
+    lastAutoDescriptionRef.current = HANDWRITING_DEFAULT_DESCRIPTION;
+  }, [category, description]);
 
   const validationMessages = useMemo(() => {
     const messages: string[] = [];
