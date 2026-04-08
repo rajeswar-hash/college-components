@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
+import { getListingCoverImage } from "@/lib/listingImage";
 
 interface ListingRow {
   id: string;
@@ -453,12 +454,14 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {myListings.map((listing) => (
+              {myListings.map((listing) => {
+                const coverImage = getListingCoverImage(listing.category, listing.images);
+                return (
                 <div key={listing.id} className="glass rounded-xl p-4 flex items-center gap-4 animate-fade-in">
                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    {listing.images && listing.images.length > 0 && listing.images[0] ? (
+                    {coverImage ? (
                       <img
-                        src={listing.images[0]}
+                        src={coverImage}
                         alt={listing.title}
                         className="w-full h-full rounded-lg object-cover"
                         loading="lazy"
@@ -492,7 +495,7 @@ const Dashboard = () => {
                     </Button>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

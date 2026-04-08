@@ -10,6 +10,7 @@ import { getSavedListingIds, toggleListingLike } from "@/lib/likes";
 import { normalizeCategory, normalizeCondition, type Listing } from "@/lib/types";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { getListingCoverImage } from "@/lib/listingImage";
 
 type SavedListing = Listing;
 
@@ -143,7 +144,7 @@ const CartPage = () => {
           ) : (
             <div className="space-y-4">
               {items.map((item) => {
-                const cover = item.images?.[0];
+                const cover = getListingCoverImage(item.category, item.images);
                 return (
                   <div key={item.id} className="glass rounded-xl border border-border/70 p-4 shadow-sm transition-shadow hover:shadow-md">
                     <div className="flex items-center gap-4">

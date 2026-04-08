@@ -7,6 +7,7 @@ import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
+import { getListingCoverImage } from "@/lib/listingImage";
 
 interface ProductCardProps {
   listing: Listing;
@@ -35,8 +36,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   const [showAuth, setShowAuth] = useState(false);
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
-  const isNotesListing = displayCategory === "Notes";
-  const previewImage = listing.images?.[0] || (isNotesListing ? `${import.meta.env.BASE_URL}notes-preview-default.jpeg` : "");
+  const previewImage = getListingCoverImage(listing.category, listing.images);
   const hasImage = Boolean(previewImage);
 
   useEffect(() => {

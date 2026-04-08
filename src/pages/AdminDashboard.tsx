@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
+import { getListingCoverImage, getListingPreviewImages } from "@/lib/listingImage";
 
 interface ListingAdminRow {
   ai_verification_status: string | null;
@@ -100,6 +101,7 @@ export default function AdminDashboard() {
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
+  const previewImages = previewListing ? getListingPreviewImages(previewListing.category, previewListing.images) : [];
 
   useEffect(() => {
     if (isPartnerModerator) {
@@ -580,20 +582,20 @@ export default function AdminDashboard() {
                 <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm dark:bg-slate-900">
                   <div className="space-y-3 p-3">
                     <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-                      {previewListing.images?.length ? (
+                      {previewImages.length ? (
                         <>
                           <img
-                            src={previewListing.images[previewImageIndex]}
+                            src={previewImages[previewImageIndex]}
                             alt={`${previewListing.title} image ${previewImageIndex + 1}`}
                             className="h-full w-full object-cover"
                           />
-                          {previewListing.images.length > 1 && (
+                          {previewImages.length > 1 && (
                             <>
                               <button
                                 type="button"
                                 onClick={() =>
                                   setPreviewImageIndex((current) =>
-                                    current === 0 ? previewListing.images!.length - 1 : current - 1
+                                    current === 0 ? previewImages.length - 1 : current - 1
                                   )
                                 }
                                 className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm dark:bg-slate-950/90"
@@ -605,7 +607,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 onClick={() =>
                                   setPreviewImageIndex((current) =>
-                                    current === previewListing.images!.length - 1 ? 0 : current + 1
+                                    current === previewImages.length - 1 ? 0 : current + 1
                                   )
                                 }
                                 className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm dark:bg-slate-950/90"
@@ -614,7 +616,7 @@ export default function AdminDashboard() {
                                 <ArrowRight className="h-4 w-4" />
                               </button>
                               <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
-                                {previewListing.images.map((image, index) => (
+                                {previewImages.map((image, index) => (
                                   <button
                                     key={`${image}-${index}`}
                                     type="button"
@@ -632,9 +634,9 @@ export default function AdminDashboard() {
                       )}
                     </div>
 
-                    {previewListing.images && previewListing.images.length > 1 && (
+                    {previewImages.length > 1 && (
                       <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                        {previewListing.images.map((image, index) => (
+                        {previewImages.map((image, index) => (
                           <button
                             key={`${image}-thumb-${index}`}
                             type="button"
@@ -939,8 +941,8 @@ export default function AdminDashboard() {
                       {freshPendingListings.map((listing) => (
                         <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-slate-900/80">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
-                            {listing.images?.[0] ? (
-                              <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                            {getListingCoverImage(listing.category, listing.images) ? (
+                              <img src={getListingCoverImage(listing.category, listing.images)} alt={listing.title} className="h-full w-full object-cover" />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                             )}
@@ -975,8 +977,8 @@ export default function AdminDashboard() {
                       {overduePendingListings.map((listing) => (
                         <div key={listing.id} className="grid gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-destructive/10">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
-                            {listing.images?.[0] ? (
-                              <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                            {getListingCoverImage(listing.category, listing.images) ? (
+                              <img src={getListingCoverImage(listing.category, listing.images)} alt={listing.title} className="h-full w-full object-cover" />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                             )}
@@ -1014,8 +1016,8 @@ export default function AdminDashboard() {
                       {flaggedListings.map((listing) => (
                         <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-slate-900/80">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
-                            {listing.images?.[0] ? (
-                              <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                            {getListingCoverImage(listing.category, listing.images) ? (
+                              <img src={getListingCoverImage(listing.category, listing.images)} alt={listing.title} className="h-full w-full object-cover" />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                             )}

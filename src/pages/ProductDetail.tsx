@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
+import { getListingPreviewImages } from "@/lib/listingImage";
 
 function formatPhone(phone: string): string | null {
   const digits = phone.replace(/\D/g, "");
@@ -180,10 +181,12 @@ const ProductDetail = () => {
     );
   }
 
-  const hasImages = listing.images && listing.images.length > 0 && listing.images[0];
+  const displayImages = getListingPreviewImages(listing.category, listing.images);
+  const hasImages = displayImages.length > 0;
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
-  const hasMultipleImages = !!listing.images && listing.images.length > 1;
+  const hasMultipleImages = displayImages.length > 1;
+  const safeCurrentImage = currentImage >= displayImages.length ? 0 : currentImage;
 
   const changeImage = (direction: "left" | "right", nextIndex: number) => {
     setImageAnimationClass(direction === "left" ? "gallery-slide-left" : "gallery-slide-right");
@@ -191,12 +194,12 @@ const ProductDetail = () => {
   };
 
   const showPreviousImage = () => {
-    const nextIndex = currentImage === 0 ? listing.images.length - 1 : currentImage - 1;
+    const nextIndex = safeCurrentImage === 0 ? displayImages.length - 1 : safeCurrentImage - 1;
     changeImage("right", nextIndex);
   };
 
   const showNextImage = () => {
-    const nextIndex = currentImage === listing.images.length - 1 ? 0 : currentImage + 1;
+    const nextIndex = safeCurrentImage === displayImages.length - 1 ? 0 : safeCurrentImage + 1;
     changeImage("left", nextIndex);
   };
 
@@ -386,9 +389,9 @@ const ProductDetail = () => {
             {hasImages ? (
               <>
                 <img
-                  key={`${currentImage}-${imageAnimationClass}`}
-                  src={listing.images[currentImage]}
-                  alt={`${listing.title} - Image ${currentImage + 1}`}
+                  key={`${safeCurrentImage}-${imageAnimationClass}`}
+                  src={displayImages[safeCurrentImage]}
+                  alt={`${listing.title} - Image ${safeCurrentImage + 1}`}
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
@@ -410,11 +413,11 @@ const ProductDetail = () => {
                       <ChevronRight className="h-4 w-4" />
                     </button>
                     <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-                      {listing.images.map((_, i) => (
+                      {displayImages.map((_, i) => (
                         <button
                           key={i}
-                          onClick={() => changeImage(i > currentImage ? "left" : "right", i)}
-                          className={`h-2.5 rounded-full transition-all ${i === currentImage ? "w-6 bg-primary" : "w-2.5 bg-background/70"}`}
+                          onClick={() => changeImage(i > safeCurrentImage ? "left" : "right", i)}
+                          className={`h-2.5 rounded-full transition-all ${i === safeCurrentImage ? "w-6 bg-primary" : "w-2.5 bg-background/70"}`}
                         />
                       ))}
                     </div>
