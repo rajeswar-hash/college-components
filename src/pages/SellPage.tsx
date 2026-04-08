@@ -453,29 +453,47 @@ const SellPage = () => {
       throw new Error("Description must include year, subject, and branch info.");
     }
 
-    const { data: sellerListings, error: sellerListingsError } = await supabase
-      .from("listings")
-      .select("title, created_at")
-      .eq("seller_id", supabaseUser.id)
-      .order("created_at", { ascending: false });
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-    if (sellerListingsError) {
+    const [
+      { count: todayListingCount, error: dailyCountError },
+      { data: latestListing, error: latestListingError },
+      { data: duplicateListings, error: duplicateListingError },
+    ] = await Promise.all([
+      supabase
+        .from("listings")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", supabaseUser.id)
+        .gte("created_at", startOfDay.toISOString()),
+      supabase
+        .from("listings")
+        .select("created_at")
+        .eq("seller_id", supabaseUser.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("listings")
+        .select("title")
+        .eq("seller_id", supabaseUser.id)
+        .ilike("title", trimmedTitle)
+        .limit(5),
+    ]);
+
+    if (dailyCountError || latestListingError || duplicateListingError) {
       throw new Error("Could not validate your upload limits right now.");
     }
 
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const todayListings = (sellerListings || []).filter((listing) => new Date(listing.created_at).getTime() >= startOfDay.getTime());
-    if (todayListings.length >= MAX_DAILY_UPLOADS) {
+    if ((todayListingCount || 0) >= MAX_DAILY_UPLOADS) {
       throw new Error(`You can post up to ${MAX_DAILY_UPLOADS} items per day.`);
     }
 
-    const latestListing = sellerListings?.[0];
     if (latestListing && Date.now() - new Date(latestListing.created_at).getTime() < UPLOAD_COOLDOWN_MS) {
       throw new Error("Please wait 30 seconds before posting another item.");
     }
 
-    const duplicateListing = sellerListings?.find((listing) => normalizeListingTitle(listing.title) === normalizedTitle);
+    const duplicateListing = duplicateListings?.find((listing) => normalizeListingTitle(listing.title) === normalizedTitle);
     if (duplicateListing) {
       throw new Error("You already posted an item with the same title.");
     }
