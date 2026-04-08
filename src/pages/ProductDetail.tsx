@@ -185,6 +185,9 @@ const ProductDetail = () => {
   const hasImages = displayImages.length > 0;
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
+  const displayPrice = displayCategory === "Handwriting Service"
+    ? `₹${Number(listing.price).toLocaleString("en-IN")}/page`
+    : `₹${Number(listing.price).toLocaleString("en-IN")}`;
   const hasMultipleImages = displayImages.length > 1;
   const safeCurrentImage = currentImage >= displayImages.length ? 0 : currentImage;
 
@@ -450,7 +453,7 @@ const ProductDetail = () => {
                     {listing.title}
                   </h1>
                   <p className="text-2xl font-extrabold leading-none text-primary sm:text-3xl">
-                    ₹{Number(listing.price).toLocaleString("en-IN")}
+                    {displayPrice}
                   </p>
                 </div>
               </div>
