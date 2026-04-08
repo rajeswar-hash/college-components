@@ -46,15 +46,17 @@ const UPLOAD_COOLDOWN_MS = 30 * 1000;
 const HANDWRITING_TITLE_EMOJI = "✍️";
 const MAX_TITLE_LENGTH = 52;
 const HANDWRITING_DEFAULT_DESCRIPTION = [
-  "I. Neat, high-quality handwritten work as per your requirements",
-  "II. Suitable for assignments, homework, files, notes completion, and all writing tasks",
-  "III. Writing sample is available in the image for reference",
-  "IV. Buyer should provide content and writing materials (paper, notebook, etc.)",
-  "V. Listed price is only for copying/writing the provided content",
-  "VI. If content or materials are not provided, they can be arranged at additional cost",
-  "VII. Work involving creativity, formatting, or understanding may have extra charges per page",
-  "VIII. Deadline and delivery time can be discussed after connecting with the seller",
-  "IX. Final pricing depends on the type and complexity of work",
+  "✍️ Handwritten Service",
+  "",
+  "I. Neat, high-quality handwritten work as per your requirements ✍️",
+  "II. Suitable for assignments, homework 📚, files, notes completion, and other writing tasks",
+  "III. Writing sample is available in the image 🖼️ for quality reference",
+  "IV. Buyer should provide content and writing materials 📄 (paper, notebook, etc.)",
+  "V. Listed price is only for copying/writing the provided content 💰",
+  "VI. If content or materials are not provided, they can be arranged at additional cost ➕",
+  "VII. Work involving creativity, formatting 🎯, or understanding may have extra charges per page",
+  "VIII. Deadline and delivery time ⏱️ can be discussed after connecting with the seller",
+  "IX. Final pricing depends on the type and complexity of work 📌",
 ].join("\n");
 
 function hasValidWhatsappNumber(phone: string) {
