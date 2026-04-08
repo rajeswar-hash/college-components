@@ -35,6 +35,7 @@ interface ListingRow {
 }
 
 const INITIAL_VISIBLE_IMAGE_BATCH = 8;
+const VISIBLE_IMAGE_BATCH_STEP = 12;
 const MIN_FILTER_PRICE = 4;
 const MAX_FILTER_PRICE = 40000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
@@ -66,9 +67,11 @@ const Index = () => {
   );
   const [requestCooldownUntil, setRequestCooldownUntil] = useState<number>(0);
   const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
+  const [visibleImageCount, setVisibleImageCount] = useState(INITIAL_VISIBLE_IMAGE_BATCH);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const collegeInputRef = useRef<HTMLInputElement>(null);
+  const listingsLoadMoreRef = useRef<HTMLDivElement>(null);
   const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
   const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -252,6 +255,7 @@ const Index = () => {
     if (!selectedCollege) {
       setListings([]);
       setLoading(false);
+      setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
       return;
     }
 
@@ -261,6 +265,7 @@ const Index = () => {
       setSelectedCategory(null);
       setSelectedCondition(null);
       setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+      setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
 
       const nextListings = await fetchCollegeListingsData(selectedCollege);
       setListings(nextListings);
@@ -290,14 +295,14 @@ const Index = () => {
 
   useEffect(() => {
     const missingVisibleImages = listings
-      .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
+      .slice(0, visibleImageCount)
       .filter((listing) => !listing.images || listing.images.length === 0)
       .map((listing) => listing.id);
 
     if (missingVisibleImages.length > 0) {
       void fetchListingImages(missingVisibleImages);
     }
-  }, [fetchListingImages, listings]);
+  }, [fetchListingImages, listings, visibleImageCount]);
 
   const filteredListings = useMemo(() => {
     let items = listings;
@@ -346,6 +351,33 @@ const Index = () => {
     sold: listing.sold,
     likes: listing.likes,
   }));
+
+  useEffect(() => {
+    setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
+  }, [selectedCollege, search, selectedCategory, selectedCondition, priceRange]);
+
+  useEffect(() => {
+    const sentinel = listingsLoadMoreRef.current;
+    if (!sentinel || filteredListings.length <= visibleImageCount) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (!firstEntry?.isIntersecting) return;
+
+        setVisibleImageCount((current) =>
+          Math.min(filteredListings.length, current + VISIBLE_IMAGE_BATCH_STEP)
+        );
+      },
+      {
+        rootMargin: "320px 0px",
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredListings.length, visibleImageCount]);
 
   const handleCollegeSelect = (college: string) => {
     const canonicalCollege = canonicalInstitutionName(college);
@@ -817,6 +849,9 @@ const Index = () => {
                     </div>
                   ))}
                 </div>
+                {filteredListings.length > visibleImageCount && (
+                  <div ref={listingsLoadMoreRef} className="h-10 w-full" aria-hidden="true" />
+                )}
               </>
             )}
           </div>
