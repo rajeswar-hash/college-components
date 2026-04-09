@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Laptop, Layers3, LogOut, MapPin, Shield, Smartphone, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
+import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewImages } from "@/lib/listingImage";
 
@@ -88,7 +88,7 @@ function formatBytes(bytes: number) {
 }
 
 export default function AdminDashboard() {
-  const { isAuthenticated, isAdmin, user, deviceSessions, logoutAllDevices } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members" | null>(null);
   const [loading, setLoading] = useState(true);
@@ -98,8 +98,6 @@ export default function AdminDashboard() {
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
   const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
   const [pendingRejectListingId, setPendingRejectListingId] = useState<string | null>(null);
-  const [showLogoutAllDialog, setShowLogoutAllDialog] = useState(false);
-  const [signingOutAll, setSigningOutAll] = useState(false);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
   const sectionContentRef = useRef<HTMLDivElement>(null);
@@ -221,8 +219,6 @@ export default function AdminDashboard() {
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
   const usageLabel =
     usagePercent >= 85 ? "Critical watch" : usagePercent >= 60 ? "Growing steadily" : "Healthy capacity";
-  const shownDeviceSessions = deviceSessions.slice(0, 3);
-  const hiddenDeviceCount = Math.max(0, deviceSessions.length - shownDeviceSessions.length);
 
   const openSupabasePage = (path: string) => {
     window.open(`https://supabase.com/dashboard/project/${PROJECT_ID}/${path}`, "_blank", "noopener,noreferrer");
@@ -431,20 +427,6 @@ export default function AdminDashboard() {
     }, 80);
   };
 
-  const handleLogoutAllDevices = async () => {
-    setSigningOutAll(true);
-    try {
-      await logoutAllDevices();
-      toast.success("Signed out from all devices.");
-      navigate("/");
-    } catch {
-      toast.error("Could not sign out all devices right now.");
-    } finally {
-      setSigningOutAll(false);
-      setShowLogoutAllDialog(false);
-    }
-  };
-
   if (!isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen bg-background">
@@ -461,28 +443,6 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <AlertDialog open={showLogoutAllDialog} onOpenChange={setShowLogoutAllDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Sign out from all devices?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will end your current admin session and every other active CampusKart session for this account.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={signingOutAll}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={signingOutAll}
-              onClick={(event) => {
-                event.preventDefault();
-                void handleLogoutAllDevices();
-              }}
-            >
-              {signingOutAll ? "Signing out..." : "Sign out all"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       {!isPartnerModerator && <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.80),rgba(255,255,255,0.92))] dark:bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.12),transparent_30%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0.94),rgba(2,6,23,0.98))]">
         <div className="container mx-auto max-w-7xl px-4 py-6 md:py-8">
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -571,53 +531,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>}
-
-      <div className="container mx-auto max-w-7xl px-4 pt-5">
-        <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
-          <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-            <div className="min-w-0">
-              <div className="mb-2 flex items-center gap-2">
-                <div className="rounded-xl bg-primary/10 p-2 text-primary">
-                  <Laptop className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Active devices</p>
-                  <p className="text-xs text-muted-foreground">Recent devices signed in with this admin account.</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {shownDeviceSessions.length > 0 ? (
-                  shownDeviceSessions.map((session, index) => (
-                    <div
-                      key={session.id}
-                      className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-xs text-muted-foreground dark:bg-slate-950/70"
-                    >
-                      {session.platform === "Android" || session.platform === "iPhone" ? (
-                        <Smartphone className="h-3.5 w-3.5 text-primary" />
-                      ) : (
-                        <Laptop className="h-3.5 w-3.5 text-primary" />
-                      )}
-                      <span className="font-medium text-foreground">{session.label}</span>
-                      {index === 0 && <Badge variant="secondary" className="text-[10px]">Current</Badge>}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-muted-foreground">Device list will appear after this account refreshes once.</p>
-                )}
-                {hiddenDeviceCount > 0 && (
-                  <Badge variant="outline" className="px-3 py-1.5 text-[11px]">
-                    +{hiddenDeviceCount} more
-                  </Badge>
-                )}
-              </div>
-            </div>
-            <Button variant="outline" className="h-10 shrink-0" onClick={() => setShowLogoutAllDialog(true)}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out all devices
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
 
       <AlertDialog open={!!pendingBanProfileId} onOpenChange={(open) => !open && setPendingBanProfileId(null)}>
         <AlertDialogContent>

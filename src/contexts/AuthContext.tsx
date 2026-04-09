@@ -16,14 +16,6 @@ interface Profile {
   avatar_url?: string;
 }
 
-export interface DeviceSessionInfo {
-  id: string;
-  label: string;
-  platform: string;
-  lastActiveAt: string;
-  lastSignInAt?: string;
-}
-
 interface AuthContextType {
   user: Profile | null;
   supabaseUser: SupabaseUser | null;
@@ -32,8 +24,6 @@ interface AuthContextType {
   logout: () => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
   updateProfile: (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => Promise<void>;
-  deviceSessions: DeviceSessionInfo[];
-  logoutAllDevices: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isBanned: boolean;
@@ -42,80 +32,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
-const DEVICE_ID_STORAGE_KEY = "campuskart_device_id";
-
-function readDeviceSessions(value: unknown): DeviceSessionInfo[] {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== "object") return null;
-      const raw = entry as Record<string, unknown>;
-      if (typeof raw.id !== "string" || typeof raw.label !== "string" || typeof raw.platform !== "string" || typeof raw.lastActiveAt !== "string") {
-        return null;
-      }
-      return {
-        id: raw.id,
-        label: raw.label,
-        platform: raw.platform,
-        lastActiveAt: raw.lastActiveAt,
-        lastSignInAt: typeof raw.lastSignInAt === "string" ? raw.lastSignInAt : undefined,
-      };
-    })
-    .filter((entry): entry is DeviceSessionInfo => !!entry)
-    .sort((a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime());
-}
-
-function getDeviceId() {
-  if (typeof window === "undefined") return "server";
-
-  const existing = window.localStorage.getItem(DEVICE_ID_STORAGE_KEY);
-  if (existing) return existing;
-
-  const created =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `device-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-
-  window.localStorage.setItem(DEVICE_ID_STORAGE_KEY, created);
-  return created;
-}
-
-function inferDevicePlatform() {
-  if (typeof navigator === "undefined") return "Unknown";
-
-  const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes("android")) return "Android";
-  if (ua.includes("iphone") || ua.includes("ipad") || ua.includes("ios")) return "iPhone";
-  if (ua.includes("windows")) return "Windows";
-  if (ua.includes("mac os")) return "Mac";
-  if (ua.includes("linux")) return "Linux";
-  return "Device";
-}
-
-function inferBrowserName() {
-  if (typeof navigator === "undefined") return "Browser";
-
-  const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes("edg")) return "Edge";
-  if (ua.includes("chrome")) return "Chrome";
-  if (ua.includes("safari") && !ua.includes("chrome")) return "Safari";
-  if (ua.includes("firefox")) return "Firefox";
-  return "Browser";
-}
-
-function getCurrentDeviceSession(user: SupabaseUser): DeviceSessionInfo {
-  const platform = inferDevicePlatform();
-  const browser = inferBrowserName();
-
-  return {
-    id: getDeviceId(),
-    label: `${platform} ${browser}`,
-    platform,
-    lastActiveAt: new Date().toISOString(),
-    lastSignInAt: user.last_sign_in_at || undefined,
-  };
-}
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
@@ -135,7 +51,6 @@ function isProfileComplete(profile: Pick<Profile, "name" | "phone" | "college"> 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
-  const [deviceSessions, setDeviceSessions] = useState<DeviceSessionInfo[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -167,23 +82,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        setDeviceSessions(readDeviceSessions(session.user.user_metadata?.device_sessions));
-        setTimeout(() => fetchProfile(session.user.id), 0);
-      } else {
-        setSupabaseUser(null);
-        setProfile(null);
-        setDeviceSessions([]);
+        if (session?.user) {
+          setSupabaseUser(session.user);
+          setTimeout(() => fetchProfile(session.user.id), 0);
+        } else {
+          setSupabaseUser(null);
+          setProfile(null);
+        }
+        setLoading(false);
       }
-      setLoading(false);
-    }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setSupabaseUser(session.user);
-        setDeviceSessions(readDeviceSessions(session.user.user_metadata?.device_sessions));
         fetchProfile(session.user.id);
       }
       setLoading(false);
@@ -191,44 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
-
-  useEffect(() => {
-    if (!supabaseUser) {
-      setDeviceSessions([]);
-      return;
-    }
-
-    const syncCurrentDevice = async () => {
-      const currentDevice = getCurrentDeviceSession(supabaseUser);
-      const existingSessions = readDeviceSessions(supabaseUser.user_metadata?.device_sessions);
-      const nextSessions = [
-        currentDevice,
-        ...existingSessions.filter((session) => session.id !== currentDevice.id),
-      ]
-        .sort((a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime())
-        .slice(0, 8);
-
-      setDeviceSessions(nextSessions);
-
-      const existingSerialized = JSON.stringify(existingSessions);
-      const nextSerialized = JSON.stringify(nextSessions);
-      if (existingSerialized === nextSerialized) return;
-
-      const { data, error } = await supabase.auth.updateUser({
-        data: {
-          ...supabaseUser.user_metadata,
-          device_sessions: nextSessions,
-        },
-      });
-
-      if (!error && data.user) {
-        setSupabaseUser(data.user);
-        setDeviceSessions(readDeviceSessions(data.user.user_metadata?.device_sessions));
-      }
-    };
-
-    void syncCurrentDevice();
-  }, [supabaseUser]);
 
   useEffect(() => {
     setIsAdmin(!!profile?.is_admin || profile?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL);
@@ -334,15 +208,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setSupabaseUser(null);
-    setDeviceSessions([]);
-    setIsAdmin(false);
-  }, []);
-
-  const logoutAllDevices = useCallback(async () => {
-    await supabase.auth.signOut({ scope: "global" });
-    setProfile(null);
-    setSupabaseUser(null);
-    setDeviceSessions([]);
     setIsAdmin(false);
   }, []);
 
@@ -373,7 +238,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setSupabaseUser(null);
-    setDeviceSessions([]);
   }, [isAdmin, profile?.email, supabaseUser?.email]);
 
   const updateProfile = useCallback(async (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => {
@@ -413,8 +277,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       deleteAccount,
       updateProfile,
-      deviceSessions,
-      logoutAllDevices,
       isAuthenticated: isAdmin || (!!supabaseUser && profileComplete),
       isAdmin,
       isBanned,
