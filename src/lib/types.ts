@@ -52,7 +52,7 @@ export const CATEGORIES: Category[] = [
   "Others",
 ];
 
-export const CONDITIONS: Condition[] = ["New", "Like New", "Fair", "Used"];
+export const CONDITIONS: Condition[] = ["New", "Like New", "Used", "Fair"];
 
 export function normalizeCategory(category: string): Category | string {
   switch (category) {
