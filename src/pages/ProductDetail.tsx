@@ -1,6 +1,6 @@
 ﻿import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeCategory, normalizeCondition } from "@/lib/types";
+import { categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
@@ -185,6 +185,7 @@ const ProductDetail = () => {
   const hasImages = displayImages.length > 0;
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
+  const shouldShowCondition = categoryUsesCondition(listing.category) && Boolean(listing.condition);
   const displayPrice = displayCategory === "Handwriting Service"
     ? `₹${Number(listing.price).toLocaleString("en-IN")}/page`
     : `₹${Number(listing.price).toLocaleString("en-IN")}`;
@@ -445,7 +446,7 @@ const ProductDetail = () => {
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{displayCategory}</Badge>
-                  <Badge variant="outline">{displayCondition}</Badge>
+                  {shouldShowCondition && <Badge variant="outline">{displayCondition}</Badge>}
                 </div>
 
                 <div className="space-y-3">

@@ -1,4 +1,4 @@
-import { Listing, normalizeCategory, normalizeCondition } from "@/lib/types";
+import { Listing, categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Share2, ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
   const [showAuth, setShowAuth] = useState(false);
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
+  const shouldShowCondition = categoryUsesCondition(listing.category) && Boolean(listing.condition);
   const displayPrice = displayCategory === "Handwriting Service" ? `₹${listing.price}/page` : `₹${listing.price}`;
   const previewImage = getListingCoverImage(listing.category, listing.images);
   const hasImage = Boolean(previewImage);
@@ -174,9 +175,11 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
                 {listing.title}
               </h3>
               <div className="flex shrink-0 items-center gap-2 sm:hidden">
-                <Badge variant="outline" className="text-[10px]">
-                  {displayCondition}
-                </Badge>
+                {shouldShowCondition && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {displayCondition}
+                  </Badge>
+                )}
               </div>
               <span className="hidden font-display font-bold text-base gradient-text whitespace-nowrap sm:inline sm:text-lg">
                 {displayPrice}
@@ -193,9 +196,11 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             <Badge variant="secondary" className={CATEGORY_COLORS[displayCategory] || ""}>
               {displayCategory}
             </Badge>
-            <Badge variant="outline" className="text-xs">
-              {displayCondition}
-            </Badge>
+            {shouldShowCondition && (
+              <Badge variant="outline" className="text-xs">
+                {displayCondition}
+              </Badge>
+            )}
           </div>
 
           <div className="mt-auto flex items-center gap-2 pt-2 sm:pt-2">

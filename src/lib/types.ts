@@ -89,6 +89,11 @@ export function normalizeCondition(condition: string): Condition | string {
   }
 }
 
+export function categoryUsesCondition(category: string): boolean {
+  const normalizedCategory = normalizeCategory(category);
+  return normalizedCategory !== "Handwriting Service" && normalizedCategory !== "Notes";
+}
+
 export const COLLEGES: string[] = [
   // IITs
   "IIT Bombay", "IIT Delhi", "IIT Madras", "IIT Kanpur", "IIT Kharagpur",
