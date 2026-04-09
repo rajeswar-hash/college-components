@@ -323,17 +323,6 @@ const Index = () => {
     });
   }, [collegeResults, fetchCollegeListingsData, fetchListingImages]);
 
-  useEffect(() => {
-    const missingVisibleImages = listings
-      .slice(0, visibleImageCount)
-      .filter((listing) => !listing.images || listing.images.length === 0)
-      .map((listing) => listing.id);
-
-    if (missingVisibleImages.length > 0) {
-      void fetchListingImages(missingVisibleImages);
-    }
-  }, [fetchListingImages, listings, visibleImageCount]);
-
   const filteredListings = useMemo(() => {
     let items = listings;
 
@@ -384,6 +373,17 @@ const Index = () => {
     likes: listing.likes,
   }));
   const visibleListings = adaptedListings.slice(0, visibleImageCount);
+
+  useEffect(() => {
+    const missingVisibleImages = filteredListings
+      .slice(0, visibleImageCount)
+      .filter((listing) => !listing.images || listing.images.length === 0)
+      .map((listing) => listing.id);
+
+    if (missingVisibleImages.length > 0) {
+      void fetchListingImages(missingVisibleImages);
+    }
+  }, [fetchListingImages, filteredListings, visibleImageCount]);
 
   useEffect(() => {
     setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
