@@ -39,8 +39,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const MAX_IMAGE_BYTES = 600 * 1024;
-const MAX_IMAGE_DIMENSION = 1280;
+const MAX_IMAGE_BYTES = 400 * 1024;
+const MAX_IMAGE_DIMENSION = 1024;
 const MAX_FILES = 5;
 const MAX_DAILY_UPLOADS = 7;
 const UPLOAD_COOLDOWN_MS = 30 * 1000;
@@ -217,12 +217,12 @@ async function compressImage(file: File) {
     outputSize
   );
 
-  let quality = 0.82;
-  let compressed = canvas.toDataURL("image/jpeg", quality);
+  let quality = 0.8;
+  let compressed = canvas.toDataURL("image/webp", quality);
 
   while (compressed.length > MAX_IMAGE_BYTES * 1.37 && quality > 0.45) {
     quality -= 0.08;
-    compressed = canvas.toDataURL("image/jpeg", quality);
+    compressed = canvas.toDataURL("image/webp", quality);
   }
 
   return compressed;
