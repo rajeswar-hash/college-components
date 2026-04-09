@@ -17,9 +17,10 @@ function applyTheme(theme: ThemeMode) {
 }
 
 function getInitialTheme(): ThemeMode {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return stored === "dark" ? "dark" : "light";
+  if (stored === "light" || stored === "dark") return stored;
+  return "dark";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
