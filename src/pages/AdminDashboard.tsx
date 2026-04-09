@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { invalidateInstitutionNamesCache } from "@/lib/institutions";
+import { normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
@@ -652,7 +653,7 @@ export default function AdminDashboard() {
                   <div className="space-y-4 p-5">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="secondary">{previewListing.category}</Badge>
-                      <Badge variant="outline">{previewListing.condition}</Badge>
+                      <Badge variant="outline">{normalizeCondition(previewListing.condition)}</Badge>
                       <Badge variant="outline" className="capitalize">
                         {previewListing.moderation_status.replaceAll("_", " ")}
                       </Badge>
