@@ -77,15 +77,15 @@ export default function AboutPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Sellers can post listings with up to five photos, a clean title, product details, condition, category, and price.</p>
+                <p>Sellers can post listings with up to five square-cropped photos, a clean title, product details, condition where required, category, and price.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Buyers can browse, search, filter by category or college, open item pages, and save useful listings to their cart for later.</p>
+                <p>Buyers can browse, search, filter by category, condition, price, or college, open item pages, share them, and save useful listings to their cart for later.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Interested buyers contact sellers directly through WhatsApp, while sellers are expected to delete listings once an item is sold.</p>
+                <p>Interested buyers contact sellers directly through WhatsApp, and new listings go through manual review before they are made public.</p>
               </div>
             </CardContent>
           </Card>
@@ -101,7 +101,7 @@ export default function AboutPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Account tools such as password reset through email OTP, profile editing, and permanent account deletion.</p>
+                <p>Account tools such as email OTP verification, password reset, profile editing, theme selection, and permanent account deletion.</p>
               </div>
               <div className="flex items-start gap-3">
                 <Store className="mt-1 h-4 w-4 shrink-0 text-primary" />
@@ -158,6 +158,30 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Buyers and sellers connect directly for questions and final coordination, which keeps the flow faster than a platform with heavy middleman steps.
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
+          <CardHeader>
+            <CardTitle>Condition guide for buyers and sellers</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="font-semibold text-foreground">New</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Unused item in fresh condition.</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="font-semibold text-foreground">Like New</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Almost unused and very close to new condition.</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="font-semibold text-foreground">Good</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Lightly used, working well, and still in solid condition.</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="font-semibold text-foreground">Fair</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Used item that still works fine but may show more visible wear.</p>
             </div>
           </CardContent>
         </Card>

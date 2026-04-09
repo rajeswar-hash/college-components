@@ -12,7 +12,11 @@ const sections = [
   },
   {
     title: "Listings and pricing",
-    body: "Sellers are responsible for their listing content, photos, condition details, and price. CampusKart may limit listing types or category-based price ranges, and listings should be deleted once an item is sold.",
+    body: "Sellers are responsible for their listing content, photos, condition details, resource links, and price. CampusKart applies category-based listing rules and price limits, and sellers should delete listings once an item is sold.",
+  },
+  {
+    title: "Manual review and moderation",
+    body: "New listings are currently reviewed before they are made public. CampusKart may approve, reject, or keep a listing under review based on quality, safety, or policy concerns. Reported listings may stay visible while review is pending unless the platform decides otherwise.",
   },
   {
     title: "Transactions and contact",
@@ -24,7 +28,7 @@ const sections = [
   },
   {
     title: "Platform actions",
-    body: "CampusKart may limit, moderate, or remove listings, accounts, or access where misuse, abuse, suspicious activity, or policy violations are identified. Administrative actions are controlled by the platform owner, and the admin account may permanently remove non-admin accounts when required.",
+    body: "CampusKart may limit, moderate, remove listings, reject listings, or ban accounts where misuse, abuse, suspicious activity, or policy violations are identified. Administrative actions are controlled by the platform owner and authorized moderators, and non-admin accounts may be permanently removed when required.",
   },
 ];
 

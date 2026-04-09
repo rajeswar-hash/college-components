@@ -195,7 +195,27 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    void loadInstitutionNames();
+    const warmInstitutions = () => {
+      void loadInstitutionNames();
+    };
+
+    let timeoutId: number | undefined;
+    let idleId: number | undefined;
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(() => warmInstitutions(), { timeout: 1200 });
+    } else {
+      timeoutId = window.setTimeout(warmInstitutions, 600);
+    }
+
+    return () => {
+      if (typeof idleId === "number" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (typeof timeoutId === "number") {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   useEffect(() => {

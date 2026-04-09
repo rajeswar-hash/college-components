@@ -19,7 +19,7 @@ const faqs = [
   {
     question: "How do I publish a listing?",
     answer:
-      "Open Sell Item, choose the right category first, add clear photos or the required file or link, write strong details, choose condition if needed, set the price, and post the item. Category-based price limits apply, and most product listings currently stay within Rs. 5,000.",
+      "Open Sell Item, choose the right category first, add clear photos or the required link, write strong details, choose condition if needed, set the price, and post the item. Category-based price limits apply, and the listing is sent for manual review before it goes live.",
   },
   {
     question: "How do I contact a seller?",
@@ -40,6 +40,11 @@ const faqs = [
     question: "What should I do after my item is sold?",
     answer:
       "Delete the listing once the item is sold so buyers do not waste time opening unavailable products.",
+  },
+  {
+    question: "Why is my listing not visible immediately after posting?",
+    answer:
+      "New listings are currently reviewed before they become public. Until approval, the seller sees the item as Under Verification in the dashboard.",
   },
   {
     question: "How do I reset my password?",
@@ -87,7 +92,7 @@ export default function HelpPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p>Keep listings honest, use a valid WhatsApp number, and delete sold items to build trust for the campus community.</p>
+                <p>Keep listings honest, use a valid WhatsApp number, and delete sold items to build trust for the campus community. Misleading or unwanted content can be rejected during review.</p>
               </div>
             </CardContent>
           </Card>

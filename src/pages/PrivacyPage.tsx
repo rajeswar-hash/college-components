@@ -4,15 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const privacySections = [
   {
     title: "Information you provide",
-    body: "CampusKart may collect account details such as your name, email address, phone number, college, and the listing content you choose to publish, including photos, item details, and pricing.",
+    body: "CampusKart may collect account details such as your name, email address, phone number, college, avatar choice, and the listing content you choose to publish, including photos, item details, pricing, and resource links where applicable.",
   },
   {
     title: "How your information is used",
-    body: "Your information is used to operate your account, verify email ownership during signup and password reset, show your listings, support buyer-seller contact, improve browsing and filtering, and keep the platform functional and reliable.",
+    body: "Your information is used to operate your account, verify email ownership during signup and password reset, show your listings, support buyer-seller contact, improve browsing and filtering, run manual listing review, and keep the platform functional and reliable.",
   },
   {
     title: "Account and listing visibility",
-    body: "CampusKart is designed around college-based discovery. Listing information is shown within the product experience so other students can browse and evaluate items more easily.",
+    body: "CampusKart is designed around college-based discovery. Listing information such as title, photos, price, category, condition, and college may be shown to other users in the browsing and product experience. Seller identity is not shown in listing moderation previews.",
+  },
+  {
+    title: "Local device data",
+    body: "CampusKart may store small preference data in your browser, such as selected college, theme preference, cooldown timers, or similar settings that help the app remember your current experience on the device.",
   },
   {
     title: "Support and feedback messages",
