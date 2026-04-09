@@ -1,5 +1,5 @@
 import { Listing, normalizeCategory, normalizeCondition } from "@/lib/types";
-import { MapPin, ShoppingCart, Trash2 } from "lucide-react";
+import { Share2, ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -99,6 +99,33 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
     onAdminDelete(listing.id);
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}#/product/${listing.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: listing.title,
+          text: `Check out this listing on CampusKart: ${listing.title}`,
+          url: shareUrl,
+        });
+      } catch {
+        // Ignore share cancellation.
+      }
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Listing link copied");
+    } catch {
+      toast.error("Could not copy listing link");
+    }
+  };
+
   return (
     <>
     <Link to={`/product/${listing.id}`} className="group block h-full">
@@ -128,16 +155,6 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               </span>
             </div>
           )}
-          <button
-            onClick={handleLike}
-            disabled={liking}
-            aria-label={liked ? "Unlike listing" : "Like listing"}
-            className={`absolute flex h-8 w-8 items-center justify-center rounded-full glass transition-transform hover:scale-110 sm:h-9 sm:w-9 ${showAdminDelete ? "top-2 right-12 sm:top-3 sm:right-14" : "top-2 right-2 sm:top-3 sm:right-3"}`}
-          >
-            <ShoppingCart
-              className={`w-4 h-4 transition-colors ${liked ? "fill-primary text-primary" : "text-muted-foreground"}`}
-            />
-          </button>
           {showAdminDelete && (
             <button
               onClick={handleAdminDelete}
@@ -181,11 +198,29 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             </Badge>
           </div>
 
-          <div className="flex items-center justify-between gap-3 pt-0 text-[11px] text-muted-foreground sm:mt-0 sm:pt-1 sm:text-xs">
-            <span className="flex min-w-0 items-center gap-1">
-              <MapPin className="w-3 h-3 shrink-0" />
-              <span className="truncate">{listing.college}</span>
-            </span>
+          <div className="mt-auto flex items-center gap-2 pt-1 sm:pt-2">
+            <button
+              onClick={handleShare}
+              type="button"
+              className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border border-border/70 bg-background/80 px-3 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:h-9 sm:text-xs"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              <span>Share</span>
+            </button>
+            <button
+              onClick={handleLike}
+              disabled={liking}
+              type="button"
+              aria-label={liked ? "Remove from cart" : "Add to cart"}
+              className={`inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-medium transition-colors sm:h-9 sm:text-xs ${
+                liked
+                  ? "bg-primary/12 text-primary hover:bg-primary/18"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
+            >
+              <ShoppingCart className={`h-3.5 w-3.5 ${liked ? "fill-primary" : ""}`} />
+              <span>{liked ? "In Cart" : "Add to Cart"}</span>
+            </button>
           </div>
         </div>
       </div>
