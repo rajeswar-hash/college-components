@@ -875,7 +875,7 @@ const SellPage = () => {
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     {category && <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">{category}</span>}
-                      {condition && <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">{condition}</span>}
+                      {condition && <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">{conditionLabelMap[condition]}</span>}
                     {selectedRule?.requiresDriveLink && resourceLink && (
                       <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">Drive link attached</span>
                     )}
