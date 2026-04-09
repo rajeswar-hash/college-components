@@ -84,17 +84,17 @@ const categoryOptions: { value: Category; label: string; icon: typeof Cpu }[] = 
 ];
 
 const conditionLabelMap: Record<Condition, string> = {
-  New: "New",
-  "Like New": "Like New",
-  Fair: "Fair",
-  Used: "Used",
+  New: "New - Unused",
+  "Like New": "Like New - Almost unused",
+  Fair: "Fair - Used, works fine",
+  Used: "Good - Lightly used",
 };
 
 const conditionNoteMap: Record<Condition, string> = {
-  New: "Never used",
-  "Like New": "Used once or twice",
-  Fair: "Clearly used but still usable",
-  Used: "Regular use",
+  New: "Brand-new item with no usage",
+  "Like New": "Almost unused and in near-new condition",
+  Fair: "Used item that still works properly",
+  Used: "Lightly used and in good working condition",
 };
 
 const categoryContentMap: Partial<Record<Category, {
