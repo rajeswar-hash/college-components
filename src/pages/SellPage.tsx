@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, categoryUsesCondition, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
+import { sanitizeMultilineInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
@@ -424,6 +425,9 @@ const SellPage = () => {
   }
 
   const runCommonChecks = async () => {
+    const safeTitle = sanitizeSingleLineInput(title);
+    const safeDescription = sanitizeMultilineInput(description);
+    const safeResourceLink = sanitizeSingleLineInput(resourceLink);
     if (!supabaseUser?.id) {
       throw new Error("Your session is not ready. Please sign out and sign back in.");
     }
@@ -438,18 +442,18 @@ const SellPage = () => {
     if (!category || !selectedRule) {
       throw new Error("Please select a category.");
     }
-    if (trimmedTitle.length < 5) throw new Error("Title must be at least 5 characters.");
+    if (safeTitle.length < 5) throw new Error("Title must be at least 5 characters.");
     if (title.length > MAX_TITLE_LENGTH) throw new Error(`Title cannot exceed ${MAX_TITLE_LENGTH} characters including spaces.`);
-    if (descriptionWordCount < 10) throw new Error("Description must be at least 10 words.");
+    if (countWords(safeDescription) < 10) throw new Error("Description must be at least 10 words.");
     if (!price || parsedPrice <= 0) throw new Error("Please enter a valid price.");
     if (parsedPrice > selectedRule.maxPrice) throw new Error(`This category allows listings only up to ₹${selectedRule.maxPrice}.`);
     if (selectedRule.requiresCondition && !condition) throw new Error("Select the condition before posting.");
     if (selectedRule.requiresImages && images.length < selectedRule.imageMinimum) throw new Error(selectedRule.imageHint);
     if (selectedRule.requiresDriveLink) {
-      if (!resourceLink.trim()) throw new Error("Add a Google Drive link.");
-      if (!isGoogleDriveLink(resourceLink.trim())) throw new Error("Use a valid Google Drive link.");
+      if (!safeResourceLink) throw new Error("Add a Google Drive link.");
+      if (!isGoogleDriveLink(safeResourceLink)) throw new Error("Use a valid Google Drive link.");
     }
-    if (selectedRule.requiresYearSubjectBranch && !hasYearSubjectBranch(description)) {
+    if (selectedRule.requiresYearSubjectBranch && !hasYearSubjectBranch(safeDescription)) {
       throw new Error("Description must include year, subject, and branch info.");
     }
 
@@ -508,14 +512,17 @@ const SellPage = () => {
 
     setSubmitting(true);
     try {
+      const safeTitle = sanitizeSingleLineInput(title);
+      const safeDescription = sanitizeMultilineInput(description);
+      const safeResourceLink = sanitizeSingleLineInput(resourceLink);
       await runCommonChecks();
 
       let aiVerificationStatus = "manual_review";
       let moderationStatus = "pending_review";
 
       const listingPayload = {
-        title: trimmedTitle,
-        description: description.trim(),
+        title: safeTitle,
+        description: safeDescription,
         price: parsedPrice,
         category,
         condition: selectedRule?.requiresCondition ? condition : "",
@@ -524,15 +531,15 @@ const SellPage = () => {
         college: postingCollege,
         sold: false,
         likes: 0,
-        resource_link: resourceLink.trim() || null,
+        resource_link: safeResourceLink || null,
         moderation_status: moderationStatus,
         report_count: 0,
         ai_verification_status: aiVerificationStatus,
       };
 
       const legacyPayload = {
-        title: trimmedTitle,
-        description: description.trim(),
+        title: safeTitle,
+        description: safeDescription,
         price: parsedPrice,
         category,
         condition: selectedRule?.requiresCondition ? condition : "",

@@ -15,6 +15,7 @@ import { MapPin, Search, Store, X, ShieldCheck, MessageCircle, Wallet, ChevronRi
 import { canonicalInstitutionName, loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
 
 interface ListingRow {
   moderation_status?: string;
@@ -494,12 +495,15 @@ const Index = () => {
 
     setSubmittingRequest(true);
     try {
+      const safeCollegeName = sanitizeSingleLineInput(requestCollegeName);
+      const safeState = sanitizeSingleLineInput(requestState);
+      const safeCity = sanitizeSingleLineInput(requestCity);
       const { error } = await supabase.from("college_requests").insert({
-        college_name: requestCollegeName.trim(),
-        state: requestState.trim(),
-        city: requestCity.trim(),
-        requester_name: user?.name || "",
-        requester_email: user?.email || "",
+        college_name: safeCollegeName,
+        state: safeState,
+        city: safeCity,
+        requester_name: sanitizeSingleLineInput(user?.name || ""),
+        requester_email: sanitizeSingleLineInput(user?.email || "").toLowerCase(),
       });
 
       if (error) throw error;

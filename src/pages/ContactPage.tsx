@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Bot, MailCheck, Send } from "lucide-react";
 import { toast } from "sonner";
+import { sanitizeEmailInput, sanitizeMultilineInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
 
 const supportEmail = "rajeswarbind39@gmail.com";
 const formSubmitEndpoint = `https://formsubmit.co/ajax/${supportEmail}`;
@@ -34,9 +35,10 @@ export default function ContactPage() {
     setSending(true);
     try {
       const formData = new FormData();
-      const cleanName = name.trim();
-      const cleanEmail = email.trim().toLowerCase();
-      const cleanSubject = subject.trim();
+      const cleanName = sanitizeSingleLineInput(name);
+      const cleanEmail = sanitizeEmailInput(email);
+      const cleanSubject = sanitizeSingleLineInput(subject);
+      const cleanMessage = sanitizeMultilineInput(message);
       const uniqueSubject = `${cleanName} | ${cleanSubject} | ${new Date().toLocaleString("en-IN")}`;
 
       formData.append("name", cleanName);
@@ -44,7 +46,7 @@ export default function ContactPage() {
       formData.append("subject", uniqueSubject);
       formData.append("_subject", uniqueSubject);
       formData.append("_replyto", cleanEmail);
-      formData.append("message", message.trim());
+      formData.append("message", cleanMessage);
       formData.append("_template", "table");
       formData.append("_captcha", "false");
 

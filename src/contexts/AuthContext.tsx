@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { canonicalInstitutionName } from "@/lib/institutions";
+import { sanitizeEmailInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
 
 interface Profile {
   id: string;
@@ -112,9 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const profileComplete = isProfileComplete(profile);
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedCollege = canonicalInstitutionName(college);
-    if (!hasValidWhatsappNumber(phone)) {
+    const normalizedEmail = sanitizeEmailInput(email);
+    const normalizedName = sanitizeSingleLineInput(name);
+    const normalizedPhone = sanitizeSingleLineInput(phone);
+    const normalizedCollege = canonicalInstitutionName(sanitizeSingleLineInput(college));
+    if (!hasValidWhatsappNumber(normalizedPhone)) {
       throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
     }
     const {
@@ -145,8 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error: authUpdateError } = await supabase.auth.updateUser({
       password,
       data: {
-        name,
-        phone,
+        name: normalizedName,
+        phone: normalizedPhone,
         college: normalizedCollege,
         email: normalizedEmail,
       },
@@ -156,8 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
-        name,
-        phone,
+        name: normalizedName,
+        phone: normalizedPhone,
         college: normalizedCollege,
         email: normalizedEmail,
       })
@@ -168,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchProfile, supabaseUser]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = sanitizeEmailInput(email);
     const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     if (error) throw error;
     const { data: userData } = await supabase.auth.getUser();
@@ -244,13 +247,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabaseUser?.id) {
       throw new Error("Please sign in again to update your profile.");
     }
-    if (typeof updates.phone === "string" && updates.phone.trim() && !hasValidWhatsappNumber(updates.phone)) {
+    const normalizedUpdates = {
+      ...updates,
+      ...(typeof updates.name === "string" ? { name: sanitizeSingleLineInput(updates.name) } : {}),
+      ...(typeof updates.phone === "string" ? { phone: sanitizeSingleLineInput(updates.phone) } : {}),
+      ...(typeof updates.college === "string" ? { college: sanitizeSingleLineInput(updates.college) } : {}),
+    };
+    if (typeof normalizedUpdates.phone === "string" && normalizedUpdates.phone.trim() && !hasValidWhatsappNumber(normalizedUpdates.phone)) {
       throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
     }
 
-    const nextCollege = updates.college ? canonicalInstitutionName(updates.college) : undefined;
+    const nextCollege = normalizedUpdates.college ? canonicalInstitutionName(normalizedUpdates.college) : undefined;
     const payload = {
-      ...updates,
+      ...normalizedUpdates,
       ...(nextCollege ? { college: nextCollege } : {}),
     };
 
@@ -261,7 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       current
         ? {
             ...current,
-            ...updates,
+            ...normalizedUpdates,
             ...(nextCollege ? { college: nextCollege } : {}),
           }
         : current
