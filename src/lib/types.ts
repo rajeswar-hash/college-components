@@ -78,8 +78,10 @@ export function normalizeCategory(category: string): Category | string {
 
 export function normalizeCondition(condition: string): Condition | string {
   switch (condition) {
+    case "Used":
+      return "Good";
     case "Good":
-      return "Used";
+      return "Good";
     case "Old":
       return "Fair";
     default:
