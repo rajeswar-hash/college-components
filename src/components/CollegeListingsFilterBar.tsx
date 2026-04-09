@@ -19,6 +19,13 @@ interface CollegeListingsFilterBarProps {
   maxPrice: number;
 }
 
+const CONDITION_DISPLAY_LABELS: Record<Condition, string> = {
+  New: "New",
+  "Like New": "Like New",
+  Used: "Good",
+  Fair: "Fair",
+};
+
 export function CollegeListingsFilterBar({
   search,
   onSearchChange,
@@ -90,7 +97,7 @@ export function CollegeListingsFilterBar({
           )}
           {selectedCondition && (
             <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
-              {selectedCondition}
+              {CONDITION_DISPLAY_LABELS[selectedCondition]}
               <button onClick={() => onConditionChange(null)}>
                 <X className="h-2.5 w-2.5" />
               </button>
@@ -156,7 +163,7 @@ export function CollegeListingsFilterBar({
                   onClick={() => onConditionChange(condition)}
                   className={`h-7 px-2.5 text-xs ${selectedCondition === condition ? "gradient-bg border-0 text-primary-foreground" : ""}`}
                 >
-                  {condition}
+                  {CONDITION_DISPLAY_LABELS[condition]}
                 </Button>
               ))}
             </div>
