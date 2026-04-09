@@ -5,6 +5,13 @@ import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import { ThemeProvider, useThemeMode } from "./contexts/ThemeContext.tsx";
 import { Toaster } from "sonner";
+import { loadInstitutionNames, canonicalInstitutionName } from "./lib/institutions";
+import { supabase } from "./integrations/supabase/client";
+import { getListingCoverImage } from "./lib/listingImage";
+
+const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
+const STARTUP_IMAGE_PRELOAD_COUNT = 4;
+const STARTUP_LISTING_FETCH_LIMIT = 12;
 
 function ResponsiveToaster() {
   const [showCloseButton, setShowCloseButton] = useState(false);
@@ -71,6 +78,67 @@ function BootstrappedApp() {
     return () => {
       isMounted = false;
       window.clearTimeout(minDelayTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const preloadImage = (src: string) => {
+      if (!src) return;
+      const image = new Image();
+      image.decoding = "async";
+      image.fetchPriority = "high";
+      image.src = src;
+    };
+
+    const warmStartup = async () => {
+      await Promise.allSettled([
+        loadInstitutionNames(),
+        import("./pages/AboutPage"),
+        import("./pages/HelpPage"),
+        import("./pages/ContactPage"),
+        import("./pages/TermsPage"),
+        import("./pages/PrivacyPage"),
+        import("./pages/SellPage"),
+        import("./pages/CartPageCompact"),
+        import("./pages/Dashboard"),
+        import("./pages/AdminDashboard"),
+        import("./pages/ProductDetail"),
+      ]);
+
+      if (cancelled) return;
+
+      const currentHash = window.location.hash || "#/";
+      const isHomeRoute = currentHash === "#/" || currentHash === "#" || currentHash.startsWith("#/?");
+      if (!isHomeRoute) return;
+
+      const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
+      if (!savedCollege) return;
+
+      const canonicalCollege = canonicalInstitutionName(savedCollege);
+      const { data, error } = await supabase
+        .from("listings")
+        .select("id, category, images, moderation_status, created_at, college")
+        .eq("college", canonicalCollege)
+        .order("created_at", { ascending: false })
+        .limit(STARTUP_LISTING_FETCH_LIMIT);
+
+      if (cancelled || error || !data) return;
+
+      data
+        .filter((listing) => !["pending_review", "rejected"].includes(listing.moderation_status || "active"))
+        .slice(0, STARTUP_IMAGE_PRELOAD_COUNT)
+        .forEach((listing) => {
+          const cover = getListingCoverImage(listing.category, listing.images || []);
+          preloadImage(cover);
+        });
+    };
+
+    void warmStartup();
+
+    return () => {
+      cancelled = true;
     };
   }, []);
 

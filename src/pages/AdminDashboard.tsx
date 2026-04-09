@@ -175,32 +175,20 @@ export default function AdminDashboard() {
   );
 
   const databaseUsageBytes = useMemo(() => {
-    const listingBytes = listings.reduce((sum, listing) => {
-      const imageBytes = (listing.images || []).reduce((imageSum, image) => imageSum + byteSize(image), 0);
-      return (
-        sum +
-        byteSize(listing.id) +
-        byteSize(listing.title || "") +
-        byteSize(listing.category || "") +
-        byteSize(listing.college || "") +
-        byteSize(String(listing.price || 0)) +
-        byteSize(String(listing.sold)) +
-        imageBytes
-      );
-    }, 0);
+    const stringifySafe = (value: unknown) => {
+      try {
+        return JSON.stringify(value) || "";
+      } catch {
+        return "";
+      }
+    };
 
-    const profileBytes = profiles.reduce(
-      (sum, profile) =>
-        sum +
-        byteSize(profile.id) +
-        byteSize(profile.name || "") +
-        byteSize(profile.email || "") +
-        byteSize(profile.college || ""),
-      0
-    );
+    const listingsBytes = byteSize(stringifySafe(listings));
+    const profilesBytes = byteSize(stringifySafe(profiles));
+    const requestsBytes = byteSize(stringifySafe(collegeRequests));
 
-    return listingBytes + profileBytes;
-  }, [listings, profiles]);
+    return listingsBytes + profilesBytes + requestsBytes;
+  }, [collegeRequests, listings, profiles]);
 
   const usagePercent = Math.min((databaseUsageBytes / DATABASE_LIMIT_BYTES) * 100, 100);
   const remainingBytes = Math.max(DATABASE_LIMIT_BYTES - databaseUsageBytes, 0);
