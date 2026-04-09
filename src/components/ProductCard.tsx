@@ -14,6 +14,7 @@ interface ProductCardProps {
   showAdminDelete?: boolean;
   onAdminDelete?: (listingId: string) => void;
   deleting?: boolean;
+  prioritizeImage?: boolean;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -27,7 +28,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   Others: "bg-muted text-muted-foreground",
 };
 
-export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, deleting = false }: ProductCardProps) {
+export function ProductCard({
+  listing,
+  showAdminDelete = false,
+  onAdminDelete,
+  deleting = false,
+  prioritizeImage = false,
+}: ProductCardProps) {
   const { isAuthenticated, supabaseUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
@@ -136,8 +143,9 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
             <img
               src={previewImage}
               alt={listing.title}
-              loading="lazy"
+              loading={prioritizeImage ? "eager" : "lazy"}
               decoding="async"
+              fetchPriority={prioritizeImage ? "high" : "auto"}
               sizes="(max-width: 639px) 96px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
               className="h-full min-h-[132px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
             />

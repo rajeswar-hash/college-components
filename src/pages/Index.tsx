@@ -43,6 +43,14 @@ const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 
+function hashListingOrder(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -68,6 +76,7 @@ const Index = () => {
   const [requestCooldownUntil, setRequestCooldownUntil] = useState<number>(0);
   const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
   const [visibleImageCount, setVisibleImageCount] = useState(INITIAL_VISIBLE_IMAGE_BATCH);
+  const [refreshOrderSeed] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const collegeInputRef = useRef<HTMLInputElement>(null);
@@ -350,10 +359,12 @@ const Index = () => {
     }
 
     return [...items].sort((a, b) => {
-      if (b.likes !== a.likes) return b.likes - a.likes;
+      const aScore = hashListingOrder(`${refreshOrderSeed}-${a.id}-${a.created_at}`);
+      const bScore = hashListingOrder(`${refreshOrderSeed}-${b.id}-${b.created_at}`);
+      if (aScore !== bScore) return bScore - aScore;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [listings, priceRange, search, selectedCategory, selectedCondition]);
+  }, [listings, priceRange, refreshOrderSeed, search, selectedCategory, selectedCondition]);
 
   const adaptedListings = filteredListings.map((listing) => ({
     id: listing.id,
@@ -371,6 +382,7 @@ const Index = () => {
     sold: listing.sold,
     likes: listing.likes,
   }));
+  const visibleListings = adaptedListings.slice(0, visibleImageCount);
 
   useEffect(() => {
     setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
@@ -858,18 +870,19 @@ const Index = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-                  {adaptedListings.map((listing, index) => (
+                  {visibleListings.map((listing, index) => (
                     <div key={listing.id} className="animate-fade-in" style={{ animationDelay: `${index * 35}ms` }}>
                       <ProductCard
                         listing={listing}
                         showAdminDelete={canDeleteFromHome}
                         onAdminDelete={handleAdminDeleteListing}
                         deleting={deletingListingId === listing.id}
+                        prioritizeImage={index < 4}
                       />
                     </div>
                   ))}
                 </div>
-                {filteredListings.length > visibleImageCount && (
+                {filteredListings.length > visibleListings.length && (
                   <div ref={listingsLoadMoreRef} className="h-10 w-full" aria-hidden="true" />
                 )}
               </>
