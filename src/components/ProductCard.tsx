@@ -214,11 +214,11 @@ export function ProductCard({ listing, showAdminDelete = false, onAdminDelete, d
               aria-label={liked ? "Remove from cart" : "Add to cart"}
               className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 text-[10px] font-medium transition-colors sm:h-9 sm:px-3 sm:text-xs ${
                 liked
-                  ? "bg-primary/12 text-primary hover:bg-primary/18"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border border-border/70 bg-background/80 text-muted-foreground hover:border-primary/40 hover:text-primary"
               }`}
             >
-              <ShoppingCart className={`h-3.5 w-3.5 ${liked ? "fill-primary" : ""}`} />
+              <ShoppingCart className={`h-3.5 w-3.5 ${liked ? "fill-primary-foreground" : ""}`} />
               <span>{liked ? "In Cart" : "Add to Cart"}</span>
             </button>
           </div>
