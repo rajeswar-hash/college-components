@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Search, Store, X, ShieldCheck, MessageCircle, Wallet, ChevronRight } from "lucide-react";
-import { canonicalInstitutionName, loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
+import { canonicalInstitutionName, loadInstitutionNames, normalizeInstitutionKey, searchInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
@@ -255,9 +255,9 @@ const Index = () => {
       const institutionNames = await loadInstitutionNames();
       if (cancelled) return;
 
-      const selectedKey = canonicalInstitutionName(selectedCollege).toLowerCase();
+      const selectedKey = normalizeInstitutionKey(selectedCollege);
       const stillAvailable = institutionNames.some(
-        (college) => canonicalInstitutionName(college).toLowerCase() === selectedKey
+        (college) => normalizeInstitutionKey(college) === selectedKey
       );
 
       if (!stillAvailable) {
