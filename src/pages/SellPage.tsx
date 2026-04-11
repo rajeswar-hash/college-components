@@ -7,6 +7,8 @@ import { Category, categoryUsesCondition, Condition } from "@/lib/types";
 import { canonicalInstitutionName } from "@/lib/institutions";
 import { sanitizeMultilineInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
+import { trackHandledError } from "@/lib/errorTracking";
+import { uploadListingImages } from "@/lib/storage";
 import { Navbar } from "@/components/Navbar";
 import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -39,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const MAX_IMAGE_BYTES = 400 * 1024;
+const MAX_IMAGE_BYTES = 380 * 1024;
 const MAX_IMAGE_DIMENSION = 1024;
 const MAX_FILES = 5;
 const MAX_DAILY_UPLOADS = 7;
@@ -181,6 +183,15 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Could not prepare fallback image"));
+    reader.readAsDataURL(blob);
+  });
+}
+
 function loadImage(dataUrl: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
@@ -217,15 +228,45 @@ async function compressImage(file: File) {
     outputSize
   );
 
-  let quality = 0.8;
-  let compressed = canvas.toDataURL("image/webp", quality);
+  const canvasToBlob = (quality: number) =>
+    new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Could not prepare image"));
+            return;
+          }
+          resolve(blob);
+        },
+        "image/webp",
+        quality,
+      );
+    });
 
-  while (compressed.length > MAX_IMAGE_BYTES * 1.37 && quality > 0.45) {
+  let quality = 0.82;
+  let compressedBlob = await canvasToBlob(quality);
+
+  while (compressedBlob.size > MAX_IMAGE_BYTES && quality > 0.45) {
     quality -= 0.08;
-    compressed = canvas.toDataURL("image/webp", quality);
+    compressedBlob = await canvasToBlob(quality);
   }
 
-  return compressed;
+  const fileName = `${file.name.replace(/\.[^.]+$/, "") || "listing-image"}.webp`;
+  const optimizedFile = new File([compressedBlob], fileName, {
+    type: "image/webp",
+    lastModified: Date.now(),
+  });
+
+  return {
+    previewUrl: URL.createObjectURL(optimizedFile),
+    file: optimizedFile,
+  };
+}
+
+interface DraftImage {
+  id: string;
+  previewUrl: string;
+  file: File;
 }
 
 const SellPage = () => {
@@ -236,11 +277,12 @@ const SellPage = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState<Category | "">("");
   const [condition, setCondition] = useState<Condition | "">("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<DraftImage[]>([]);
   const [resourceLink, setResourceLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageDraftsRef = useRef<DraftImage[]>([]);
   const lastAutoTitleRef = useRef("");
   const lastAutoDescriptionRef = useRef("");
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
@@ -260,6 +302,7 @@ const SellPage = () => {
 
   const handleCategoryChange = (value: Category) => {
     const nextCategory = value as Category;
+    images.forEach((image) => URL.revokeObjectURL(image.previewUrl));
     setCategory(nextCategory);
     setTitle("");
     setDescription("");
@@ -283,6 +326,7 @@ const SellPage = () => {
 
   useEffect(() => {
     if (isDigitalCategory) {
+      imageDraftsRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
       setImages([]);
     }
   }, [isDigitalCategory]);
@@ -362,8 +406,16 @@ const SellPage = () => {
 
       try {
         const compressed = await compressImage(file);
-        setImages((prev) => [...prev, compressed]);
-      } catch {
+        setImages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            previewUrl: compressed.previewUrl,
+            file: compressed.file,
+          },
+        ]);
+      } catch (error) {
+        trackHandledError("sell.process-image", error, { fileName: file.name });
         toast.error(`Could not process ${file.name}`);
       } finally {
         setProcessingImages((count) => Math.max(0, count - 1));
@@ -390,8 +442,24 @@ const SellPage = () => {
   }, [canUploadImages, formLocked, images.length, selectedRule]);
 
   const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImages((prev) => {
+      const target = prev[index];
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
+
+  useEffect(() => {
+    imageDraftsRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => {
+      imageDraftsRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    };
+  }, []);
 
   const getFriendlyListingError = (errorMessage: string, missingColumn?: string | null) => {
     if (missingColumn === "ai_verification_status" || missingColumn === "moderation_status" || missingColumn === "report_count") {
@@ -516,17 +584,38 @@ const SellPage = () => {
       const safeDescription = sanitizeMultilineInput(description);
       const safeResourceLink = sanitizeSingleLineInput(resourceLink);
       await runCommonChecks();
+      const listingId = crypto.randomUUID();
 
       let aiVerificationStatus = "manual_review";
       let moderationStatus = "pending_review";
+      let listingImages: string[] = [];
+      let usedDatabaseImageFallback = false;
+
+      if (canUploadImages && images.length > 0) {
+        try {
+          listingImages = await uploadListingImages(
+            supabaseUser.id,
+            listingId,
+            images.map((image) => image.file),
+          );
+        } catch (storageError) {
+          trackHandledError("sell.upload-listing-images", storageError, {
+            listingId,
+            imageCount: images.length,
+          });
+          listingImages = await Promise.all(images.map((image) => blobToDataUrl(image.file)));
+          usedDatabaseImageFallback = true;
+        }
+      }
 
       const listingPayload = {
+        id: listingId,
         title: safeTitle,
         description: safeDescription,
         price: parsedPrice,
         category,
         condition: selectedRule?.requiresCondition ? condition : "",
-        images: canUploadImages ? images : [],
+        images: listingImages,
         seller_id: supabaseUser.id,
         college: postingCollege,
         sold: false,
@@ -538,12 +627,13 @@ const SellPage = () => {
       };
 
       const legacyPayload = {
+        id: listingId,
         title: safeTitle,
         description: safeDescription,
         price: parsedPrice,
         category,
         condition: selectedRule?.requiresCondition ? condition : "",
-        images: canUploadImages ? images : [],
+        images: listingImages,
         seller_id: supabaseUser.id,
         college: postingCollege,
         sold: false,
@@ -576,12 +666,16 @@ const SellPage = () => {
       }
 
       toast.success(
-        usedLegacyFallback
+        usedLegacyFallback || usedDatabaseImageFallback
           ? "Sent for manual review. It will go live after approval, usually within 12 hours."
           : "Sent for manual review. It will go live after approval, usually within 12 hours."
       );
       navigate("/dashboard");
     } catch (err: any) {
+      trackHandledError("sell.submit-listing", err, {
+        category,
+        hasImages: images.length > 0,
+      });
       toast.error(err.message || "The item could not be listed right now. Please review the form and try again.");
     } finally {
       setSubmitting(false);
@@ -752,7 +846,7 @@ const SellPage = () => {
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                   {images.map((img, i) => (
                     <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted/40 dark:border-white/10 dark:bg-slate-950/70">
-                      <img src={img} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" />
+                    <img src={img.previewUrl} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" />
                       {i === 0 && (
                           <div className="absolute left-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-semibold text-primary shadow-sm dark:bg-slate-950/90">
                           Cover
@@ -874,7 +968,7 @@ const SellPage = () => {
               <div className="flex gap-3">
                 <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted dark:bg-slate-950/80">
                   {images[0] ? (
-                    <img src={images[0]} alt="Preview" className="h-full w-full object-cover" />
+                    <img src={images[0].previewUrl} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
                     <Upload className="h-6 w-6 text-muted-foreground" />
                   )}

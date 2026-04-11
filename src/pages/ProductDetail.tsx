@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
-import { getListingPreviewImages } from "@/lib/listingImage";
+import { getListingDetailImages } from "@/lib/listingImage";
+import { trackHandledError } from "@/lib/errorTracking";
 
 function formatPhone(phone: string): string | null {
   const digits = phone.replace(/\D/g, "");
@@ -70,6 +71,9 @@ const ProductDetail = () => {
         .single();
 
       if (error || !data) {
+        if (error) {
+          trackHandledError("product-detail.fetch-listing", error, { listingId: id });
+        }
         setLoading(false);
         return;
       }
@@ -181,7 +185,7 @@ const ProductDetail = () => {
     );
   }
 
-  const displayImages = getListingPreviewImages(listing.category, listing.images);
+  const displayImages = getListingDetailImages(listing.category, listing.images);
   const hasImages = displayImages.length > 0;
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
@@ -301,6 +305,9 @@ const ProductDetail = () => {
 
       window.open(buildWhatsappUrl(latestPhone), "_blank", "noopener,noreferrer");
     } catch {
+      trackHandledError("product-detail.contact-seller", new Error("Could not open seller WhatsApp contact"), {
+        listingId: listing.id,
+      });
       if (whatsappPhone) {
         window.open(buildWhatsappUrl(whatsappPhone), "_blank", "noopener,noreferrer");
         return;
@@ -365,6 +372,7 @@ const ProductDetail = () => {
         toast.success("Report removed.");
       }
     } catch (error: any) {
+      trackHandledError("product-detail.report-listing", error, { listingId: listing.id });
       toast.error(error.message || "Could not report this listing right now");
     } finally {
       setReporting(false);

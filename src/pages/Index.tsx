@@ -16,6 +16,8 @@ import { canonicalInstitutionName, loadInstitutionNames, normalizeInstitutionKey
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
+import { deleteListingImages } from "@/lib/storage";
+import { trackHandledError } from "@/lib/errorTracking";
 
 interface ListingRow {
   moderation_status?: string;
@@ -562,9 +564,11 @@ const Index = () => {
 
     setDeletingListingId(listingId);
     try {
+      const targetListing = listings.find((listing) => listing.id === listingId);
       const { error } = await supabase.from("listings").delete().eq("id", listingId);
       if (error) throw error;
 
+      void deleteListingImages(targetListing?.images);
       setListings((prev) => prev.filter((listing) => listing.id !== listingId));
       listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
         listingsCacheRef.current.set(
@@ -574,6 +578,7 @@ const Index = () => {
       });
       toast.success("Listing deleted successfully.");
     } catch (error: any) {
+      trackHandledError("home.admin-delete-listing", error, { listingId });
       toast.error(error.message || "Could not delete this listing right now.");
     } finally {
       setDeletingListingId(null);

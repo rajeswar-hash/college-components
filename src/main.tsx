@@ -8,6 +8,8 @@ import { Toaster } from "sonner";
 import { loadInstitutionNames, canonicalInstitutionName } from "./lib/institutions";
 import { supabase } from "./integrations/supabase/client";
 import { getListingCoverImage } from "./lib/listingImage";
+import { AppErrorBoundary } from "./components/AppErrorBoundary.tsx";
+import { installGlobalErrorTracking } from "./lib/errorTracking";
 
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const STARTUP_IMAGE_PRELOAD_COUNT = 4;
@@ -79,6 +81,10 @@ function BootstrappedApp() {
       isMounted = false;
       window.clearTimeout(minDelayTimer);
     };
+  }, []);
+
+  useEffect(() => {
+    return installGlobalErrorTracking();
   }, []);
 
   useEffect(() => {
@@ -154,7 +160,9 @@ function BootstrappedApp() {
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
     <AuthProvider>
-      <BootstrappedApp />
+      <AppErrorBoundary>
+        <BootstrappedApp />
+      </AppErrorBoundary>
     </AuthProvider>
   </ThemeProvider>
 );

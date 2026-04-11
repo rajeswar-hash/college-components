@@ -11,6 +11,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage } from "@/lib/listingImage";
+import { deleteListingImages } from "@/lib/storage";
+import { trackHandledError } from "@/lib/errorTracking";
 
 interface ListingRow {
   id: string;
@@ -150,11 +152,14 @@ const Dashboard = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const target = myListings.find((listing) => listing.id === id);
     const { error } = await supabase.from("listings").delete().eq("id", id);
     if (error) {
+      trackHandledError("dashboard.delete-listing", error, { listingId: id });
       toast.error("Failed to delete");
       return;
     }
+    void deleteListingImages(target?.images);
     setMyListings((prev) => prev.filter((l) => l.id !== id));
     toast.success("Listing deleted");
   };
@@ -193,6 +198,7 @@ const Dashboard = () => {
       setIsEditingProfile(false);
       toast.success("Profile updated");
     } catch (error) {
+      trackHandledError("dashboard.save-profile", error, { userId: supabaseUser?.id });
       toast.error(error instanceof Error ? error.message : "Could not update profile");
     } finally {
       setSavingProfile(false);

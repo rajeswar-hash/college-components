@@ -27,6 +27,8 @@ import { Input } from "@/components/ui/input";
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewImages } from "@/lib/listingImage";
+import { deleteListingImages } from "@/lib/storage";
+import { trackHandledError } from "@/lib/errorTracking";
 
 interface ListingAdminRow {
   ai_verification_status: string | null;
@@ -72,6 +74,26 @@ interface CollegeRequestRow {
   reviewed_at: string | null;
 }
 
+interface SystemHealthRow {
+  listing_count: number;
+  pending_review_count: number;
+  database_usage_bytes: number;
+  listing_storage_bytes: number;
+  listing_storage_growth_7d_bytes: number;
+  storage_object_count: number;
+  frontend_errors_24h: number;
+}
+
+interface FrontendErrorRow {
+  id: string;
+  created_at: string;
+  route: string | null;
+  source: string;
+  severity: string;
+  message: string;
+  user_email: string | null;
+}
+
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const SUPABASE_BILLING_URL = "https://supabase.com/dashboard/org/ponqczgkbajoevlbqvny/billing";
@@ -108,6 +130,10 @@ export default function AdminDashboard() {
   const [newCollegeName, setNewCollegeName] = useState("");
   const [collegeOverrideError, setCollegeOverrideError] = useState("");
   const [cleaningDatabase, setCleaningDatabase] = useState(false);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [systemHealth, setSystemHealth] = useState<SystemHealthRow | null>(null);
+  const [recentErrors, setRecentErrors] = useState<FrontendErrorRow[]>([]);
+  const [healthError, setHealthError] = useState("");
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const previewImages = previewListing ? getListingPreviewImages(previewListing.category, previewListing.images) : [];
@@ -150,18 +176,21 @@ export default function AdminDashboard() {
       ]);
 
       if (listingError) {
+        trackHandledError("admin.load-listings", listingError);
         toast.error("Could not load listing data for the admin dashboard.");
       } else {
         setListings((listingData as ListingAdminRow[]) || []);
       }
 
       if (profileError) {
+        trackHandledError("admin.load-profiles", profileError);
         toast.error("Could not load profile data for the admin dashboard.");
       } else if (!isPartnerModerator) {
         setProfiles((profileData as ProfileAdminRow[]) || []);
       }
 
       if (collegeRequestError) {
+        trackHandledError("admin.load-college-requests", collegeRequestError);
         toast.error("Could not load college requests.");
       } else if (!isPartnerModerator) {
         const nextRequests = (collegeRequestData as CollegeRequestRow[]) || [];
@@ -177,12 +206,46 @@ export default function AdminDashboard() {
     fetchAdminData();
   }, [isAdmin, isAuthenticated, isPartnerModerator]);
 
+  const refreshSystemHealth = async () => {
+    if (isPartnerModerator) return;
+
+    setHealthLoading(true);
+    setHealthError("");
+
+    try {
+      const [{ data: healthData, error: healthRpcError }, { data: recentErrorData, error: recentErrorQueryError }] =
+        await Promise.all([
+          (supabase as any).rpc("get_admin_system_health"),
+          (supabase as any)
+            .from("frontend_error_logs")
+            .select("id, created_at, route, source, severity, message, user_email")
+            .order("created_at", { ascending: false })
+            .limit(5),
+        ]);
+
+      if (healthRpcError) throw healthRpcError;
+      if (recentErrorQueryError) throw recentErrorQueryError;
+
+      setSystemHealth((healthData?.[0] as SystemHealthRow | undefined) || null);
+      setRecentErrors((recentErrorData as FrontendErrorRow[]) || []);
+    } catch (error) {
+      trackHandledError("admin.load-system-health", error);
+      setHealthError("Live system health is not ready yet, so fallback estimates are shown below.");
+    } finally {
+      setHealthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshSystemHealth();
+  }, [isPartnerModerator]);
+
   const totalListingValue = useMemo(
     () => listings.reduce((sum, listing) => sum + Number(listing.price || 0), 0),
     [listings]
   );
 
-  const databaseUsageBytes = useMemo(() => {
+  const estimatedDatabaseUsageBytes = useMemo(() => {
     const stringifySafe = (value: unknown) => {
       try {
         return JSON.stringify(value) || "";
@@ -197,11 +260,16 @@ export default function AdminDashboard() {
 
     return listingsBytes + profilesBytes + requestsBytes;
   }, [collegeRequests, listings, profiles]);
-
+  const databaseUsageBytes = systemHealth?.database_usage_bytes ?? estimatedDatabaseUsageBytes;
+  const storageUsageBytes = systemHealth?.listing_storage_bytes ?? 0;
+  const storageGrowthBytes = systemHealth?.listing_storage_growth_7d_bytes ?? 0;
+  const storageObjectCount = systemHealth?.storage_object_count ?? 0;
+  const frontendErrors24h = systemHealth?.frontend_errors_24h ?? recentErrors.length;
   const usagePercent = Math.min((databaseUsageBytes / DATABASE_LIMIT_BYTES) * 100, 100);
   const remainingBytes = Math.max(DATABASE_LIMIT_BYTES - databaseUsageBytes, 0);
   const activeListings = listings.filter((listing) => !listing.sold).length;
   const pendingListings = listings.filter((listing) => listing.moderation_status === "pending_review");
+  const pendingReviewCount = systemHealth?.pending_review_count ?? pendingListings.length;
   const overduePendingListings = pendingListings.filter(
     (listing) => Date.now() - new Date(listing.created_at).getTime() >= 10 * 60 * 60 * 1000
   );
@@ -244,6 +312,7 @@ export default function AdminDashboard() {
       toast.success(
         `Database cleaned: ${result?.old_rejected_college_requests_removed ?? 0} old requests, ${result?.duplicate_reports_removed ?? 0} duplicate reports removed.`
       );
+      void refreshSystemHealth();
     } catch {
       toast.error("Database cleanup is not available yet. Run the latest maintenance SQL first.");
     } finally {
@@ -266,13 +335,17 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteListing = async (id: string) => {
+    const target = listings.find((listing) => listing.id === id);
     const { error } = await supabase.from("listings").delete().eq("id", id);
     if (error) {
+      trackHandledError("admin.delete-listing", error, { listingId: id });
       toast.error("Delete failed. This project may still need stricter server-side admin permissions.");
       return;
     }
 
+    void deleteListingImages(target?.images);
     setListings((current) => current.filter((listing) => listing.id !== id));
+    void refreshSystemHealth();
     toast.success("Listing removed.");
   };
 
@@ -285,6 +358,7 @@ export default function AdminDashboard() {
       .eq("id", listingId);
 
     if (error) {
+      trackHandledError("admin.reject-listing", error, { listingId });
       toast.error("Could not reject this listing.");
       return;
     }
@@ -298,6 +372,7 @@ export default function AdminDashboard() {
     );
     setPreviewListing((current) => (current?.id === listingId ? null : current));
     setPendingRejectListingId(null);
+    void refreshSystemHealth();
     toast.success("Listing rejected.");
   };
 
@@ -312,6 +387,7 @@ export default function AdminDashboard() {
       .eq("id", listingId);
 
     if (listingError) {
+      trackHandledError("admin.approve-listing", listingError, { listingId });
       toast.error("Could not approve this listing.");
       return;
     }
@@ -326,6 +402,7 @@ export default function AdminDashboard() {
       )
     );
     setPreviewListing((current) => (current?.id === listingId ? null : current));
+    void refreshSystemHealth();
     toast.success("Listing approved and reports cleared.");
   };
 
@@ -342,6 +419,7 @@ export default function AdminDashboard() {
       .eq("id", profileId);
 
     if (error) {
+      trackHandledError("admin.ban-user", error, { profileId });
       toast.error("Could not ban this user.");
       return;
     }
@@ -360,6 +438,7 @@ export default function AdminDashboard() {
       )
     );
     setPreviewListing((current) => (current?.seller_id === profileId ? null : current));
+    void refreshSystemHealth();
     toast.success("User banned for repeated violations.");
     setPendingBanProfileId(null);
   };
@@ -379,12 +458,14 @@ export default function AdminDashboard() {
     const rpcClient = supabase as any;
     const { error } = await rpcClient.rpc("admin_delete_account", { target_user_id: profileId });
     if (error) {
+      trackHandledError("admin.delete-account", error, { profileId });
       toast.error("Could not delete this account permanently yet.");
       return;
     }
 
     setProfiles((current) => current.filter((profile) => profile.id !== profileId));
     setListings((current) => current.filter((listing) => listing.seller_id !== profileId));
+    void refreshSystemHealth();
     toast.success("Account deleted permanently.");
   };
 
@@ -405,6 +486,7 @@ export default function AdminDashboard() {
       .eq("id", id);
 
     if (error) {
+      trackHandledError("admin.update-college-request", error, { requestId: id, status });
       toast.error("Could not update this college request.");
       return;
     }
@@ -435,6 +517,7 @@ export default function AdminDashboard() {
     const { error } = await supabase.from("college_requests").delete().eq("id", id);
 
     if (error) {
+      trackHandledError("admin.delete-college-request", error, { requestId: id });
       toast.error("Could not remove this college request yet.");
       return;
     }
@@ -812,11 +895,18 @@ export default function AdminDashboard() {
       <div className="container mx-auto max-w-7xl px-4 py-6">
         {!isPartnerModerator && <Alert className="mb-4 border-primary/20 bg-primary/5 py-3 dark:bg-primary/10">
           <Wrench className="h-4 w-4" />
-          <AlertTitle>Space monitoring note</AlertTitle>
+          <AlertTitle>System health</AlertTitle>
           <AlertDescription>
-            This dashboard estimates database footprint from frontend-readable data. Real quota and upgrades still happen in Supabase.
+            Storage-backed listing images, moderation pressure, and recent client-side errors are tracked here so issues show up before users feel them.
           </AlertDescription>
         </Alert>}
+
+        {!isPartnerModerator && healthError && (
+          <Alert className="mb-4 border-amber-500/20 bg-amber-500/5 py-3 text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+            <AlertTitle>Live metrics fallback</AlertTitle>
+            <AlertDescription>{healthError}</AlertDescription>
+          </Alert>
+        )}
 
         {!isPartnerModerator && <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
@@ -826,23 +916,48 @@ export default function AdminDashboard() {
                   <CardTitle className="flex items-center gap-2">
                     <HardDrive className="h-5 w-5 text-primary" /> Database usage monitor
                   </CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Compact storage overview for current platform growth.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Live database, media storage, moderation load, and recent error visibility.</p>
                 </div>
-                <Badge variant="secondary" className={usageTone}>{usageLabel}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className={usageTone}>{usageLabel}</Badge>
+                  <Button variant="outline" className="h-8 px-3 text-xs" onClick={refreshSystemHealth} disabled={healthLoading}>
+                    {healthLoading ? "Refreshing..." : "Refresh"}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Estimated used</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Database used</p>
                   <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(databaseUsageBytes)}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Estimated remaining</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Database remaining</p>
                   <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(remainingBytes)}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Assumed plan limit</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Media stored</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(storageUsageBytes)}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Storage growth 7d</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(storageGrowthBytes)}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Pending review</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{pendingReviewCount}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Client errors 24h</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{frontendErrors24h}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Stored files</p>
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">{storageObjectCount}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Assumed DB limit</p>
                   <p className="mt-1 font-display text-xl font-bold text-foreground">{formatBytes(DATABASE_LIMIT_BYTES)}</p>
                 </div>
               </div>
@@ -859,15 +974,15 @@ export default function AdminDashboard() {
                 {usagePercent >= 85
                   ? "Capacity is getting tight. Open billing and review add-ons before uploads start failing."
                   : usagePercent >= 60
-                    ? "Usage is healthy but worth watching as more listings and images come in."
-                    : "Current usage looks comfortable for continued growth."}
+                    ? "Database usage is growing steadily. Media storage and moderation volume are worth watching now."
+                    : "Current usage looks comfortable, and storage-backed images are keeping the site lighter than database-stored image blobs."}
               </div>
             </CardContent>
           </Card>
 
           <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
             <CardHeader className="pb-3">
-              <CardTitle>Admin actions</CardTitle>
+              <CardTitle>Admin actions & recent errors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
@@ -899,6 +1014,36 @@ export default function AdminDashboard() {
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Accounts</p>
                   <p className="mt-1 text-sm font-semibold text-foreground">{profiles.length} registered users</p>
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-foreground">Latest error events</p>
+                  <Badge variant="secondary">{recentErrors.length}</Badge>
+                </div>
+                {recentErrors.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No recent client-side errors were logged.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {recentErrors.map((entry) => (
+                      <div key={entry.id} className="rounded-xl border border-border/70 bg-card/70 p-2.5 dark:bg-slate-950/70">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-xs font-semibold text-foreground">{entry.source}</p>
+                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                            {new Date(entry.created_at).toLocaleString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{entry.message}</p>
+                        {entry.route && <p className="mt-1 truncate text-[10px] text-muted-foreground">{entry.route}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
