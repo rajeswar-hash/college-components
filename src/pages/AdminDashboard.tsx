@@ -107,6 +107,7 @@ export default function AdminDashboard() {
   const [collegeListSearch, setCollegeListSearch] = useState("");
   const [newCollegeName, setNewCollegeName] = useState("");
   const [collegeOverrideError, setCollegeOverrideError] = useState("");
+  const [cleaningDatabase, setCleaningDatabase] = useState(false);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const previewImages = previewListing ? getListingPreviewImages(previewListing.category, previewListing.images) : [];
@@ -226,6 +227,28 @@ export default function AdminDashboard() {
 
   const openExternalPage = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDatabaseCleanup = async () => {
+    const confirmed = window.confirm(
+      "Clean safe database junk now? This only removes old rejected college requests, duplicate reports, and empty college override rows."
+    );
+    if (!confirmed) return;
+
+    setCleaningDatabase(true);
+    try {
+      const { data, error } = await (supabase as any).rpc("admin_cleanup_database");
+      if (error) throw error;
+
+      const result = data?.[0];
+      toast.success(
+        `Database cleaned: ${result?.old_rejected_college_requests_removed ?? 0} old requests, ${result?.duplicate_reports_removed ?? 0} duplicate reports removed.`
+      );
+    } catch {
+      toast.error("Database cleanup is not available yet. Run the latest maintenance SQL first.");
+    } finally {
+      setCleaningDatabase(false);
+    }
   };
 
   const refreshCollegeList = async () => {
@@ -858,6 +881,14 @@ export default function AdminDashboard() {
               </Button>
               <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openSupabasePage("auth/users")}>
                 Open auth users <ExternalLink className="h-4 w-4" />
+              </Button>
+              <Button
+                className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80"
+                variant="outline"
+                onClick={handleDatabaseCleanup}
+                disabled={cleaningDatabase}
+              >
+                {cleaningDatabase ? "Cleaning database..." : "Clean safe database junk"} <Wrench className="h-4 w-4" />
               </Button>
               <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
                 <div>
