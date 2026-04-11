@@ -15,6 +15,11 @@ interface ApprovedCollegeRequestEntry {
   state: string;
 }
 
+interface CollegeOverrideEntry {
+  college_name: string;
+  action: "add" | "remove";
+}
+
 let cachedInstitutions: string[] | null = null;
 let loadingPromise: Promise<string[]> | null = null;
 let baseInstitutionsPromise: Promise<string[]> | null = null;
@@ -159,6 +164,22 @@ export async function loadInstitutionNames(): Promise<string[]> {
       for (const request of (approvedRequests as ApprovedCollegeRequestEntry[] | null) || []) {
         const withLocation = [request.college_name, request.city, request.state].filter(Boolean).join(", ");
         addInstitution(withLocation || request.college_name);
+      }
+    }
+
+    const { data: collegeOverrides, error: overrideError } = await (supabase as any).rpc("get_college_overrides");
+
+    if (!overrideError) {
+      for (const override of (collegeOverrides as CollegeOverrideEntry[] | null) || []) {
+        const cleaned = canonicalInstitutionName(override.college_name);
+        const key = normalizeInstitutionKey(cleaned);
+        if (!cleaned || !key) continue;
+
+        if (override.action === "remove") {
+          institutionMap.delete(key);
+        } else {
+          institutionMap.set(key, cleaned);
+        }
       }
     }
 

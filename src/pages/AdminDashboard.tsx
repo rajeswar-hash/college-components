@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { invalidateInstitutionNamesCache } from "@/lib/institutions";
+import { canonicalInstitutionName, invalidateInstitutionNamesCache, loadInstitutionNames } from "@/lib/institutions";
+import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { categoryUsesCondition, normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -90,7 +91,7 @@ function formatBytes(bytes: number) {
 export default function AdminDashboard() {
   const { isAuthenticated, isAdmin, user } = useAuth();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members" | null>(null);
+  const [activeSection, setActiveSection] = useState<"requests" | "listings" | "members" | "colleges" | null>(null);
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState<ListingAdminRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileAdminRow[]>([]);
@@ -100,6 +101,11 @@ export default function AdminDashboard() {
   const [pendingRejectListingId, setPendingRejectListingId] = useState<string | null>(null);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
+  const [collegeList, setCollegeList] = useState<string[]>([]);
+  const [loadingColleges, setLoadingColleges] = useState(false);
+  const [collegeListSearch, setCollegeListSearch] = useState("");
+  const [newCollegeName, setNewCollegeName] = useState("");
+  const [collegeOverrideError, setCollegeOverrideError] = useState("");
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const previewImages = previewListing ? getListingPreviewImages(previewListing.category, previewListing.images) : [];
@@ -201,6 +207,11 @@ export default function AdminDashboard() {
     (listing) => Date.now() - new Date(listing.created_at).getTime() < 10 * 60 * 60 * 1000
   );
   const flaggedListings = listings.filter((listing) => listing.moderation_status === "flagged" || listing.moderation_status === "hidden");
+  const visibleCollegeList = useMemo(() => {
+    const query = collegeListSearch.trim().toLowerCase();
+    if (!query) return collegeList;
+    return collegeList.filter((college) => college.toLowerCase().includes(query));
+  }, [collegeList, collegeListSearch]);
   const soldListings = listings.filter((listing) => listing.sold).length;
   const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
   const usageTone =
@@ -214,6 +225,20 @@ export default function AdminDashboard() {
 
   const openExternalPage = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const refreshCollegeList = async () => {
+    setLoadingColleges(true);
+    setCollegeOverrideError("");
+    try {
+      invalidateInstitutionNamesCache();
+      const names = await loadInstitutionNames();
+      setCollegeList(names);
+    } catch {
+      toast.error("Could not load college list.");
+    } finally {
+      setLoadingColleges(false);
+    }
   };
 
   const handleDeleteListing = async (id: string) => {
@@ -404,8 +429,56 @@ export default function AdminDashboard() {
     toast.success("College request removed.");
   };
 
-  const handleSectionChange = (section: "requests" | "listings" | "members") => {
+  const upsertCollegeOverride = async (collegeName: string, action: "add" | "remove") => {
+    const safeCollegeName = canonicalInstitutionName(sanitizeSingleLineInput(collegeName));
+    if (!safeCollegeName) {
+      toast.error("Please enter a valid college name.");
+      return false;
+    }
+
+    const { error } = await (supabase as any)
+      .from("college_overrides")
+      .upsert(
+        {
+          college_name: safeCollegeName,
+          action,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "college_name" }
+      );
+
+    if (error) {
+      setCollegeOverrideError("College manager needs the latest database migration before add/remove can be saved.");
+      toast.error("Could not save this college change.");
+      return false;
+    }
+
+    await refreshCollegeList();
+    return true;
+  };
+
+  const handleAddCollege = async () => {
+    const added = await upsertCollegeOverride(newCollegeName, "add");
+    if (!added) return;
+    setNewCollegeName("");
+    toast.success("College added to search.");
+  };
+
+  const handleRemoveCollege = async (collegeName: string) => {
+    const confirmed = window.confirm(`Remove "${collegeName}" from college search?`);
+    if (!confirmed) return;
+
+    const removed = await upsertCollegeOverride(collegeName, "remove");
+    if (removed) {
+      toast.success("College removed from search.");
+    }
+  };
+
+  const handleSectionChange = (section: "requests" | "listings" | "members" | "colleges") => {
     setActiveSection((current) => (current === section ? null : section));
+    if (section === "colleges" && activeSection !== "colleges") {
+      void refreshCollegeList();
+    }
 
     window.setTimeout(() => {
       sectionContentRef.current?.scrollIntoView({
@@ -792,7 +865,7 @@ export default function AdminDashboard() {
                       : "Open one section at a time so the panel stays compact as data grows."}
                   </p>
                 </div>
-                <div className={`grid gap-2 ${isPartnerModerator ? "sm:grid-cols-1" : "sm:grid-cols-3"}`}>
+                <div className={`grid gap-2 ${isPartnerModerator ? "sm:grid-cols-1" : "sm:grid-cols-4"}`}>
                   {!isPartnerModerator && (
                   <Button
                     variant={activeSection === "requests" ? "default" : "outline"}
@@ -811,6 +884,16 @@ export default function AdminDashboard() {
                     <span>Listing Moderation</span>
                       <Badge variant="secondary" className="ml-2 text-[10px]">{pendingListings.length + flaggedListings.length}</Badge>
                   </Button>
+                  {!isPartnerModerator && (
+                  <Button
+                    variant={activeSection === "colleges" ? "default" : "outline"}
+                    className="h-9 w-full justify-between text-xs sm:text-sm"
+                    onClick={() => handleSectionChange("colleges")}
+                  >
+                    <span>College List</span>
+                    <Badge variant="secondary" className="ml-2 text-[10px]">{collegeList.length || "All"}</Badge>
+                  </Button>
+                  )}
                   {!isPartnerModerator && (
                   <Button
                     variant={activeSection === "members" ? "default" : "outline"}
@@ -1045,6 +1128,82 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          )}
+
+          {activeSection === "colleges" && (
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" /> College list
+                  </CardTitle>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Add or remove colleges from search. The list is shown alphabetically.
+                  </p>
+                </div>
+                <Badge variant="secondary">{collegeList.length} visible</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {collegeOverrideError && (
+                <Alert variant="destructive">
+                  <AlertTitle>Database update needed</AlertTitle>
+                  <AlertDescription>{collegeOverrideError}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="grid gap-2 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] dark:bg-slate-950/50">
+                <Input
+                  value={newCollegeName}
+                  onChange={(event) => setNewCollegeName(event.target.value)}
+                  placeholder="Add college name..."
+                  className="h-10"
+                />
+                <Button className="h-10" onClick={handleAddCollege} disabled={loadingColleges || !newCollegeName.trim()}>
+                  Add College
+                </Button>
+              </div>
+
+              <div className="grid gap-2 md:grid-cols-[1fr_auto] md:items-center">
+                <Input
+                  value={collegeListSearch}
+                  onChange={(event) => setCollegeListSearch(event.target.value)}
+                  placeholder="Search colleges..."
+                  className="h-10"
+                />
+                <Button variant="outline" className="h-10" onClick={refreshCollegeList} disabled={loadingColleges}>
+                  Refresh
+                </Button>
+              </div>
+
+              {loadingColleges ? (
+                <p className="text-sm text-muted-foreground">Loading colleges...</p>
+              ) : visibleCollegeList.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No colleges match this search.</p>
+              ) : (
+                <div className="max-h-[560px] space-y-2 overflow-y-auto pr-1">
+                  {visibleCollegeList.map((college) => (
+                    <div
+                      key={college}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-950/50"
+                    >
+                      <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{college}</p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 shrink-0 text-xs text-destructive hover:text-destructive"
+                        onClick={() => handleRemoveCollege(college)}
+                        disabled={loadingColleges}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
