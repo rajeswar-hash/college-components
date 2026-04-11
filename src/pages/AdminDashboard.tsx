@@ -1211,7 +1211,7 @@ export default function AdminDashboard() {
                       key={college}
                       className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-950/50"
                     >
-                      <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{college}</p>
+                      <p className="min-w-0 flex-1 whitespace-normal break-words text-sm font-medium leading-5 text-foreground">{college}</p>
                       <Button
                         size="sm"
                         variant="outline"
