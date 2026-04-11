@@ -455,6 +455,7 @@ export default function AdminDashboard() {
     }
 
     await refreshCollegeList();
+    window.dispatchEvent(new Event("campuskart-colleges-updated"));
     return true;
   };
 

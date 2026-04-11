@@ -247,6 +247,39 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    if (!selectedCollege) return;
+
+    let cancelled = false;
+
+    const validateSelectedCollege = async () => {
+      const institutionNames = await loadInstitutionNames();
+      if (cancelled) return;
+
+      const selectedKey = canonicalInstitutionName(selectedCollege).toLowerCase();
+      const stillAvailable = institutionNames.some(
+        (college) => canonicalInstitutionName(college).toLowerCase() === selectedKey
+      );
+
+      if (!stillAvailable) {
+        resetCollegeSelection();
+        toast.info("This college is no longer available, so we returned you to the homepage.");
+      }
+    };
+
+    void validateSelectedCollege();
+
+    const handleCollegeListUpdated = () => {
+      void validateSelectedCollege();
+    };
+
+    window.addEventListener("campuskart-colleges-updated", handleCollegeListUpdated);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("campuskart-colleges-updated", handleCollegeListUpdated);
+    };
+  }, [resetCollegeSelection, selectedCollege]);
+
+  useEffect(() => {
     const handlePopState = () => {
       if (selectedCollege) {
         resetCollegeSelection();
