@@ -99,6 +99,7 @@ export default function AdminDashboard() {
   const [collegeNameDrafts, setCollegeNameDrafts] = useState<Record<string, string>>({});
   const [pendingBanProfileId, setPendingBanProfileId] = useState<string | null>(null);
   const [pendingRejectListingId, setPendingRejectListingId] = useState<string | null>(null);
+  const [pendingRemoveCollegeName, setPendingRemoveCollegeName] = useState<string | null>(null);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
   const [collegeList, setCollegeList] = useState<string[]>([]);
@@ -465,11 +466,9 @@ export default function AdminDashboard() {
   };
 
   const handleRemoveCollege = async (collegeName: string) => {
-    const confirmed = window.confirm(`Remove "${collegeName}" from college search?`);
-    if (!confirmed) return;
-
     const removed = await upsertCollegeOverride(collegeName, "remove");
     if (removed) {
+      setPendingRemoveCollegeName(null);
       toast.success("College removed from search.");
     }
   };
@@ -628,6 +627,26 @@ export default function AdminDashboard() {
               onClick={() => pendingRejectListingId && void handleRejectListing(pendingRejectListingId)}
             >
               Reject listing
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pendingRemoveCollegeName} onOpenChange={(open) => !open && setPendingRemoveCollegeName(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this college from search?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide {pendingRemoveCollegeName ? `"${pendingRemoveCollegeName}"` : "this college"} from the college search list for users after the database change is saved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => pendingRemoveCollegeName && void handleRemoveCollege(pendingRemoveCollegeName)}
+            >
+              Remove college
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1197,7 +1216,7 @@ export default function AdminDashboard() {
                         size="sm"
                         variant="outline"
                         className="h-8 shrink-0 text-xs text-destructive hover:text-destructive"
-                        onClick={() => handleRemoveCollege(college)}
+                        onClick={() => setPendingRemoveCollegeName(college)}
                         disabled={loadingColleges}
                       >
                         Remove
