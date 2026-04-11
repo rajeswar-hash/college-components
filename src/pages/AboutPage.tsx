@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PublicPageLayout } from "@/components/PublicPageLayout";
 import { ArrowRight, MessageCircle, Recycle, ShieldCheck, Sparkles, Store, Users, Wallet, Zap } from "lucide-react";
 
+const businessEmail = "businesscampuskart@gmail.com";
+
 const currentHighlights = [
   {
     icon: Users,
@@ -183,6 +185,19 @@ export default function AboutPage() {
               <p className="font-semibold text-foreground">Fair</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">Used item that still works fine but may show more visible wear.</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass border-border/70 shadow-[0_18px_50px_rgba(20,184,166,0.08)]">
+          <CardHeader>
+            <CardTitle>Business inquiries</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm leading-6 text-muted-foreground">
+            For partnerships, collaborations, or business-related inquiries, contact{" "}
+            <a href={`mailto:${businessEmail}`} className="font-medium text-primary hover:underline">
+              {businessEmail}
+            </a>
+            .
           </CardContent>
         </Card>
       </div>

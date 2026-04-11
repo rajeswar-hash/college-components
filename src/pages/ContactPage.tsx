@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { sanitizeEmailInput, sanitizeMultilineInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
 
 const supportEmail = "rajeswarbind39@gmail.com";
+const businessEmail = "businesscampuskart@gmail.com";
 const formSubmitEndpoint = `https://formsubmit.co/ajax/${supportEmail}`;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -105,6 +106,17 @@ export default function ContactPage() {
               <Button asChild className="gradient-bg border-0 text-primary-foreground hover:opacity-90">
                 <Link to="/help-bot">Open Help Bot</Link>
               </Button>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4 text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">Business & Partnerships</p>
+              <p className="mt-2 leading-6">
+                For business inquiries, partnerships, or collaboration opportunities, email{" "}
+                <a href={`mailto:${businessEmail}`} className="font-medium text-primary hover:underline">
+                  {businessEmail}
+                </a>
+                .
+              </p>
             </div>
           </CardContent>
         </Card>
