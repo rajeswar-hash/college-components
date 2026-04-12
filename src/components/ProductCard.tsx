@@ -142,17 +142,26 @@ export function ProductCard({
       <div className="glass flex min-h-[132px] overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:h-full sm:min-h-[116px] sm:block">
         <div className="relative w-[96px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
-            <LqipImage
-              src={previewImage}
-              alt={listing.title}
-              placeholderSrc={previewPlaceholder}
-              loading={prioritizeImage ? "eager" : "lazy"}
-              decoding="async"
-              fetchPriority={prioritizeImage ? "high" : "auto"}
-              sizes="(max-width: 639px) 96px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="h-full min-h-[132px] w-full bg-muted sm:min-h-0"
-              imgClassName="h-full min-h-[132px] w-full object-contain p-1 transition-transform duration-300 group-hover:scale-[1.02] sm:min-h-0 sm:p-2"
-            />
+            <>
+              <img
+                src={previewPlaceholder || previewImage}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full min-h-[132px] w-full scale-110 object-cover blur-2xl opacity-55 sm:min-h-0"
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18),transparent_62%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_62%)]" />
+              <LqipImage
+                src={previewImage}
+                alt={listing.title}
+                placeholderSrc={previewPlaceholder}
+                loading={prioritizeImage ? "eager" : "lazy"}
+                decoding="async"
+                fetchPriority={prioritizeImage ? "high" : "auto"}
+                sizes="(max-width: 639px) 96px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                className="relative h-full min-h-[132px] w-full bg-transparent sm:min-h-0"
+                imgClassName="h-full min-h-[132px] w-full object-contain p-1 transition-transform duration-300 group-hover:scale-[1.02] sm:min-h-0 sm:p-2"
+              />
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />

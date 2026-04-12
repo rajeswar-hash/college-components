@@ -415,6 +415,13 @@ const ProductDetail = () => {
           >
             {hasImages ? (
               <>
+                <img
+                  src={displayPlaceholders[safeCurrentImage] || displayImages[safeCurrentImage]}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover blur-3xl opacity-55"
+                />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22),transparent_62%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_62%)]" />
                 <LqipImage
                   key={`${safeCurrentImage}-${imageAnimationClass}`}
                   src={displayImages[safeCurrentImage]}
@@ -424,7 +431,7 @@ const ProductDetail = () => {
                   decoding="async"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 896px"
-                  className="h-full w-full bg-muted"
+                  className="relative h-full w-full bg-transparent"
                   imgClassName={`h-full w-full object-contain p-2 sm:p-3 ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (
