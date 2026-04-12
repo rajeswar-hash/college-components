@@ -424,8 +424,8 @@ const ProductDetail = () => {
                   decoding="async"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 896px"
-                  className="h-full w-full"
-                  imgClassName={`h-full w-full object-cover ${imageAnimationClass}`}
+                  className="h-full w-full bg-muted"
+                  imgClassName={`h-full w-full object-contain p-2 sm:p-3 ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (
                   <>

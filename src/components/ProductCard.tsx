@@ -150,8 +150,8 @@ export function ProductCard({
               decoding="async"
               fetchPriority={prioritizeImage ? "high" : "auto"}
               sizes="(max-width: 639px) 96px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="h-full min-h-[132px] w-full sm:min-h-0"
-              imgClassName="h-full min-h-[132px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
+              className="h-full min-h-[132px] w-full bg-muted sm:min-h-0"
+              imgClassName="h-full min-h-[132px] w-full object-contain p-1 transition-transform duration-300 group-hover:scale-[1.02] sm:min-h-0 sm:p-2"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
