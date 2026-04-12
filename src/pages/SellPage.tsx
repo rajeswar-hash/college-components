@@ -201,13 +201,20 @@ function loadImage(dataUrl: string) {
   });
 }
 
+function isSquareRatio(width: number, height: number) {
+  if (!width || !height) return false;
+  const ratio = width / height;
+  return Math.abs(ratio - 1) <= 0.02;
+}
+
 async function compressImage(file: File) {
   const originalDataUrl = await readFileAsDataUrl(file);
   const image = await loadImage(originalDataUrl);
-  const sourceSize = Math.min(image.width, image.height);
-  const cropX = Math.max(0, Math.floor((image.width - sourceSize) / 2));
-  const cropY = Math.max(0, Math.floor((image.height - sourceSize) / 2));
-  const outputSize = Math.max(1, Math.round(Math.min(sourceSize, MAX_IMAGE_DIMENSION)));
+  if (!isSquareRatio(image.width, image.height)) {
+    throw new Error("Only 1:1 square images are allowed");
+  }
+
+  const outputSize = Math.max(1, Math.round(Math.min(image.width, image.height, MAX_IMAGE_DIMENSION)));
 
   const canvas = document.createElement("canvas");
   canvas.width = outputSize;
@@ -218,10 +225,10 @@ async function compressImage(file: File) {
 
   context.drawImage(
     image,
-    cropX,
-    cropY,
-    sourceSize,
-    sourceSize,
+    0,
+    0,
+    image.width,
+    image.height,
     0,
     0,
     outputSize,
@@ -416,7 +423,11 @@ const SellPage = () => {
         ]);
       } catch (error) {
         trackHandledError("sell.process-image", error, { fileName: file.name });
-        toast.error(`Could not process ${file.name}`);
+        const message =
+          error instanceof Error && error.message === "Only 1:1 square images are allowed"
+            ? `${file.name} must be a 1:1 square image`
+            : `Could not process ${file.name}`;
+        toast.error(message);
       } finally {
         setProcessingImages((count) => Math.max(0, count - 1));
       }
@@ -833,7 +844,7 @@ const SellPage = () => {
                 <p className="text-sm font-semibold text-foreground">
                   {category === "Handwriting Service" ? "Tap to upload handwriting samples" : "Tap to upload item photos"}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB each. Photos are optimized automatically.</p>
+                <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB each. Only 1:1 square images are allowed.</p>
               </div>
 
               {processingImages > 0 && (
