@@ -41,9 +41,11 @@ export function Navbar() {
   const isActive = (path: string) => location.pathname === path;
   const brandLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
   const navButtonClass = (path: string) =>
-    isActive(path)
-      ? "bg-primary/10 text-primary hover:bg-primary/15"
-      : "";
+    `${
+      isActive(path)
+        ? "bg-primary/10 text-primary hover:bg-primary/15"
+        : ""
+    } md:transition-all md:duration-200 md:hover:-translate-y-0.5 md:hover:scale-[1.04] md:hover:shadow-[0_10px_24px_rgba(15,23,42,0.12)]`;
 
   useEffect(() => {
     if (mobileMenu) {
