@@ -133,6 +133,7 @@ export default function AdminDashboard() {
   const [newCollegeName, setNewCollegeName] = useState("");
   const [collegeOverrideError, setCollegeOverrideError] = useState("");
   const [cleaningDatabase, setCleaningDatabase] = useState(false);
+  const [clearingErrors, setClearingErrors] = useState(false);
   const [healthLoading, setHealthLoading] = useState(false);
   const [systemHealth, setSystemHealth] = useState<SystemHealthRow | null>(null);
   const [recentErrors, setRecentErrors] = useState<FrontendErrorRow[]>([]);
@@ -245,6 +246,30 @@ export default function AdminDashboard() {
       setHealthError("Live system health is not ready yet, so fallback estimates are shown below.");
     } finally {
       setHealthLoading(false);
+    }
+  };
+
+  const handleClearLatestErrors = async () => {
+    if (recentErrors.length === 0 || clearingErrors) return;
+
+    setClearingErrors(true);
+    try {
+      const errorIds = recentErrors.map((entry) => entry.id);
+      const { error } = await supabase
+        .from("frontend_error_logs")
+        .delete()
+        .in("id", errorIds);
+
+      if (error) throw error;
+
+      setRecentErrors([]);
+      void refreshSystemHealth();
+      toast.success("Latest error events cleared.");
+    } catch (error) {
+      trackHandledError("admin.clear-latest-errors", error, { count: recentErrors.length });
+      toast.error("Could not clear the latest error events.");
+    } finally {
+      setClearingErrors(false);
     }
   };
 
@@ -1054,12 +1079,23 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-foreground">Latest error events</p>
-                  <Badge variant="secondary">{recentErrors.length}</Badge>
-                </div>
-                {recentErrors.length === 0 ? (
+                <div className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-foreground">Latest error events</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{recentErrors.length}</Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-[11px]"
+                        onClick={handleClearLatestErrors}
+                        disabled={recentErrors.length === 0 || clearingErrors}
+                      >
+                        {clearingErrors ? "Clearing..." : "Clear"}
+                      </Button>
+                    </div>
+                  </div>
+                  {recentErrors.length === 0 ? (
                   <p className="text-xs text-muted-foreground">No recent client-side errors were logged.</p>
                 ) : (
                   <div className="space-y-2">
