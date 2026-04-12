@@ -11,8 +11,9 @@ import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
-import { getListingDetailImages } from "@/lib/listingImage";
+import { getListingDetailImages, getListingDetailPlaceholders } from "@/lib/listingImage";
 import { trackHandledError } from "@/lib/errorTracking";
+import { LqipImage } from "@/components/LqipImage";
 
 function formatPhone(phone: string): string | null {
   const digits = phone.replace(/\D/g, "");
@@ -186,6 +187,7 @@ const ProductDetail = () => {
   }
 
   const displayImages = getListingDetailImages(listing.category, listing.images);
+  const displayPlaceholders = getListingDetailPlaceholders(listing.category, listing.images);
   const hasImages = displayImages.length > 0;
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
@@ -400,15 +402,17 @@ const ProductDetail = () => {
           >
             {hasImages ? (
               <>
-                <img
+                <LqipImage
                   key={`${safeCurrentImage}-${imageAnimationClass}`}
                   src={displayImages[safeCurrentImage]}
+                  placeholderSrc={displayPlaceholders[safeCurrentImage] || displayImages[safeCurrentImage]}
                   alt={`${listing.title} - Image ${safeCurrentImage + 1}`}
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 896px"
-                  className={`h-full w-full object-cover ${imageAnimationClass}`}
+                  className="h-full w-full"
+                  imgClassName={`h-full w-full object-cover ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (
                   <>

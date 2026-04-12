@@ -7,7 +7,8 @@ import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
-import { getListingCoverImage } from "@/lib/listingImage";
+import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
+import { LqipImage } from "@/components/LqipImage";
 
 interface ProductCardProps {
   listing: Listing;
@@ -45,6 +46,7 @@ export function ProductCard({
   const shouldShowCondition = categoryUsesCondition(listing.category) && Boolean(listing.condition);
   const displayPrice = displayCategory === "Handwriting Service" ? `₹${listing.price}/page` : `₹${listing.price}`;
   const previewImage = getListingCoverImage(listing.category, listing.images);
+  const previewPlaceholder = getListingPreviewPlaceholders(listing.category, listing.images)[0] || previewImage;
   const hasImage = Boolean(previewImage);
 
   useEffect(() => {
@@ -140,14 +142,16 @@ export function ProductCard({
       <div className="glass flex min-h-[132px] overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:h-full sm:min-h-[116px] sm:block">
         <div className="relative w-[96px] shrink-0 overflow-hidden bg-muted sm:w-full sm:aspect-[4/3]">
           {hasImage ? (
-            <img
+            <LqipImage
               src={previewImage}
               alt={listing.title}
+              placeholderSrc={previewPlaceholder}
               loading={prioritizeImage ? "eager" : "lazy"}
               decoding="async"
               fetchPriority={prioritizeImage ? "high" : "auto"}
               sizes="(max-width: 639px) 96px, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="h-full min-h-[132px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
+              className="h-full min-h-[132px] w-full sm:min-h-0"
+              imgClassName="h-full min-h-[132px] w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:min-h-0"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

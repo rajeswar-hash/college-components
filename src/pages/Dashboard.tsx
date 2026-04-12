@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
-import { getListingCoverImage } from "@/lib/listingImage";
+import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
+import { LqipImage } from "@/components/LqipImage";
 
 interface ListingRow {
   id: string;
@@ -462,14 +463,17 @@ const Dashboard = () => {
             <div className="space-y-4">
               {myListings.map((listing) => {
                 const coverImage = getListingCoverImage(listing.category, listing.images);
+                const coverPlaceholder = getListingPreviewPlaceholders(listing.category, listing.images)[0] || coverImage;
                 return (
                 <div key={listing.id} className="glass rounded-xl p-4 flex items-center gap-4 animate-fade-in">
                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
                     {coverImage ? (
-                      <img
+                      <LqipImage
                         src={coverImage}
                         alt={listing.title}
-                        className="w-full h-full rounded-lg object-cover"
+                        placeholderSrc={coverPlaceholder}
+                        className="w-full h-full rounded-lg"
+                        imgClassName="w-full h-full rounded-lg object-cover"
                         loading="lazy"
                         decoding="async"
                       />

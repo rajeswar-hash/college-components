@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const LISTING_MEDIA_BUCKET = "listing-media";
 const STORAGE_PREVIEW_SIZE = 480;
 const STORAGE_DETAIL_SIZE = 1400;
+const STORAGE_TINY_SIZE = 36;
 
 const publicUrlCache = new Map<string, string>();
 
@@ -36,6 +37,34 @@ export function getListingImageUrl(imageRef?: string | null, variant: "preview" 
           height: STORAGE_DETAIL_SIZE,
           resize: "contain" as const,
           quality: 82,
+        };
+
+  const { data } = supabase.storage.from(LISTING_MEDIA_BUCKET).getPublicUrl(imageRef, { transform });
+  publicUrlCache.set(cacheKey, data.publicUrl);
+  return data.publicUrl;
+}
+
+export function getListingImagePlaceholderUrl(imageRef?: string | null, variant: "preview" | "detail" = "preview") {
+  if (!imageRef) return "";
+  if (!isStorageImagePath(imageRef)) return imageRef;
+
+  const cacheKey = `placeholder:${variant}:${imageRef}`;
+  const cached = publicUrlCache.get(cacheKey);
+  if (cached) return cached;
+
+  const transform =
+    variant === "preview"
+      ? {
+          width: STORAGE_TINY_SIZE,
+          height: STORAGE_TINY_SIZE,
+          resize: "cover" as const,
+          quality: 24,
+        }
+      : {
+          width: 48,
+          height: 48,
+          resize: "cover" as const,
+          quality: 28,
         };
 
   const { data } = supabase.storage.from(LISTING_MEDIA_BUCKET).getPublicUrl(imageRef, { transform });

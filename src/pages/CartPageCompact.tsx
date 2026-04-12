@@ -10,7 +10,8 @@ import { getSavedListingIds, toggleListingLike } from "@/lib/likes";
 import { normalizeCategory, normalizeCondition, type Listing } from "@/lib/types";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { getListingCoverImage } from "@/lib/listingImage";
+import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
+import { LqipImage } from "@/components/LqipImage";
 
 type SavedListing = Listing;
 
@@ -145,13 +146,22 @@ const CartPageCompact = () => {
             <div className="space-y-4">
               {items.map((item) => {
                 const cover = getListingCoverImage(item.category, item.images);
+                const coverPlaceholder = getListingPreviewPlaceholders(item.category, item.images)[0] || cover;
                 return (
                   <div key={item.id} className="glass rounded-xl border border-border/70 p-4 shadow-sm transition-shadow hover:shadow-md">
                     <div className="flex items-center gap-4">
                       <Link to={`/product/${item.id}`} className="block shrink-0">
                         <div className="h-16 w-16 overflow-hidden rounded-lg bg-muted">
                           {cover ? (
-                            <img src={cover} alt={item.title} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                            <LqipImage
+                              src={cover}
+                              alt={item.title}
+                              placeholderSrc={coverPlaceholder}
+                              className="h-full w-full"
+                              imgClassName="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">{item.category}</div>
                           )}

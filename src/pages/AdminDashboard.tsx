@@ -26,9 +26,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
-import { getListingCoverImage, getListingPreviewImages } from "@/lib/listingImage";
+import { getListingCoverImage, getListingPreviewImages, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
+import { LqipImage } from "@/components/LqipImage";
 
 interface ListingAdminRow {
   ai_verification_status: string | null;
@@ -137,6 +138,7 @@ export default function AdminDashboard() {
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const previewImages = previewListing ? getListingPreviewImages(previewListing.category, previewListing.images) : [];
+  const previewPlaceholders = previewListing ? getListingPreviewPlaceholders(previewListing.category, previewListing.images) : [];
 
   useEffect(() => {
     if (isPartnerModerator) {
@@ -772,10 +774,15 @@ export default function AdminDashboard() {
                     <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
                       {previewImages.length ? (
                         <>
-                          <img
+                          <LqipImage
                             src={previewImages[previewImageIndex]}
+                            placeholderSrc={previewPlaceholders[previewImageIndex] || previewImages[previewImageIndex]}
                             alt={`${previewListing.title} image ${previewImageIndex + 1}`}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full"
+                            imgClassName="h-full w-full object-cover"
+                            loading="eager"
+                            decoding="async"
+                            fetchPriority="high"
                           />
                           {previewImages.length > 1 && (
                             <>
@@ -831,7 +838,15 @@ export default function AdminDashboard() {
                             onClick={() => setPreviewImageIndex(index)}
                             className={`overflow-hidden rounded-xl border ${index === previewImageIndex ? "border-primary ring-2 ring-primary/20" : "border-border/70"}`}
                           >
-                            <img src={image} alt={`Preview thumbnail ${index + 1}`} className="aspect-square h-full w-full object-cover" />
+                            <LqipImage
+                              src={image}
+                              placeholderSrc={previewPlaceholders[index] || image}
+                              alt={`Preview thumbnail ${index + 1}`}
+                              className="aspect-square h-full w-full"
+                              imgClassName="aspect-square h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
                           </button>
                         ))}
                       </div>
@@ -1212,7 +1227,13 @@ export default function AdminDashboard() {
                         <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-slate-900/80">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
                             {getListingCoverImage(listing.category, listing.images) ? (
-                              <img src={getListingCoverImage(listing.category, listing.images)} alt={listing.title} className="h-full w-full object-cover" />
+                              <LqipImage
+                                src={getListingCoverImage(listing.category, listing.images)}
+                                placeholderSrc={getListingPreviewPlaceholders(listing.category, listing.images)[0] || getListingCoverImage(listing.category, listing.images)}
+                                alt={listing.title}
+                                className="h-full w-full"
+                                imgClassName="h-full w-full object-cover"
+                              />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                             )}
@@ -1248,7 +1269,13 @@ export default function AdminDashboard() {
                         <div key={listing.id} className="grid gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-destructive/10">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
                             {getListingCoverImage(listing.category, listing.images) ? (
-                              <img src={getListingCoverImage(listing.category, listing.images)} alt={listing.title} className="h-full w-full object-cover" />
+                              <LqipImage
+                                src={getListingCoverImage(listing.category, listing.images)}
+                                placeholderSrc={getListingPreviewPlaceholders(listing.category, listing.images)[0] || getListingCoverImage(listing.category, listing.images)}
+                                alt={listing.title}
+                                className="h-full w-full"
+                                imgClassName="h-full w-full object-cover"
+                              />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                             )}
@@ -1287,7 +1314,13 @@ export default function AdminDashboard() {
                         <div key={listing.id} className="grid gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[128px_1fr_auto] md:items-center dark:bg-slate-900/80">
                           <div className="h-28 overflow-hidden rounded-2xl bg-muted">
                             {getListingCoverImage(listing.category, listing.images) ? (
-                              <img src={getListingCoverImage(listing.category, listing.images)} alt={listing.title} className="h-full w-full object-cover" />
+                              <LqipImage
+                                src={getListingCoverImage(listing.category, listing.images)}
+                                placeholderSrc={getListingPreviewPlaceholders(listing.category, listing.images)[0] || getListingCoverImage(listing.category, listing.images)}
+                                alt={listing.title}
+                                className="h-full w-full"
+                                imgClassName="h-full w-full object-cover"
+                              />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No image</div>
                             )}
