@@ -10,8 +10,7 @@ import { supabase } from "./integrations/supabase/client";
 import { getListingCoverImage } from "./lib/listingImage";
 import { AppErrorBoundary } from "./components/AppErrorBoundary.tsx";
 import { installGlobalErrorTracking } from "./lib/errorTracking";
-import { LqipImage } from "./components/LqipImage.tsx";
-import { brandLogoPlaceholder, heroDesktopPlaceholder, heroMobilePlaceholder } from "./lib/staticImagePlaceholders";
+import { heroDesktopPlaceholder, heroMobilePlaceholder } from "./lib/staticImagePlaceholders";
 
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const STARTUP_IMAGE_PRELOAD_COUNT = 4;
@@ -42,15 +41,13 @@ function AppBootScreen() {
         <div className="absolute left-1/2 top-1/2 -z-10 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,hsla(210,88%,46%,0.28)_0%,hsla(208,90%,56%,0.16)_24%,hsla(206,92%,60%,0.08)_46%,hsla(206,92%,60%,0.03)_66%,transparent_82%)] blur-2xl sm:h-80 sm:w-80" />
         <div className="glass flex min-w-[272px] max-w-[84vw] flex-col items-center rounded-[24px] border-white/50 px-5 py-5 shadow-[0_18px_50px_hsla(210,78%,50%,0.08)] sm:min-w-[352px] sm:px-7 sm:py-6">
           <div className="flex items-center gap-3.5 sm:gap-4">
-            <LqipImage
+            <img
               src={brandLogoSrc}
               alt="CampusKart logo"
-              placeholderSrc={brandLogoPlaceholder}
               loading="eager"
               fetchPriority="high"
-              decoding="async"
-              className="h-14 w-14 rounded-[18px] shadow-[0_12px_26px_hsla(210,78%,50%,0.14)] sm:h-18 sm:w-18 sm:rounded-[22px]"
-              imgClassName="h-full w-full rounded-[18px] object-cover sm:rounded-[22px]"
+              decoding="sync"
+              className="h-14 w-14 rounded-[18px] object-cover shadow-[0_12px_26px_hsla(210,78%,50%,0.14)] sm:h-18 sm:w-18 sm:rounded-[22px]"
             />
             <div className="text-left">
               <h1 className="font-display text-[1.8rem] font-bold leading-none tracking-tight text-foreground sm:text-[2.2rem]">
@@ -106,7 +103,6 @@ function BootstrappedApp() {
       preloadImage(`${import.meta.env.BASE_URL}campuskart-logo.jpeg`);
       preloadImage(`${import.meta.env.BASE_URL}campus-hero-mobile.jpg`);
       preloadImage(`${import.meta.env.BASE_URL}campus-hero-desktop.jpg`);
-      preloadImage(brandLogoPlaceholder);
       preloadImage(heroMobilePlaceholder);
       preloadImage(heroDesktopPlaceholder);
 
