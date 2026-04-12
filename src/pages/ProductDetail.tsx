@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart } from "lucide-react";
+import { ArrowLeft, MapPin, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart, ImageIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -454,9 +454,10 @@ const ProductDetail = () => {
                 )}
               </>
             ) : (
-              <div className="flex h-full items-center justify-center">
-                <div className="h-24 w-24 rounded-2xl gradient-bg opacity-20" />
-                <span className="absolute text-sm font-medium text-muted-foreground">{displayCategory}</span>
+              <div className="flex h-full items-center justify-center bg-muted/80">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[22px] border border-border/60 bg-background/70 shadow-sm">
+                  <ImageIcon className="h-9 w-9 text-muted-foreground/70" />
+                </div>
               </div>
             )}
             {listing.sold && (

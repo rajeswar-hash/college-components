@@ -1,5 +1,5 @@
 import { Listing, categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
-import { Share2, ShoppingCart, Trash2 } from "lucide-react";
+import { ImageIcon, Share2, ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -154,11 +154,10 @@ export function ProductCard({
               imgClassName="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-xl gradient-bg opacity-20" />
-              <span className="absolute text-muted-foreground text-sm font-medium">
-                {displayCategory}
-              </span>
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/80">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/60 bg-background/70 shadow-sm">
+                <ImageIcon className="h-6 w-6 text-muted-foreground/70" />
+              </div>
             </div>
           )}
           {listing.sold && (
