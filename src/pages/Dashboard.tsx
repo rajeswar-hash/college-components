@@ -166,26 +166,34 @@ const Dashboard = () => {
     toast.success("Listing deleted");
   };
 
-  const handleMarkSold = async (id: string) => {
+  const handleSoldToggle = async (id: string, nextSoldState: boolean) => {
     if (updatingSoldId) return;
 
     setUpdatingSoldId(id);
     try {
       const { error } = await supabase
         .from("listings")
-        .update({ sold: true })
+        .update({ sold: nextSoldState })
         .eq("id", id)
         .eq("seller_id", supabaseUser?.id || "");
 
       if (error) throw error;
 
       setMyListings((prev) =>
-        prev.map((listing) => (listing.id === id ? { ...listing, sold: true } : listing))
+        prev.map((listing) => (listing.id === id ? { ...listing, sold: nextSoldState } : listing))
       );
-      toast.success("Marked as sold. Buyers will no longer see this item.");
+      toast.success(
+        nextSoldState
+          ? "Marked as sold. Buyers will no longer see this item."
+          : "Listing is active again and visible to buyers."
+      );
     } catch (error) {
-      trackHandledError("dashboard.mark-sold", error, { listingId: id, userId: supabaseUser?.id });
-      toast.error("Could not mark this listing as sold");
+      trackHandledError("dashboard.toggle-sold", error, {
+        listingId: id,
+        userId: supabaseUser?.id,
+        nextSoldState,
+      });
+      toast.error(`Could not ${nextSoldState ? "mark" : "unmark"} this listing as sold`);
     } finally {
       setUpdatingSoldId(null);
     }
@@ -470,7 +478,7 @@ const Dashboard = () => {
           </div>
 
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800">
-            Delete a listing as soon as it is sold. Sold items should not stay visible on the marketplace.
+            Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
           </div>
 
           {loading ? (
@@ -526,21 +534,24 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    {!listing.sold && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-emerald-500/25 text-emerald-700 hover:border-emerald-500/35 hover:text-emerald-800"
-                        onClick={() => handleMarkSold(listing.id)}
-                        disabled={updatingSoldId === listing.id}
-                      >
-                        {updatingSoldId === listing.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="w-4 h-4" />
-                        )}
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className={
+                        listing.sold
+                          ? "border-amber-500/25 text-amber-700 hover:border-amber-500/35 hover:text-amber-800"
+                          : "border-emerald-500/25 text-emerald-700 hover:border-emerald-500/35 hover:text-emerald-800"
+                      }
+                      onClick={() => handleSoldToggle(listing.id, !listing.sold)}
+                      disabled={updatingSoldId === listing.id}
+                    >
+                      {updatingSoldId === listing.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4" />
+                      )}
+                      <span className="ml-2">{listing.sold ? "Unmark Sold" : "Mark Sold"}</span>
+                    </Button>
                     <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleDelete(listing.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
