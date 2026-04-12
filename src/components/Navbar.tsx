@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { getSavedListingsCount, onCartUpdated } from "@/lib/likes";
+import { LqipImage } from "@/components/LqipImage";
+import { brandLogoPlaceholder } from "@/lib/staticImagePlaceholders";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isAdmin, deleteAccount } = useAuth();
@@ -148,10 +150,15 @@ export function Navbar() {
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 md:gap-3">
-            <img
+            <LqipImage
               src={brandLogoSrc}
               alt="CampusKart logo"
-              className="h-9 w-9 rounded-lg object-cover shadow-sm md:h-10 md:w-10"
+              placeholderSrc={brandLogoPlaceholder}
+              className="h-9 w-9 rounded-lg shadow-sm md:h-10 md:w-10"
+              imgClassName="h-full w-full rounded-lg object-cover"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
             <span className="font-display text-xl font-bold leading-none text-foreground md:flex md:h-10 md:items-center">
               Campus<span className="gradient-text">Kart</span>

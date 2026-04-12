@@ -14,6 +14,7 @@ import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listi
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
+import { avatarPlaceholder } from "@/lib/staticImagePlaceholders";
 
 interface ListingRow {
   id: string;
@@ -298,10 +299,12 @@ const Dashboard = () => {
                   <div className="relative h-20 w-20 shrink-0">
                     <div className="absolute inset-0 rounded-full bg-primary/10 blur-md" />
                     <div className="relative overflow-hidden rounded-full border border-white/80 bg-white shadow-[0_18px_32px_rgba(15,23,42,0.12)] ring-4 ring-white/75">
-                      <img
+                      <LqipImage
                         src={selectedAvatar}
                         alt="Profile avatar"
-                        className="h-20 w-20 object-cover"
+                        placeholderSrc={avatarPlaceholder}
+                        className="h-20 w-20"
+                        imgClassName="h-20 w-20 object-cover"
                         loading="lazy"
                         decoding="async"
                       />
@@ -414,10 +417,12 @@ const Dashboard = () => {
                         }`}
                       >
                         <div className="aspect-square overflow-hidden rounded-[18px] bg-white">
-                          <img
+                          <LqipImage
                             src={avatar.url}
                             alt="Profile avatar option"
-                            className="h-full w-full object-cover"
+                            placeholderSrc={avatarPlaceholder}
+                            className="h-full w-full"
+                            imgClassName="h-full w-full object-cover"
                             loading="lazy"
                             decoding="async"
                           />
