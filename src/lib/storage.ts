@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const LISTING_MEDIA_BUCKET = "listing-media";
 const STORAGE_PREVIEW_SIZE = 480;
-const STORAGE_DETAIL_SIZE = 1400;
+const STORAGE_DETAIL_SIZE = 1800;
 const STORAGE_TINY_SIZE = 36;
 
 const publicUrlCache = new Map<string, string>();
@@ -36,7 +36,7 @@ export function getListingImageUrl(imageRef?: string | null, variant: "preview" 
           width: STORAGE_DETAIL_SIZE,
           height: STORAGE_DETAIL_SIZE,
           resize: "contain" as const,
-          quality: 82,
+          quality: 92,
         };
 
   const { data } = supabase.storage.from(LISTING_MEDIA_BUCKET).getPublicUrl(imageRef, { transform });
