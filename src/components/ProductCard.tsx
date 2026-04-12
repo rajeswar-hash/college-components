@@ -1,5 +1,5 @@
 import { Listing, categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
-import { ImageIcon, Share2, ShoppingCart, Trash2 } from "lucide-react";
+import { Share2, ShoppingCart, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
@@ -36,6 +36,7 @@ export function ProductCard({
   deleting = false,
   prioritizeImage = false,
 }: ProductCardProps) {
+  const fallbackLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
   const { isAuthenticated, supabaseUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
@@ -155,9 +156,13 @@ export function ProductCard({
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-muted/80">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border/60 bg-background/70 shadow-sm">
-                <ImageIcon className="h-6 w-6 text-muted-foreground/70" />
-              </div>
+              <img
+                src={fallbackLogoSrc}
+                alt="CampusKart"
+                loading="eager"
+                decoding="async"
+                className="h-14 w-14 rounded-2xl border border-border/60 bg-background/80 object-cover shadow-sm"
+              />
             </div>
           )}
           {listing.sold && (
