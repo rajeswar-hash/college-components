@@ -176,6 +176,26 @@ const Index = () => {
         moderation_status: listing.moderation_status ?? "active",
       }));
 
+      const firstVisibleIds = nextListings
+        .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
+        .map((listing) => listing.id);
+
+      if (firstVisibleIds.length > 0) {
+        const { data: firstVisibleImages } = await supabase
+          .from("listings")
+          .select("id, images")
+          .in("id", firstVisibleIds);
+
+        if (firstVisibleImages?.length) {
+          const imageMap = new Map(firstVisibleImages.map((row) => [row.id, row.images || []]));
+          nextListings.forEach((listing) => {
+            if (imageMap.has(listing.id)) {
+              listing.images = imageMap.get(listing.id) || [];
+            }
+          });
+        }
+      }
+
       listingsCacheRef.current.set(canonicalCollege, nextListings);
       return nextListings;
     })();
