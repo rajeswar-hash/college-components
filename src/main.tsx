@@ -106,19 +106,7 @@ function BootstrappedApp() {
       preloadImage(heroMobilePlaceholder);
       preloadImage(heroDesktopPlaceholder);
 
-      await Promise.allSettled([
-        loadInstitutionNames(),
-        import("./pages/AboutPage"),
-        import("./pages/HelpPage"),
-        import("./pages/ContactPage"),
-        import("./pages/TermsPage"),
-        import("./pages/PrivacyPage"),
-        import("./pages/SellPage"),
-        import("./pages/CartPageCompact"),
-        import("./pages/Dashboard"),
-        import("./pages/AdminDashboard"),
-        import("./pages/ProductDetail"),
-      ]);
+      await loadInstitutionNames();
 
       if (cancelled) return;
 

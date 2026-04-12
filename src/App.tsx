@@ -1,9 +1,9 @@
 import { Suspense, lazy } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import Index from "./pages/Index";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
 
+const Index = lazy(() => import("./pages/Index"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
