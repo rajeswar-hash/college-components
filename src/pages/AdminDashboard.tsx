@@ -291,6 +291,11 @@ export default function AdminDashboard() {
   const usageLabel =
     usagePercent >= 85 ? "Critical watch" : usagePercent >= 60 ? "Growing steadily" : "Healthy capacity";
 
+  const getListingSaleMeta = (sold: boolean) =>
+    sold
+      ? { label: "Sold", className: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-200" }
+      : { label: "Active", className: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-200" };
+
   const openSupabasePage = (path: string) => {
     window.open(`https://supabase.com/dashboard/project/${PROJECT_ID}/${path}`, "_blank", "noopener,noreferrer");
   };
@@ -680,8 +685,16 @@ export default function AdminDashboard() {
                   <Badge variant="secondary" className="text-[10px]">Inventory</Badge>
                 </div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Active vs sold</p>
-                <p className="mt-1 font-display text-xl font-bold text-foreground">{activeListings}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{soldListings} sold items archived</p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-300">Active</p>
+                    <p className="mt-1 font-display text-lg font-bold text-foreground">{activeListings}</p>
+                  </div>
+                  <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-600 dark:text-amber-300">Sold</p>
+                    <p className="mt-1 font-display text-lg font-bold text-foreground">{soldListings}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
             <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
@@ -1239,7 +1252,12 @@ export default function AdminDashboard() {
                             )}
                           </div>
                           <div className="min-w-0 space-y-2">
-                            <p className="text-sm font-semibold text-foreground">{listing.title}</p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-semibold text-foreground">{listing.title}</p>
+                              <Badge variant="outline" className={getListingSaleMeta(listing.sold).className}>
+                                {getListingSaleMeta(listing.sold).label}
+                              </Badge>
+                            </div>
                             <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">{listing.description}</p>
                             <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
                           </div>
@@ -1284,6 +1302,9 @@ export default function AdminDashboard() {
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="text-sm font-semibold text-foreground">{listing.title}</p>
                               <Badge variant="destructive" className="text-[10px]">10h+ pending</Badge>
+                              <Badge variant="outline" className={getListingSaleMeta(listing.sold).className}>
+                                {getListingSaleMeta(listing.sold).label}
+                              </Badge>
                             </div>
                             <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">{listing.description}</p>
                             <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
@@ -1329,6 +1350,9 @@ export default function AdminDashboard() {
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="text-sm font-semibold text-foreground">{listing.title}</p>
                               <Badge variant={listing.moderation_status === "hidden" ? "destructive" : "secondary"} className="text-[10px] capitalize">{listing.moderation_status}</Badge>
+                              <Badge variant="outline" className={getListingSaleMeta(listing.sold).className}>
+                                {getListingSaleMeta(listing.sold).label}
+                              </Badge>
                             </div>
                             <p className="line-clamp-3 text-xs leading-5 text-muted-foreground">{listing.description}</p>
                             <p className="text-sm font-semibold text-foreground">Rs. {Number(listing.price).toLocaleString("en-IN")}</p>
