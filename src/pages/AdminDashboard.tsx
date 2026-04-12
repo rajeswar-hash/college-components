@@ -99,6 +99,8 @@ const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const SUPABASE_BILLING_URL = "https://supabase.com/dashboard/org/ponqczgkbajoevlbqvny/billing";
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
+const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
+const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
 
 function byteSize(value: string) {
   return new TextEncoder().encode(value).length;
@@ -137,8 +139,16 @@ export default function AdminDashboard() {
   const [healthError, setHealthError] = useState("");
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
+  const isMainAdmin = user?.email?.trim().toLowerCase() === MAIN_ADMIN_EMAIL;
   const previewImages = previewListing ? getListingPreviewImages(previewListing.category, previewListing.images) : [];
   const previewPlaceholders = previewListing ? getListingPreviewPlaceholders(previewListing.category, previewListing.images) : [];
+
+  useEffect(() => {
+    if (!isMainAdmin) return;
+    if (localStorage.getItem(MAIN_ADMIN_PIN_UNLOCK_KEY) === "true") return;
+    navigate("/dashboard", { replace: true });
+    toast.error("Unlock the admin panel from your dashboard first.");
+  }, [isMainAdmin, navigate]);
 
   useEffect(() => {
     if (isPartnerModerator) {

@@ -8,7 +8,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, Loader2, Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CheckCircle2, KeyRound, Loader2, Lock, Moon, Pencil, Package, Plus, Save, Shield, Sparkles, Sun, Trash2, Unlock, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { deleteListingImages } from "@/lib/storage";
@@ -71,15 +72,37 @@ function getDefaultAvatar(name?: string | null, email?: string | null) {
   return PROFILE_AVATARS[index]?.url || PROFILE_AVATARS[0].url;
 }
 
+const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
+const MAIN_ADMIN_PIN_HASH_KEY = "campuskart-main-admin-pin-hash";
+const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
+
+async function hashAdminPin(pin: string) {
+  const encoded = new TextEncoder().encode(pin);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest))
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 const Dashboard = () => {
   const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile, loading: authLoading } = useAuth();
   const { theme, setTheme } = useThemeMode();
   const navigate = useNavigate();
+  const isMainAdmin = user?.email?.trim().toLowerCase() === MAIN_ADMIN_EMAIL;
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingSoldId, setUpdatingSoldId] = useState<string | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [hasAdminPin, setHasAdminPin] = useState(false);
+  const [adminPanelUnlocked, setAdminPanelUnlocked] = useState(false);
+  const [adminPin, setAdminPin] = useState("");
+  const [newAdminPin, setNewAdminPin] = useState("");
+  const [confirmAdminPin, setConfirmAdminPin] = useState("");
+  const [resetCurrentPin, setResetCurrentPin] = useState("");
+  const [resetNewPin, setResetNewPin] = useState("");
+  const [resetConfirmPin, setResetConfirmPin] = useState("");
+  const [savingAdminPin, setSavingAdminPin] = useState(false);
   const [banState, setBanState] = useState<{ isBanned: boolean; reason: string | null }>({
     isBanned: false,
     reason: null,
@@ -103,7 +126,7 @@ const Dashboard = () => {
   }, [user]);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && !isMainAdmin) {
       navigate("/admin", { replace: true });
       return;
     }
@@ -132,7 +155,18 @@ const Dashboard = () => {
       setLoading(false);
     };
     fetchListings();
-  }, [isAdmin, navigate, supabaseUser]);
+  }, [isAdmin, isMainAdmin, navigate, supabaseUser]);
+
+  useEffect(() => {
+    if (!isMainAdmin) {
+      setHasAdminPin(false);
+      setAdminPanelUnlocked(false);
+      return;
+    }
+
+    setHasAdminPin(!!localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY));
+    setAdminPanelUnlocked(localStorage.getItem(MAIN_ADMIN_PIN_UNLOCK_KEY) === "true");
+  }, [isMainAdmin]);
 
   const activeListings = myListings.filter((listing) => !listing.sold).length;
   const soldListings = myListings.filter((listing) => listing.sold).length;
@@ -249,6 +283,103 @@ const Dashboard = () => {
       avatar_url: user?.avatar_url || "",
     });
     setIsEditingProfile(false);
+  };
+
+  const validatePinFormat = (pin: string) => /^\d{4,8}$/.test(pin);
+
+  const handleCreateAdminPin = async () => {
+    if (!validatePinFormat(newAdminPin)) {
+      toast.error("Use a 4 to 8 digit PIN");
+      return;
+    }
+    if (newAdminPin !== confirmAdminPin) {
+      toast.error("PIN confirmation does not match");
+      return;
+    }
+
+    setSavingAdminPin(true);
+    try {
+      const hashedPin = await hashAdminPin(newAdminPin);
+      localStorage.setItem(MAIN_ADMIN_PIN_HASH_KEY, hashedPin);
+      localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
+      setHasAdminPin(true);
+      setAdminPanelUnlocked(true);
+      setNewAdminPin("");
+      setConfirmAdminPin("");
+      toast.success("Admin PIN created");
+    } finally {
+      setSavingAdminPin(false);
+    }
+  };
+
+  const handleUnlockAdminPanel = async () => {
+    const storedHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
+    if (!storedHash) {
+      toast.error("Create your admin PIN first");
+      return;
+    }
+    if (!validatePinFormat(adminPin)) {
+      toast.error("Enter your 4 to 8 digit PIN");
+      return;
+    }
+
+    setSavingAdminPin(true);
+    try {
+      const hashedPin = await hashAdminPin(adminPin);
+      if (hashedPin !== storedHash) {
+        toast.error("Incorrect PIN");
+        return;
+      }
+
+      localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
+      setAdminPanelUnlocked(true);
+      setAdminPin("");
+      toast.success("Admin panel unlocked");
+    } finally {
+      setSavingAdminPin(false);
+    }
+  };
+
+  const handleResetAdminPin = async () => {
+    const storedHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
+    if (!storedHash) {
+      toast.error("Create your admin PIN first");
+      return;
+    }
+    if (!validatePinFormat(resetCurrentPin) || !validatePinFormat(resetNewPin)) {
+      toast.error("Use a 4 to 8 digit PIN");
+      return;
+    }
+    if (resetNewPin !== resetConfirmPin) {
+      toast.error("New PIN confirmation does not match");
+      return;
+    }
+
+    setSavingAdminPin(true);
+    try {
+      const currentHash = await hashAdminPin(resetCurrentPin);
+      if (currentHash !== storedHash) {
+        toast.error("Current PIN is incorrect");
+        return;
+      }
+
+      const nextHash = await hashAdminPin(resetNewPin);
+      localStorage.setItem(MAIN_ADMIN_PIN_HASH_KEY, nextHash);
+      localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
+      setAdminPanelUnlocked(true);
+      setResetCurrentPin("");
+      setResetNewPin("");
+      setResetConfirmPin("");
+      toast.success("Admin PIN updated");
+    } finally {
+      setSavingAdminPin(false);
+    }
+  };
+
+  const handleLockAdminPanel = () => {
+    localStorage.removeItem(MAIN_ADMIN_PIN_UNLOCK_KEY);
+    setAdminPanelUnlocked(false);
+    toast.success("Admin panel locked");
   };
 
   if (authLoading) {
@@ -563,6 +694,105 @@ const Dashboard = () => {
                   </div>
                 </div>
               )})}
+            </div>
+          )}
+
+          {isMainAdmin && (
+            <div className="glass rounded-2xl border border-primary/10 p-5 shadow-[0_18px_60px_rgba(34,197,194,0.08)]">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <h2 className="font-display text-xl font-semibold text-foreground">Admin Panel Access</h2>
+                  </div>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Your main admin account uses the normal dashboard first. Open the admin panel only after PIN verification.
+                  </p>
+                </div>
+                {adminPanelUnlocked && (
+                  <Button onClick={() => navigate("/admin")} className="gradient-bg border-0 text-primary-foreground hover:opacity-90">
+                    <Unlock className="mr-2 h-4 w-4" />
+                    Open Admin Panel
+                  </Button>
+                )}
+              </div>
+
+              {!hasAdminPin ? (
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  <Input
+                    value={newAdminPin}
+                    onChange={(event) => setNewAdminPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                    placeholder="Set 4-8 digit PIN"
+                    inputMode="numeric"
+                  />
+                  <Input
+                    value={confirmAdminPin}
+                    onChange={(event) => setConfirmAdminPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                    placeholder="Confirm PIN"
+                    inputMode="numeric"
+                  />
+                  <Button onClick={handleCreateAdminPin} disabled={savingAdminPin}>
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    {savingAdminPin ? "Saving..." : "Create PIN"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-5 space-y-4">
+                  {!adminPanelUnlocked && (
+                    <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                      <Input
+                        value={adminPin}
+                        onChange={(event) => setAdminPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                        placeholder="Enter admin PIN"
+                        inputMode="numeric"
+                      />
+                      <Button onClick={handleUnlockAdminPanel} disabled={savingAdminPin}>
+                        <Unlock className="mr-2 h-4 w-4" />
+                        {savingAdminPin ? "Checking..." : "Unlock Admin Panel"}
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Reset admin PIN</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Use your current PIN once, then set a new one.</p>
+                      </div>
+                      {adminPanelUnlocked && (
+                        <Button variant="outline" onClick={handleLockAdminPanel}>
+                          <Lock className="mr-2 h-4 w-4" />
+                          Lock
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <Input
+                        value={resetCurrentPin}
+                        onChange={(event) => setResetCurrentPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                        placeholder="Current PIN"
+                        inputMode="numeric"
+                      />
+                      <Input
+                        value={resetNewPin}
+                        onChange={(event) => setResetNewPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                        placeholder="New PIN"
+                        inputMode="numeric"
+                      />
+                      <Input
+                        value={resetConfirmPin}
+                        onChange={(event) => setResetConfirmPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                        placeholder="Confirm new PIN"
+                        inputMode="numeric"
+                      />
+                    </div>
+                    <Button className="mt-3" variant="outline" onClick={handleResetAdminPin} disabled={savingAdminPin}>
+                      <KeyRound className="mr-2 h-4 w-4" />
+                      {savingAdminPin ? "Updating..." : "Reset PIN"}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

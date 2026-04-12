@@ -34,6 +34,9 @@ export function Navbar() {
   const lockedScrollY = useRef(0);
   const navigate = useNavigate();
   const location = useLocation();
+  const isMainAdmin = user?.email?.trim().toLowerCase() === "rajeswarbind39@gmail.com";
+  const dashboardRoute = isAdmin && !isMainAdmin ? "/admin" : "/dashboard";
+  const dashboardLabel = isAdmin && !isMainAdmin ? "Admin Panel" : "Dashboard";
 
   const isActive = (path: string) => location.pathname === path;
   const brandLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
@@ -124,6 +127,9 @@ export function Navbar() {
   const handleLogout = async () => {
     setShowSignOutConfirm(false);
     setMobileMenu(false);
+    if (isMainAdmin) {
+      localStorage.removeItem("campuskart-main-admin-pin-unlocked");
+    }
     await logout();
     navigate("/");
   };
@@ -256,8 +262,8 @@ export function Navbar() {
             {isAuthenticated && (
               <>
                 <Link to={isAdmin ? "/admin" : "/dashboard"}>
-                  <Button variant="ghost" size="sm" className={navButtonClass(isAdmin ? "/admin" : "/dashboard")}>
-                    {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} {isAdmin ? "Admin Panel" : "Dashboard"}
+                  <Button variant="ghost" size="sm" className={navButtonClass(dashboardRoute)}>
+                    {isAdmin && !isMainAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} {dashboardLabel}
                   </Button>
                 </Link>
                 <Button variant="ghost" size="sm" onClick={() => setShowSignOutConfirm(true)}>
@@ -319,9 +325,9 @@ export function Navbar() {
                   <Plus className="w-4 h-4 mr-1" /> Sell Item
                 </Button>
                 {isAuthenticated && (
-                  <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={() => setMobileMenu(false)}>
-                    <Button variant="ghost" className={`w-full justify-start ${navButtonClass(isAdmin ? "/admin" : "/dashboard")}`}>
-                      {isAdmin ? <Shield className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />} {isAdmin ? "Admin Panel" : "Dashboard"}
+                  <Link to={dashboardRoute} onClick={() => setMobileMenu(false)}>
+                    <Button variant="ghost" className={`w-full justify-start ${navButtonClass(dashboardRoute)}`}>
+                      {isAdmin && !isMainAdmin ? <Shield className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />} {dashboardLabel}
                     </Button>
                   </Link>
                 )}
