@@ -19,7 +19,7 @@ import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
-import { collegeBannerPlaceholder, heroDesktopPlaceholder, heroMobilePlaceholder } from "@/lib/staticImagePlaceholders";
+import { heroDesktopPlaceholder, heroMobilePlaceholder } from "@/lib/staticImagePlaceholders";
 
 interface ListingRow {
   moderation_status?: string;
@@ -667,15 +667,13 @@ const Index = () => {
                   <Card className="relative z-20 mx-auto mt-[62px] max-w-[332px] border-white/90 bg-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] dark:border-white/10 dark:bg-slate-950/90 dark:shadow-[0_22px_50px_rgba(2,6,23,0.5)] sm:mt-[108px] sm:max-w-[430px]">
                     <CardContent className="space-y-4 px-4 py-5 text-center sm:px-5 sm:py-6">
                       <div className="inline-flex w-full max-w-[292px] items-center justify-center gap-3 rounded-[16px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(59,130,246,0.10))] px-4 py-2.5 text-left shadow-[0_10px_24px_rgba(20,184,166,0.08)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(20,184,166,0.16),rgba(30,41,59,0.9),rgba(59,130,246,0.2))] dark:shadow-[0_10px_24px_rgba(2,6,23,0.28)] sm:max-w-[346px] sm:justify-center sm:gap-4 sm:px-5">
-                        <LqipImage
+                        <img
                           src={`${import.meta.env.BASE_URL}college-banner-icon.jpeg`}
-                          placeholderSrc={collegeBannerPlaceholder}
                           alt="College icon"
-                          className="ml-2 h-9 w-9 shrink-0 rounded-[10px] sm:ml-0 sm:h-10 sm:w-10"
-                          imgClassName="h-full w-full rounded-[10px] object-cover"
                           loading="eager"
                           decoding="async"
                           fetchPriority="high"
+                          className="ml-2 h-9 w-9 shrink-0 rounded-[10px] object-cover sm:ml-0 sm:h-10 sm:w-10"
                         />
                         <p className="flex-1 text-center text-[12px] leading-4 text-foreground/68 dark:text-slate-300/78 sm:flex-none sm:text-center sm:text-[13px] sm:leading-[1.1rem]">
                           <span className="block text-[15px] font-bold uppercase tracking-[0.08em] text-foreground dark:text-slate-50 sm:text-[16px]">SELECT YOUR COLLEGE</span>
