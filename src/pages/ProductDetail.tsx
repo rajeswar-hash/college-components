@@ -408,20 +408,13 @@ const ProductDetail = () => {
 
         <div className="animate-fade-in grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
           <div
-            className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:sticky lg:top-24"
+            className="relative aspect-square overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:sticky lg:top-24"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
             {hasImages ? (
               <>
-                <img
-                  src={displayPlaceholders[safeCurrentImage] || displayImages[safeCurrentImage]}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 h-full w-full scale-110 object-cover blur-3xl opacity-55"
-                />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22),transparent_62%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_62%)]" />
                 <LqipImage
                   key={`${safeCurrentImage}-${imageAnimationClass}`}
                   src={displayImages[safeCurrentImage]}
@@ -431,8 +424,8 @@ const ProductDetail = () => {
                   decoding="async"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 896px"
-                  className="relative h-full w-full bg-transparent"
-                  imgClassName={`h-full w-full object-contain p-2 sm:p-3 ${imageAnimationClass}`}
+                  className="h-full w-full bg-muted"
+                  imgClassName={`h-full w-full object-cover ${imageAnimationClass}`}
                 />
                 {hasMultipleImages && (
                   <>
