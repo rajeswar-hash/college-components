@@ -157,7 +157,11 @@ const Index = () => {
       }
 
       const nextListings: ListingRow[] = data
-        .filter((listing) => !["pending_review", "rejected"].includes(listing.moderation_status || "active"))
+        .filter(
+          (listing) =>
+            !listing.sold &&
+            !["pending_review", "rejected"].includes(listing.moderation_status || "active")
+        )
         .map((listing) => ({
         ...listing,
         images: [],

@@ -173,6 +173,7 @@ const ProductDetail = () => {
 
   const isOwnListing = !!supabaseUser && supabaseUser.id === listing.seller_id;
   const hiddenFromPublic = ["pending_review", "rejected"].includes(listing.moderation_status || "active");
+  const soldAndHiddenFromBuyers = listing.sold && !isOwnListing && !isAdmin;
 
   if (hiddenFromPublic && !isOwnListing && !isAdmin) {
     return (
@@ -180,6 +181,18 @@ const ProductDetail = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground text-lg">This listing is under review and is not public yet.</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Go Home</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (soldAndHiddenFromBuyers) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground text-lg">This listing has been marked sold and is no longer public.</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Go Home</Button>
         </div>
       </div>

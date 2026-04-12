@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
+import { CheckCircle2, Loader2, Moon, Pencil, Package, Plus, Save, Sparkles, Sun, Trash2, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { deleteListingImages } from "@/lib/storage";
@@ -76,6 +76,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [myListings, setMyListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingSoldId, setUpdatingSoldId] = useState<string | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [banState, setBanState] = useState<{ isBanned: boolean; reason: string | null }>({
@@ -163,6 +164,31 @@ const Dashboard = () => {
     void deleteListingImages(target?.images);
     setMyListings((prev) => prev.filter((l) => l.id !== id));
     toast.success("Listing deleted");
+  };
+
+  const handleMarkSold = async (id: string) => {
+    if (updatingSoldId) return;
+
+    setUpdatingSoldId(id);
+    try {
+      const { error } = await supabase
+        .from("listings")
+        .update({ sold: true })
+        .eq("id", id)
+        .eq("seller_id", supabaseUser?.id || "");
+
+      if (error) throw error;
+
+      setMyListings((prev) =>
+        prev.map((listing) => (listing.id === id ? { ...listing, sold: true } : listing))
+      );
+      toast.success("Marked as sold. Buyers will no longer see this item.");
+    } catch (error) {
+      trackHandledError("dashboard.mark-sold", error, { listingId: id, userId: supabaseUser?.id });
+      toast.error("Could not mark this listing as sold");
+    } finally {
+      setUpdatingSoldId(null);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -500,6 +526,21 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <div className="flex gap-2 shrink-0">
+                    {!listing.sold && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-emerald-500/25 text-emerald-700 hover:border-emerald-500/35 hover:text-emerald-800"
+                        onClick={() => handleMarkSold(listing.id)}
+                        disabled={updatingSoldId === listing.id}
+                      >
+                        {updatingSoldId === listing.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleDelete(listing.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>

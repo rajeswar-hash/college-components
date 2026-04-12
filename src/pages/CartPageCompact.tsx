@@ -44,6 +44,7 @@ const CartPageCompact = () => {
           .from("listings")
           .select("id, title, description, price, category, condition, images, seller_id, college, created_at, sold, likes")
           .in("id", listingIds)
+          .eq("sold", false)
           .order("created_at", { ascending: false });
 
         if (error || !data) throw error;
