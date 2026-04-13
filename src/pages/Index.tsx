@@ -365,26 +365,6 @@ const Index = () => {
   }, [resetCollegeSelection, selectedCollege]);
 
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const nextState = event.state as { campuskartCollegeView?: string } | null;
-
-      if (nextState?.campuskartCollegeView) {
-        const nextCollege = canonicalInstitutionName(nextState.campuskartCollegeView);
-        setSelectedCollege(nextCollege);
-        setCollegeQuery(nextCollege);
-        return;
-      }
-
-      if (selectedCollege) {
-        resetCollegeSelection();
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [resetCollegeSelection, selectedCollege]);
-
-  useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 640px)");
     const sync = () => setIsDesktopHero(mediaQuery.matches);
 
