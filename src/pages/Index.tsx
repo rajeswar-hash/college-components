@@ -172,7 +172,7 @@ const Index = () => {
 
       const primaryResponse = await supabase
         .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
+        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status, images")
         .eq("college", canonicalCollege)
         .order("created_at", { ascending: false });
 
@@ -182,7 +182,7 @@ const Index = () => {
       if (error) {
         const fallbackResponse = await supabase
           .from("listings")
-          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
+          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, images")
           .eq("college", canonicalCollege)
           .order("created_at", { ascending: false });
         data = fallbackResponse.data;
@@ -201,32 +201,12 @@ const Index = () => {
         )
         .map((listing) => ({
         ...listing,
-        images: [],
+        images: listing.images || [],
         college: canonicalInstitutionName(listing.college),
         seller_name: "",
         seller_phone: "",
         moderation_status: listing.moderation_status ?? "active",
       }));
-
-      const firstVisibleIds = nextListings
-        .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
-        .map((listing) => listing.id);
-
-      if (firstVisibleIds.length > 0) {
-        const { data: firstVisibleImages } = await supabase
-          .from("listings")
-          .select("id, images")
-          .in("id", firstVisibleIds);
-
-        if (firstVisibleImages?.length) {
-          const imageMap = new Map(firstVisibleImages.map((row) => [row.id, row.images || []]));
-          nextListings.forEach((listing) => {
-            if (imageMap.has(listing.id)) {
-              listing.images = imageMap.get(listing.id) || [];
-            }
-          });
-        }
-      }
 
       listingsCacheRef.current.set(canonicalCollege, nextListings);
       return nextListings;
