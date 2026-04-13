@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -91,6 +91,7 @@ function getPersistentListingOrderSeed() {
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<Condition | null>(null);
@@ -126,6 +127,35 @@ const Index = () => {
   const skipNextCollegeFetchRef = useRef(false);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const canDeleteFromHome = isAdmin && !isPartnerModerator;
+
+  const restoreCollegeView = useCallback((collegeName: string, allowCache = true) => {
+    const canonicalCollege = canonicalInstitutionName(collegeName);
+    const canRestoreCachedState =
+      allowCache &&
+      homeViewStateCache?.selectedCollege &&
+      normalizeInstitutionKey(homeViewStateCache.selectedCollege) === normalizeInstitutionKey(canonicalCollege);
+
+    if (canRestoreCachedState) {
+      const restoredListings = Array.isArray(homeViewStateCache.listings) ? homeViewStateCache.listings : [];
+
+      skipNextCollegeFetchRef.current = restoredListings.length > 0;
+      setSelectedCollege(canonicalCollege);
+      setCollegeQuery(homeViewStateCache.collegeQuery || canonicalCollege);
+      setSearch(homeViewStateCache.search || "");
+      setSelectedCategory(homeViewStateCache.selectedCategory || null);
+      setSelectedCondition(homeViewStateCache.selectedCondition || null);
+      setPriceRange(homeViewStateCache.priceRange || [MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+      setVisibleImageCount(
+        Math.max(INITIAL_VISIBLE_IMAGE_BATCH, homeViewStateCache.visibleImageCount || INITIAL_VISIBLE_IMAGE_BATCH)
+      );
+      setListings(restoredListings);
+      listingsCacheRef.current.set(canonicalCollege, restoredListings);
+      return;
+    }
+
+    setSelectedCollege(canonicalCollege);
+    setCollegeQuery(canonicalCollege);
+  }, []);
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
@@ -236,27 +266,14 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (homeViewStateCache?.selectedCollege) {
-      const canonicalCollege = canonicalInstitutionName(homeViewStateCache.selectedCollege);
-      const restoredListings = Array.isArray(homeViewStateCache.listings) ? homeViewStateCache.listings : [];
-
-      skipNextCollegeFetchRef.current = restoredListings.length > 0;
-      setSelectedCollege(canonicalCollege);
-      setCollegeQuery(homeViewStateCache.collegeQuery || canonicalCollege);
-      setSearch(homeViewStateCache.search || "");
-      setSelectedCategory(homeViewStateCache.selectedCategory || null);
-      setSelectedCondition(homeViewStateCache.selectedCondition || null);
-      setPriceRange(homeViewStateCache.priceRange || [MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
-      setVisibleImageCount(
-        Math.max(INITIAL_VISIBLE_IMAGE_BATCH, homeViewStateCache.visibleImageCount || INITIAL_VISIBLE_IMAGE_BATCH)
-      );
-      setListings(restoredListings);
-      listingsCacheRef.current.set(canonicalCollege, restoredListings);
+    const requestedCollege = searchParams.get("college");
+    if (requestedCollege) {
+      restoreCollegeView(requestedCollege);
     } else {
       const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
       if (savedCollege) {
-        setSelectedCollege(savedCollege);
-        setCollegeQuery(savedCollege);
+        restoreCollegeView(savedCollege, false);
+        setSearchParams({ college: canonicalInstitutionName(savedCollege) }, { replace: true });
       }
     }
 
@@ -264,7 +281,7 @@ const Index = () => {
     if (savedCooldown > Date.now()) {
       setRequestCooldownUntil(savedCooldown);
     }
-  }, []);
+  }, [restoreCollegeView, searchParams]);
 
   useEffect(() => {
     const warmInstitutions = () => {
@@ -330,6 +347,22 @@ const Index = () => {
     setSelectedCondition(null);
     setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
   }, []);
+
+  useEffect(() => {
+    const requestedCollege = searchParams.get("college");
+    const canonicalRequestedCollege = requestedCollege ? canonicalInstitutionName(requestedCollege) : null;
+
+    if (canonicalRequestedCollege) {
+      if (normalizeInstitutionKey(canonicalRequestedCollege) !== normalizeInstitutionKey(selectedCollege || "")) {
+        restoreCollegeView(canonicalRequestedCollege);
+      }
+      return;
+    }
+
+    if (selectedCollege) {
+      resetCollegeSelection();
+    }
+  }, [resetCollegeSelection, restoreCollegeView, searchParams, selectedCollege]);
 
   useEffect(() => {
     if (!selectedCollege) return;
@@ -536,9 +569,6 @@ const Index = () => {
 
   const handleCollegeSelect = (college: string) => {
     const canonicalCollege = canonicalInstitutionName(college);
-    if (!selectedCollege) {
-      window.history.pushState({ campuskartCollegeView: canonicalCollege }, "", window.location.href);
-    }
     setSelectedCollege(canonicalCollege);
     setCollegeQuery(canonicalCollege);
     setCollegeDropdownOpen(false);
@@ -547,10 +577,12 @@ const Index = () => {
     setSelectedCategory(null);
     setSelectedCondition(null);
     setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+    setSearchParams({ college: canonicalCollege });
   };
 
   const handleChangeCollege = () => {
     resetCollegeSelection();
+    setSearchParams({});
   };
 
   const handleCollegeInputFocus = () => {
