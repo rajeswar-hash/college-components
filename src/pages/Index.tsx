@@ -44,6 +44,7 @@ const VISIBLE_IMAGE_BATCH_STEP = 12;
 const MIN_FILTER_PRICE = 4;
 const MAX_FILTER_PRICE = 40000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
+const LISTING_ORDER_SEED_STORAGE_KEY = "campuskart-listing-order-seed";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
@@ -54,6 +55,24 @@ function hashListingOrder(value: string) {
     hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
   }
   return hash;
+}
+
+function getPersistentListingOrderSeed() {
+  if (typeof window === "undefined") {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  const existingSeed = sessionStorage.getItem(LISTING_ORDER_SEED_STORAGE_KEY);
+  const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  const isReload = navigationEntry?.type === "reload";
+
+  if (existingSeed && !isReload) {
+    return existingSeed;
+  }
+
+  const nextSeed = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  sessionStorage.setItem(LISTING_ORDER_SEED_STORAGE_KEY, nextSeed);
+  return nextSeed;
 }
 
 const Index = () => {
@@ -84,7 +103,7 @@ const Index = () => {
   const [isDesktopHero, setIsDesktopHero] = useState(
     typeof window !== "undefined" ? window.matchMedia("(min-width: 640px)").matches : false
   );
-  const [refreshOrderSeed] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const [refreshOrderSeed] = useState(() => getPersistentListingOrderSeed());
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const collegeInputRef = useRef<HTMLInputElement>(null);
