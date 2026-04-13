@@ -39,11 +39,23 @@ interface ListingRow {
   seller_phone?: string;
 }
 
+interface StoredHomeState {
+  selectedCollege: string | null;
+  collegeQuery: string;
+  search: string;
+  selectedCategory: Category | null;
+  selectedCondition: Condition | null;
+  priceRange: [number, number];
+  visibleImageCount: number;
+  listings: ListingRow[];
+}
+
 const INITIAL_VISIBLE_IMAGE_BATCH = 8;
 const VISIBLE_IMAGE_BATCH_STEP = 12;
 const MIN_FILTER_PRICE = 4;
 const MAX_FILTER_PRICE = 40000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
+const HOME_STATE_STORAGE_KEY = "campuskart-home-state";
 const LISTING_ORDER_SEED_STORAGE_KEY = "campuskart-listing-order-seed";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
@@ -110,6 +122,7 @@ const Index = () => {
   const listingsLoadMoreRef = useRef<HTMLDivElement>(null);
   const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
   const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
+  const skipNextCollegeFetchRef = useRef(false);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const canDeleteFromHome = isAdmin && !isPartnerModerator;
 
@@ -242,10 +255,36 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
-    if (savedCollege) {
-      setSelectedCollege(savedCollege);
-      setCollegeQuery(savedCollege);
+    const savedHomeStateRaw = sessionStorage.getItem(HOME_STATE_STORAGE_KEY);
+    if (savedHomeStateRaw) {
+      try {
+        const savedHomeState = JSON.parse(savedHomeStateRaw) as StoredHomeState;
+        if (savedHomeState.selectedCollege) {
+          const canonicalCollege = canonicalInstitutionName(savedHomeState.selectedCollege);
+          const restoredListings = Array.isArray(savedHomeState.listings) ? savedHomeState.listings : [];
+
+          skipNextCollegeFetchRef.current = restoredListings.length > 0;
+          setSelectedCollege(canonicalCollege);
+          setCollegeQuery(savedHomeState.collegeQuery || canonicalCollege);
+          setSearch(savedHomeState.search || "");
+          setSelectedCategory(savedHomeState.selectedCategory || null);
+          setSelectedCondition(savedHomeState.selectedCondition || null);
+          setPriceRange(savedHomeState.priceRange || [MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+          setVisibleImageCount(
+            Math.max(INITIAL_VISIBLE_IMAGE_BATCH, savedHomeState.visibleImageCount || INITIAL_VISIBLE_IMAGE_BATCH)
+          );
+          setListings(restoredListings);
+          listingsCacheRef.current.set(canonicalCollege, restoredListings);
+        }
+      } catch {
+        sessionStorage.removeItem(HOME_STATE_STORAGE_KEY);
+      }
+    } else {
+      const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
+      if (savedCollege) {
+        setSelectedCollege(savedCollege);
+        setCollegeQuery(savedCollege);
+      }
     }
 
     const savedCooldown = Number(localStorage.getItem(COLLEGE_REQUEST_COOLDOWN_KEY) || 0);
@@ -283,8 +322,33 @@ const Index = () => {
       localStorage.setItem(SELECTED_COLLEGE_STORAGE_KEY, selectedCollege);
     } else {
       localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
+      sessionStorage.removeItem(HOME_STATE_STORAGE_KEY);
     }
   }, [selectedCollege]);
+
+  useEffect(() => {
+    const nextState: StoredHomeState = {
+      selectedCollege,
+      collegeQuery,
+      search,
+      selectedCategory,
+      selectedCondition,
+      priceRange,
+      visibleImageCount,
+      listings,
+    };
+
+    sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(nextState));
+  }, [
+    collegeQuery,
+    listings,
+    priceRange,
+    search,
+    selectedCategory,
+    selectedCollege,
+    selectedCondition,
+    visibleImageCount,
+  ]);
 
   const resetCollegeSelection = useCallback(() => {
     setSelectedCollege(null);
@@ -378,6 +442,12 @@ const Index = () => {
       setListings([]);
       setLoading(false);
       setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
+      return;
+    }
+
+    if (skipNextCollegeFetchRef.current) {
+      skipNextCollegeFetchRef.current = false;
+      setLoading(false);
       return;
     }
 
