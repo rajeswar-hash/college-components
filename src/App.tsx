@@ -1,21 +1,24 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
+import { RouteModules } from "./lib/routePreload";
 
-const Index = lazy(() => import("./pages/Index"));
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const HelpPage = lazy(() => import("./pages/HelpPage"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
-const TermsPage = lazy(() => import("./pages/TermsPage"));
-const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
-const HelpBotPage = lazy(() => import("./pages/HelpBotPage"));
-const SellPage = lazy(() => import("./pages/SellPage"));
-const CartPage = lazy(() => import("./pages/CartPageCompact"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const ProductDetail = lazy(() => import("./pages/ProductDetail"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const {
+  Index,
+  ResetPasswordPage,
+  AboutPage,
+  HelpPage,
+  ContactPage,
+  TermsPage,
+  PrivacyPage,
+  HelpBotPage,
+  SellPage,
+  CartPage,
+  Dashboard,
+  AdminDashboard,
+  ProductDetail,
+  NotFound,
+} = RouteModules;
 
 const RouteLoader = () => (
   <div className="min-h-screen bg-background">

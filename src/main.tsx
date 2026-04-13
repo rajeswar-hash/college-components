@@ -11,6 +11,7 @@ import { getListingCoverImage } from "./lib/listingImage";
 import { AppErrorBoundary } from "./components/AppErrorBoundary.tsx";
 import { installGlobalErrorTracking } from "./lib/errorTracking";
 import { heroDesktopPlaceholder, heroMobilePlaceholder } from "./lib/staticImagePlaceholders";
+import { preloadCommonRoutes } from "./lib/routePreload";
 
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const STARTUP_IMAGE_PRELOAD_COUNT = 4;
@@ -90,6 +91,8 @@ function BootstrappedApp() {
 
   useEffect(() => {
     let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
 
     const preloadImage = (src: string) => {
       if (!src) return;
@@ -138,8 +141,25 @@ function BootstrappedApp() {
 
     void warmStartup();
 
+    const warmRoutes = () => {
+      if (cancelled) return;
+      preloadCommonRoutes();
+    };
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(warmRoutes, { timeout: 2200 });
+    } else {
+      timeoutId = window.setTimeout(warmRoutes, 1800);
+    }
+
     return () => {
       cancelled = true;
+      if (typeof idleId === "number" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (typeof timeoutId === "number") {
+        window.clearTimeout(timeoutId);
+      }
     };
   }, []);
 

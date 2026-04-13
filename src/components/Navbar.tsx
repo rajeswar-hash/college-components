@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { getSavedListingsCount, onCartUpdated } from "@/lib/likes";
+import { preloadRouteChunk } from "@/lib/routePreload";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isAdmin, deleteAccount } = useAuth();
@@ -46,6 +47,12 @@ export function Navbar() {
         ? "bg-primary/10 text-primary hover:bg-primary/15"
         : ""
     } md:transition-all md:duration-200 md:hover:-translate-y-0.5 md:hover:scale-[1.04] md:hover:shadow-[0_10px_24px_rgba(15,23,42,0.12)]`;
+
+  const getLinkPrefetchProps = (routeName: Parameters<typeof preloadRouteChunk>[0]) => ({
+    onMouseEnter: () => preloadRouteChunk(routeName),
+    onFocus: () => preloadRouteChunk(routeName),
+    onTouchStart: () => preloadRouteChunk(routeName),
+  });
 
   useEffect(() => {
     if (mobileMenu) {
@@ -170,19 +177,19 @@ export function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/">
+            <Link to="/" {...getLinkPrefetchProps("Index")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/")}>Home</Button>
             </Link>
-            <Link to="/about">
+            <Link to="/about" {...getLinkPrefetchProps("AboutPage")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/about")}>About</Button>
             </Link>
-            <Link to="/help">
+            <Link to="/help" {...getLinkPrefetchProps("HelpPage")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/help")}>Help</Button>
             </Link>
-            <Link to="/terms">
+            <Link to="/terms" {...getLinkPrefetchProps("TermsPage")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/terms")}>Terms</Button>
             </Link>
-            <Link to="/contact">
+            <Link to="/contact" {...getLinkPrefetchProps("ContactPage")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/contact")}>Contact</Button>
             </Link>
             {isAuthenticated && !isAdmin && (
@@ -233,11 +240,11 @@ export function Navbar() {
                 </AlertDialogContent>
               </AlertDialog>
             )}
-            <Link to="/privacy">
+            <Link to="/privacy" {...getLinkPrefetchProps("PrivacyPage")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/privacy")}>Privacy</Button>
             </Link>
             {isAuthenticated && (
-              <Link to="/cart">
+              <Link to="/cart" {...getLinkPrefetchProps("CartPage")}>
                 <Button variant="ghost" size="sm" className={`relative ${navButtonClass("/cart")}`}>
                   <ShoppingCart className="w-4 h-4 mr-1" /> Cart
                   {cartCount > 0 && (
@@ -251,6 +258,8 @@ export function Navbar() {
             <Button
               size="sm"
               className="gradient-bg text-primary-foreground border-0 hover:opacity-90"
+              onMouseEnter={() => preloadRouteChunk("SellPage")}
+              onFocus={() => preloadRouteChunk("SellPage")}
               onClick={() => {
                 if (isAuthenticated) {
                   navigate("/sell");
@@ -263,7 +272,7 @@ export function Navbar() {
             </Button>
             {isAuthenticated && (
               <>
-                <Link to={isAdmin ? "/admin" : "/dashboard"}>
+                <Link to={isAdmin ? "/admin" : "/dashboard"} {...getLinkPrefetchProps(isAdmin ? "AdminDashboard" : "Dashboard")}>
                   <Button variant="ghost" size="sm" className={navButtonClass(dashboardRoute)}>
                     {isAdmin && !isMainAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} {dashboardLabel}
                   </Button>
@@ -327,25 +336,25 @@ export function Navbar() {
                   <Plus className="w-4 h-4 mr-1" /> Sell Item
                 </Button>
                 {isAuthenticated && (
-                  <Link to={dashboardRoute} onClick={() => setMobileMenu(false)}>
+                <Link to={dashboardRoute} onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps(isAdmin ? "AdminDashboard" : "Dashboard")}>
                     <Button variant="ghost" className={`w-full justify-start ${navButtonClass(dashboardRoute)}`}>
                       {isAdmin && !isMainAdmin ? <Shield className="w-4 h-4 mr-2" /> : <User className="w-4 h-4 mr-2" />} {dashboardLabel}
                     </Button>
                   </Link>
                 )}
-                <Link to="/" onClick={() => setMobileMenu(false)}>
+                <Link to="/" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("Index")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/")}`}>Home</Button>
                 </Link>
-                <Link to="/about" onClick={() => setMobileMenu(false)}>
+                <Link to="/about" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("AboutPage")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/about")}`}>About</Button>
                 </Link>
-                <Link to="/help" onClick={() => setMobileMenu(false)}>
+                <Link to="/help" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("HelpPage")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/help")}`}>Help</Button>
                 </Link>
-                <Link to="/terms" onClick={() => setMobileMenu(false)}>
+                <Link to="/terms" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("TermsPage")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/terms")}`}>Terms & Conditions</Button>
                 </Link>
-                <Link to="/contact" onClick={() => setMobileMenu(false)}>
+                <Link to="/contact" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("ContactPage")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/contact")}`}>Contact Us</Button>
                 </Link>
                 {isAuthenticated && !isAdmin && (
@@ -396,11 +405,11 @@ export function Navbar() {
                     </AlertDialogContent>
                   </AlertDialog>
                 )}
-                <Link to="/privacy" onClick={() => setMobileMenu(false)}>
+                <Link to="/privacy" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("PrivacyPage")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/privacy")}`}>Privacy Policy</Button>
                 </Link>
                 {isAuthenticated && (
-                  <Link to="/cart" onClick={() => setMobileMenu(false)}>
+                  <Link to="/cart" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("CartPage")}>
                     <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/cart")}`}>
                       <ShoppingCart className="w-4 h-4 mr-2" /> Cart
                       {cartCount > 0 && (
