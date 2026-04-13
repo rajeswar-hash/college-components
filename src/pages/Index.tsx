@@ -55,11 +55,12 @@ const VISIBLE_IMAGE_BATCH_STEP = 12;
 const MIN_FILTER_PRICE = 4;
 const MAX_FILTER_PRICE = 40000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
-const HOME_STATE_STORAGE_KEY = "campuskart-home-state";
 const LISTING_ORDER_SEED_STORAGE_KEY = "campuskart-listing-order-seed";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
+
+let homeViewStateCache: StoredHomeState | null = null;
 
 function hashListingOrder(value: string) {
   let hash = 0;
@@ -235,30 +236,22 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const savedHomeStateRaw = sessionStorage.getItem(HOME_STATE_STORAGE_KEY);
-    if (savedHomeStateRaw) {
-      try {
-        const savedHomeState = JSON.parse(savedHomeStateRaw) as StoredHomeState;
-        if (savedHomeState.selectedCollege) {
-          const canonicalCollege = canonicalInstitutionName(savedHomeState.selectedCollege);
-          const restoredListings = Array.isArray(savedHomeState.listings) ? savedHomeState.listings : [];
+    if (homeViewStateCache?.selectedCollege) {
+      const canonicalCollege = canonicalInstitutionName(homeViewStateCache.selectedCollege);
+      const restoredListings = Array.isArray(homeViewStateCache.listings) ? homeViewStateCache.listings : [];
 
-          skipNextCollegeFetchRef.current = restoredListings.length > 0;
-          setSelectedCollege(canonicalCollege);
-          setCollegeQuery(savedHomeState.collegeQuery || canonicalCollege);
-          setSearch(savedHomeState.search || "");
-          setSelectedCategory(savedHomeState.selectedCategory || null);
-          setSelectedCondition(savedHomeState.selectedCondition || null);
-          setPriceRange(savedHomeState.priceRange || [MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
-          setVisibleImageCount(
-            Math.max(INITIAL_VISIBLE_IMAGE_BATCH, savedHomeState.visibleImageCount || INITIAL_VISIBLE_IMAGE_BATCH)
-          );
-          setListings(restoredListings);
-          listingsCacheRef.current.set(canonicalCollege, restoredListings);
-        }
-      } catch {
-        sessionStorage.removeItem(HOME_STATE_STORAGE_KEY);
-      }
+      skipNextCollegeFetchRef.current = restoredListings.length > 0;
+      setSelectedCollege(canonicalCollege);
+      setCollegeQuery(homeViewStateCache.collegeQuery || canonicalCollege);
+      setSearch(homeViewStateCache.search || "");
+      setSelectedCategory(homeViewStateCache.selectedCategory || null);
+      setSelectedCondition(homeViewStateCache.selectedCondition || null);
+      setPriceRange(homeViewStateCache.priceRange || [MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
+      setVisibleImageCount(
+        Math.max(INITIAL_VISIBLE_IMAGE_BATCH, homeViewStateCache.visibleImageCount || INITIAL_VISIBLE_IMAGE_BATCH)
+      );
+      setListings(restoredListings);
+      listingsCacheRef.current.set(canonicalCollege, restoredListings);
     } else {
       const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
       if (savedCollege) {
@@ -302,12 +295,12 @@ const Index = () => {
       localStorage.setItem(SELECTED_COLLEGE_STORAGE_KEY, selectedCollege);
     } else {
       localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
-      sessionStorage.removeItem(HOME_STATE_STORAGE_KEY);
+      homeViewStateCache = null;
     }
   }, [selectedCollege]);
 
   useEffect(() => {
-    const nextState: StoredHomeState = {
+    homeViewStateCache = {
       selectedCollege,
       collegeQuery,
       search,
@@ -317,8 +310,6 @@ const Index = () => {
       visibleImageCount,
       listings,
     };
-
-    sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(nextState));
   }, [
     collegeQuery,
     listings,
