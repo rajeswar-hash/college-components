@@ -394,7 +394,16 @@ const Index = () => {
   }, [resetCollegeSelection, selectedCollege]);
 
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (event: PopStateEvent) => {
+      const nextState = event.state as { campuskartCollegeView?: string } | null;
+
+      if (nextState?.campuskartCollegeView) {
+        const nextCollege = canonicalInstitutionName(nextState.campuskartCollegeView);
+        setSelectedCollege(nextCollege);
+        setCollegeQuery(nextCollege);
+        return;
+      }
+
       if (selectedCollege) {
         resetCollegeSelection();
       }
