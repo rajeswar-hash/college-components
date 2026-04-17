@@ -118,6 +118,7 @@ const Index = () => {
     typeof window !== "undefined" ? window.matchMedia("(min-width: 640px)").matches : false
   );
   const [refreshOrderSeed] = useState(() => getPersistentListingOrderSeed());
+  const requestedCollege = collegeParam ? canonicalInstitutionName(decodeURIComponent(collegeParam)) : null;
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const collegeWrapperRef = useRef<HTMLDivElement>(null);
   const collegeInputRef = useRef<HTMLInputElement>(null);
@@ -270,7 +271,6 @@ const Index = () => {
     if (didRestoreInitialCollegeRef.current) return;
     didRestoreInitialCollegeRef.current = true;
 
-    const requestedCollege = collegeParam ? decodeURIComponent(collegeParam) : null;
     if (requestedCollege) {
       restoreCollegeView(requestedCollege);
     } else {
@@ -285,7 +285,7 @@ const Index = () => {
     if (savedCooldown > Date.now()) {
       setRequestCooldownUntil(savedCooldown);
     }
-  }, [collegeParam, navigate, restoreCollegeView]);
+  }, [navigate, requestedCollege, restoreCollegeView]);
 
   useEffect(() => {
     const warmInstitutions = () => {
@@ -350,8 +350,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const requestedCollege = collegeParam ? decodeURIComponent(collegeParam) : null;
-    const canonicalRequestedCollege = requestedCollege ? canonicalInstitutionName(requestedCollege) : null;
+    const canonicalRequestedCollege = requestedCollege;
 
     if (canonicalRequestedCollege) {
       if (normalizeInstitutionKey(canonicalRequestedCollege) !== normalizeInstitutionKey(selectedCollege || "")) {
@@ -363,7 +362,7 @@ const Index = () => {
     if (selectedCollege) {
       resetCollegeSelection();
     }
-  }, [collegeParam, resetCollegeSelection, restoreCollegeView, selectedCollege]);
+  }, [requestedCollege, resetCollegeSelection, restoreCollegeView, selectedCollege]);
 
   useEffect(() => {
     if (!selectedCollege) return;
@@ -435,6 +434,9 @@ const Index = () => {
 
   useEffect(() => {
     if (!selectedCollege) {
+      if (requestedCollege) {
+        return;
+      }
       setListings([]);
       setLoading(false);
       setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
@@ -461,7 +463,7 @@ const Index = () => {
     };
 
     void fetchCollegeListings();
-  }, [fetchCollegeListingsData, selectedCollege]);
+  }, [fetchCollegeListingsData, requestedCollege, selectedCollege]);
 
   useEffect(() => {
     if (collegeResults.length === 0) return;
