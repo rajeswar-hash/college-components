@@ -56,6 +56,7 @@ const MIN_FILTER_PRICE = 4;
 const MAX_FILTER_PRICE = 40000;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const LISTING_ORDER_SEED_STORAGE_KEY = "campuskart-listing-order-seed";
+const LISTING_ORDER_ORIGIN_STORAGE_KEY = "campuskart-listing-order-origin";
 const COLLEGE_REQUEST_COOLDOWN_KEY = "campuskart-college-request-cooldown";
 const REQUEST_COOLDOWN_MS = 60 * 1000;
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
@@ -76,15 +77,16 @@ function getPersistentListingOrderSeed() {
   }
 
   const existingSeed = sessionStorage.getItem(LISTING_ORDER_SEED_STORAGE_KEY);
-  const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
-  const isReload = navigationEntry?.type === "reload";
+  const currentOrigin = String(performance.timeOrigin || Date.now());
+  const existingOrigin = sessionStorage.getItem(LISTING_ORDER_ORIGIN_STORAGE_KEY);
 
-  if (existingSeed && !isReload) {
+  if (existingSeed && existingOrigin === currentOrigin) {
     return existingSeed;
   }
 
   const nextSeed = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   sessionStorage.setItem(LISTING_ORDER_SEED_STORAGE_KEY, nextSeed);
+  sessionStorage.setItem(LISTING_ORDER_ORIGIN_STORAGE_KEY, currentOrigin);
   return nextSeed;
 }
 
