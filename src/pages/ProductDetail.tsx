@@ -1,5 +1,4 @@
 ﻿import { useParams, useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -50,7 +49,6 @@ const ProductDetail = () => {
   const { isAuthenticated, supabaseUser, isAdmin } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -400,21 +398,8 @@ const ProductDetail = () => {
     day: "numeric", month: "short", year: "numeric",
   });
 
-  const backTarget =
-    typeof location.state === "object" &&
-    location.state !== null &&
-    "from" in location.state &&
-    typeof (location.state as { from?: unknown }).from === "string"
-      ? (location.state as { from: string }).from
-      : null;
-
   const handleBack = () => {
-    if (backTarget) {
-      navigate(backTarget);
-      return;
-    }
-
-    navigate(-1);
+    navigate(`/college/${encodeURIComponent(listing.college)}`);
   };
 
   return (
