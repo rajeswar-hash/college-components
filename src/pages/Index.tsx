@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -91,7 +91,7 @@ function getPersistentListingOrderSeed() {
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { collegeParam } = useParams<{ collegeParam?: string }>();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<Condition | null>(null);
@@ -270,14 +270,14 @@ const Index = () => {
     if (didRestoreInitialCollegeRef.current) return;
     didRestoreInitialCollegeRef.current = true;
 
-    const requestedCollege = searchParams.get("college");
+    const requestedCollege = collegeParam ? decodeURIComponent(collegeParam) : null;
     if (requestedCollege) {
       restoreCollegeView(requestedCollege);
     } else {
       const savedCollege = localStorage.getItem(SELECTED_COLLEGE_STORAGE_KEY);
       if (savedCollege) {
         restoreCollegeView(savedCollege, false);
-        setSearchParams({ college: canonicalInstitutionName(savedCollege) }, { replace: true });
+        navigate(`/college/${encodeURIComponent(canonicalInstitutionName(savedCollege))}`, { replace: true });
       }
     }
 
@@ -285,7 +285,7 @@ const Index = () => {
     if (savedCooldown > Date.now()) {
       setRequestCooldownUntil(savedCooldown);
     }
-  }, [restoreCollegeView, searchParams, setSearchParams]);
+  }, [collegeParam, navigate, restoreCollegeView]);
 
   useEffect(() => {
     const warmInstitutions = () => {
@@ -353,7 +353,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    const requestedCollege = searchParams.get("college");
+    const requestedCollege = collegeParam ? decodeURIComponent(collegeParam) : null;
     const canonicalRequestedCollege = requestedCollege ? canonicalInstitutionName(requestedCollege) : null;
 
     if (canonicalRequestedCollege) {
@@ -366,7 +366,7 @@ const Index = () => {
     if (selectedCollege) {
       resetCollegeSelection();
     }
-  }, [resetCollegeSelection, restoreCollegeView, searchParams, selectedCollege]);
+  }, [collegeParam, resetCollegeSelection, restoreCollegeView, selectedCollege]);
 
   useEffect(() => {
     if (!selectedCollege) return;
@@ -581,14 +581,14 @@ const Index = () => {
     setSelectedCategory(null);
     setSelectedCondition(null);
     setPriceRange([MIN_FILTER_PRICE, MAX_FILTER_PRICE]);
-    setSearchParams({ college: canonicalCollege });
+    navigate(`/college/${encodeURIComponent(canonicalCollege)}`);
   };
 
   const handleChangeCollege = () => {
     localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
     homeViewStateCache = null;
     resetCollegeSelection();
-    setSearchParams({}, { replace: true });
+    navigate("/", { replace: true });
   };
 
   const handleCollegeInputFocus = () => {
