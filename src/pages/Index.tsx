@@ -314,9 +314,6 @@ const Index = () => {
   useEffect(() => {
     if (selectedCollege) {
       localStorage.setItem(SELECTED_COLLEGE_STORAGE_KEY, selectedCollege);
-    } else {
-      localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
-      homeViewStateCache = null;
     }
   }, [selectedCollege]);
 
@@ -383,6 +380,8 @@ const Index = () => {
       );
 
       if (!stillAvailable) {
+        localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
+        homeViewStateCache = null;
         resetCollegeSelection();
         toast.info("This college is no longer available, so we returned you to the homepage.");
       }
