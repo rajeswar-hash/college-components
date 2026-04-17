@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-const siteBase = process.env.VITE_SITE_BASE || "/";
+const siteBase = process.env.VITE_SITE_BASE || "./";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
