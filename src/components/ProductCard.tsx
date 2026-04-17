@@ -1,6 +1,6 @@
 import { Listing, categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Share2, ShoppingCart, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -38,6 +38,7 @@ export function ProductCard({
   prioritizeImage = false,
 }: ProductCardProps) {
   const fallbackLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
+  const location = useLocation();
   const { isAuthenticated, supabaseUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
@@ -142,6 +143,7 @@ export function ProductCard({
     <>
     <Link
       to={`/product/${listing.id}`}
+      state={{ from: `${location.pathname}${location.search}${location.hash}` }}
       className="group block h-full"
       onMouseEnter={() => preloadRouteChunk("ProductDetail")}
       onFocus={() => preloadRouteChunk("ProductDetail")}
