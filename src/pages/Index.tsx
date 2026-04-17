@@ -125,6 +125,7 @@ const Index = () => {
   const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
   const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
   const skipNextCollegeFetchRef = useRef(false);
+  const didRestoreInitialCollegeRef = useRef(false);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const canDeleteFromHome = isAdmin && !isPartnerModerator;
 
@@ -266,6 +267,9 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    if (didRestoreInitialCollegeRef.current) return;
+    didRestoreInitialCollegeRef.current = true;
+
     const requestedCollege = searchParams.get("college");
     if (requestedCollege) {
       restoreCollegeView(requestedCollege);
@@ -281,7 +285,7 @@ const Index = () => {
     if (savedCooldown > Date.now()) {
       setRequestCooldownUntil(savedCooldown);
     }
-  }, [restoreCollegeView, searchParams]);
+  }, [restoreCollegeView, searchParams, setSearchParams]);
 
   useEffect(() => {
     const warmInstitutions = () => {
@@ -581,8 +585,10 @@ const Index = () => {
   };
 
   const handleChangeCollege = () => {
+    localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
+    homeViewStateCache = null;
     resetCollegeSelection();
-    setSearchParams({});
+    setSearchParams({}, { replace: true });
   };
 
   const handleCollegeInputFocus = () => {
