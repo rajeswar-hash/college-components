@@ -321,6 +321,21 @@ export default function AdminDashboard() {
   }, [collegeList, collegeListSearch]);
   const soldListings = listings.filter((listing) => listing.sold).length;
   const averageListingValue = listings.length ? Math.round(totalListingValue / listings.length) : 0;
+  const collegesWithListings = useMemo(() => {
+    const grouped = listings.reduce<Record<string, number>>((accumulator, listing) => {
+      const collegeName = listing.college?.trim();
+      if (!collegeName) return accumulator;
+      accumulator[collegeName] = (accumulator[collegeName] || 0) + 1;
+      return accumulator;
+    }, {});
+
+    return Object.entries(grouped)
+      .map(([college, count]) => ({ college, count }))
+      .sort((left, right) => {
+        if (right.count !== left.count) return right.count - left.count;
+        return left.college.localeCompare(right.college);
+      });
+  }, [listings]);
   const usageTone =
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
   const usageLabel =
@@ -746,6 +761,45 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {isMainAdmin && (
+            <Card className="mt-4 overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-primary" /> Colleges with listings
+                    </CardTitle>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      All colleges that currently have items in the marketplace database.
+                    </p>
+                  </div>
+                  <Badge variant="secondary">{collegesWithListings.length} colleges</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {collegesWithListings.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No colleges have listings yet.</p>
+                ) : (
+                  <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                    {collegesWithListings.map(({ college, count }) => (
+                      <div
+                        key={college}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/70 px-3 py-3 shadow-sm dark:bg-slate-950/50"
+                      >
+                        <p className="min-w-0 flex-1 whitespace-normal break-words text-sm font-medium leading-5 text-foreground">
+                          {college}
+                        </p>
+                        <Badge variant="outline" className="shrink-0">
+                          {count} {count === 1 ? "item" : "items"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>}
 
