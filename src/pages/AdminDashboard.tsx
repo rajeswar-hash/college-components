@@ -127,6 +127,7 @@ export default function AdminDashboard() {
   const [pendingRemoveCollegeName, setPendingRemoveCollegeName] = useState<string | null>(null);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
+  const [showCollegesWithListings, setShowCollegesWithListings] = useState(false);
   const [collegeList, setCollegeList] = useState<string[]>([]);
   const [loadingColleges, setLoadingColleges] = useState(false);
   const [collegeListSearch, setCollegeListSearch] = useState("");
@@ -781,20 +782,22 @@ export default function AdminDashboard() {
                 {collegesWithListings.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No colleges have listings yet.</p>
                 ) : (
-                  <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                    {collegesWithListings.map(({ college, count }) => (
-                      <div
-                        key={college}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/70 px-3 py-3 shadow-sm dark:bg-slate-950/50"
-                      >
-                        <p className="min-w-0 flex-1 whitespace-normal break-words text-sm font-medium leading-5 text-foreground">
-                          {college}
-                        </p>
-                        <Badge variant="outline" className="shrink-0">
-                          {count} {count === 1 ? "item" : "items"}
-                        </Badge>
-                      </div>
-                    ))}
+                  <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {collegesWithListings.length} colleges currently have marketplace items.
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Open the full list to see each college name and its item count.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="h-10 shrink-0"
+                      onClick={() => setShowCollegesWithListings(true)}
+                    >
+                      View colleges
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -1005,6 +1008,33 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCollegesWithListings} onOpenChange={setShowCollegesWithListings}>
+        <DialogContent className="max-h-[88vh] overflow-y-auto rounded-3xl border-border/70 bg-background sm:max-w-3xl dark:bg-slate-950">
+          <DialogHeader className="pb-2">
+            <DialogTitle>Colleges with listings</DialogTitle>
+          </DialogHeader>
+          {collegesWithListings.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No colleges have listings yet.</p>
+          ) : (
+            <div className="grid gap-2 md:grid-cols-2">
+              {collegesWithListings.map(({ college, count }) => (
+                <div
+                  key={college}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/70 px-3 py-3 shadow-sm dark:bg-slate-900/80"
+                >
+                  <p className="min-w-0 flex-1 whitespace-normal break-words text-sm font-medium leading-5 text-foreground">
+                    {college}
+                  </p>
+                  <Badge variant="outline" className="shrink-0">
+                    {count} {count === 1 ? "item" : "items"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
           )}
         </DialogContent>
       </Dialog>
