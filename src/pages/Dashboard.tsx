@@ -11,10 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, KeyRound, Loader2, Lock, Moon, Pencil, Package, Plus, Save, Shield, Sparkles, Sun, Trash2, Unlock, User, X } from "lucide-react";
 import { toast } from "sonner";
-import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
+import { getListingCoverImage } from "@/lib/listingImage";
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
-import { LqipImage } from "@/components/LqipImage";
 import {
   extractBuiltInAvatarId,
   getAvatarStorageValue,
@@ -647,18 +646,15 @@ const Dashboard = () => {
             <div className="space-y-4">
               {myListings.map((listing, index) => {
                 const coverImage = getListingCoverImage(listing.category, listing.images);
-                const coverPlaceholder = getListingPreviewPlaceholders(listing.category, listing.images)[0] || coverImage;
                 return (
                 <div key={listing.id} className="glass animate-fade-in rounded-2xl border border-border/70 p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                       {coverImage ? (
-                        <LqipImage
+                        <img
                           src={coverImage}
                           alt={listing.title}
-                          placeholderSrc={coverPlaceholder}
-                          className="h-full w-full"
-                          imgClassName="h-full w-full object-cover"
+                          className="h-full w-full object-cover"
                           loading={index < 3 ? "eager" : "lazy"}
                           decoding="async"
                           fetchPriority={index < 2 ? "high" : "auto"}
