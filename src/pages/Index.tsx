@@ -202,7 +202,7 @@ const Index = () => {
 
       const primaryResponse = await supabase
         .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
+        .select("id, title, description, price, category, condition, images, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
         .eq("college", canonicalCollege)
         .order("created_at", { ascending: false });
 
@@ -212,7 +212,7 @@ const Index = () => {
       if (error) {
         const fallbackResponse = await supabase
           .from("listings")
-          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
+          .select("id, title, description, price, category, condition, images, seller_id, college, sold, likes, created_at")
           .eq("college", canonicalCollege)
           .order("created_at", { ascending: false });
         data = fallbackResponse.data;
