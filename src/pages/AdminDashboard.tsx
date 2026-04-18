@@ -97,7 +97,7 @@ interface FrontendErrorRow {
 
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
-const SUPABASE_BILLING_URL = "https://supabase.com/dashboard/org/ponqczgkbajoevlbqvny/billing";
+const GODADDY_DOMAIN_SETTINGS_URL = "https://dcc.godaddy.com/control/portfolio/campus-kart.in/settings?ventureId=d3acf6f8-981b-4484-a902-86992919704e&referrer=vh-quicklink&itc=mya_vh_buildwebsite_dashboard";
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
@@ -691,9 +691,9 @@ export default function AdminDashboard() {
                 </span>
                 <ArrowUpRight className="h-4 w-4" />
               </Button>
-              <Button className="gradient-bg h-10 justify-between border-0 text-xs text-primary-foreground hover:opacity-90 sm:text-sm" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
+              <Button className="gradient-bg h-10 justify-between border-0 text-xs text-primary-foreground hover:opacity-90 sm:text-sm" onClick={() => openExternalPage(GODADDY_DOMAIN_SETTINGS_URL)}>
                 <span className="flex items-center">
-                  <Wallet className="mr-2 h-4 w-4" /> Buy extra capacity
+                  <Wallet className="mr-2 h-4 w-4" /> Open domain settings
                 </span>
                 <ArrowUpRight className="h-4 w-4" />
               </Button>
@@ -1132,8 +1132,8 @@ export default function AdminDashboard() {
               <CardTitle>Admin actions & recent errors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage(SUPABASE_BILLING_URL)}>
-                Open billing page <ExternalLink className="h-4 w-4" />
+              <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage(GODADDY_DOMAIN_SETTINGS_URL)}>
+                Open domain renew settings <ExternalLink className="h-4 w-4" />
               </Button>
               <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage("https://supabase.com/docs/guides/platform/billing-on-supabase")}>
                 Open billing guide <ExternalLink className="h-4 w-4" />
