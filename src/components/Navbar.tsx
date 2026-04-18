@@ -51,7 +51,6 @@ export function Navbar() {
   const getLinkPrefetchProps = (routeName: Parameters<typeof preloadRouteChunk>[0]) => ({
     onMouseEnter: () => preloadRouteChunk(routeName),
     onFocus: () => preloadRouteChunk(routeName),
-    onTouchStart: () => preloadRouteChunk(routeName),
   });
 
   useEffect(() => {

@@ -147,7 +147,6 @@ export function ProductCard({
       className="group block h-full"
       onMouseEnter={() => preloadRouteChunk("ProductDetail")}
       onFocus={() => preloadRouteChunk("ProductDetail")}
-      onTouchStart={() => preloadRouteChunk("ProductDetail")}
     >
       <div className="glass flex min-h-[112px] overflow-hidden rounded-xl border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:h-full sm:min-h-[96px] sm:block">
         <div className="relative aspect-square w-[112px] shrink-0 overflow-hidden bg-muted sm:w-full">
