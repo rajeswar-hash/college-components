@@ -146,6 +146,7 @@ const Index = () => {
   const listingsLoadMoreRef = useRef<HTMLDivElement>(null);
   const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
   const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
+  const checkedMissingImageIdsRef = useRef<Set<string>>(new Set());
   const listingLoadRequestRef = useRef(0);
   const collegeSearchRequestRef = useRef(0);
   const skipNextCollegeFetchRef = useRef(false);
@@ -192,14 +193,21 @@ const Index = () => {
 
     if (error || !data) return;
 
-    const imageMap = new Map(data.map((row) => [row.id, row.images || []]));
+    const imageMap = new Map(
+      data
+        .map((row) => [row.id, row.images || []] as const)
+        .filter(([, images]) => images.length > 0)
+    );
+
+    if (imageMap.size === 0) return;
 
     listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
       let changed = false;
       const nextCachedListings = cachedListings.map((listing) => {
-        if (!imageMap.has(listing.id)) return listing;
+        const nextImages = imageMap.get(listing.id);
+        if (!nextImages) return listing;
         changed = true;
-        return { ...listing, images: imageMap.get(listing.id) };
+        return { ...listing, images: nextImages };
       });
 
       if (changed) {
@@ -208,9 +216,14 @@ const Index = () => {
     });
 
     setListings((prev) => {
-      return prev.map((listing) =>
-        imageMap.has(listing.id) ? { ...listing, images: imageMap.get(listing.id) } : listing
-      );
+      let changed = false;
+      const nextListings = prev.map((listing) => {
+        const nextImages = imageMap.get(listing.id);
+        if (!nextImages) return listing;
+        changed = true;
+        return { ...listing, images: nextImages };
+      });
+      return changed ? nextListings : prev;
     });
   }, []);
 
@@ -452,6 +465,7 @@ const Index = () => {
 
     const fetchCollegeListings = async () => {
       const requestId = ++listingLoadRequestRef.current;
+      checkedMissingImageIdsRef.current.clear();
       setLoading(true);
       setSearch("");
       setSelectedCategory(null);
@@ -477,9 +491,11 @@ const Index = () => {
         const warmedImageIds = warmedListings
           .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
           .filter((listing) => !listing.images || listing.images.length === 0)
+          .filter((listing) => !checkedMissingImageIdsRef.current.has(listing.id))
           .map((listing) => listing.id);
 
         if (warmedImageIds.length > 0) {
+          warmedImageIds.forEach((id) => checkedMissingImageIdsRef.current.add(id));
           void fetchListingImages(warmedImageIds);
         }
       });
@@ -541,9 +557,11 @@ const Index = () => {
     const missingVisibleImages = filteredListings
       .slice(0, visibleImageCount)
       .filter((listing) => !listing.images || listing.images.length === 0)
+      .filter((listing) => !checkedMissingImageIdsRef.current.has(listing.id))
       .map((listing) => listing.id);
 
     if (missingVisibleImages.length > 0) {
+      missingVisibleImages.forEach((id) => checkedMissingImageIdsRef.current.add(id));
       void fetchListingImages(missingVisibleImages);
     }
   }, [fetchListingImages, filteredListings, visibleImageCount]);
