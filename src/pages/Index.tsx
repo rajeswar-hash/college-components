@@ -20,6 +20,7 @@ import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
 import { heroDesktopPlaceholder, heroMobilePlaceholder } from "@/lib/staticImagePlaceholders";
+import { getSafeListingImageRefs } from "@/lib/listingImage";
 
 interface ListingRow {
   moderation_status?: string;
@@ -185,7 +186,46 @@ const Index = () => {
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
-    return;
+
+    const { data, error } = await supabase
+      .from("listings")
+      .select("id, images")
+      .in("id", listingIds);
+
+    if (error || !data) return;
+
+    const imageMap = new Map(
+      data
+        .map((row) => [row.id, getSafeListingImageRefs(row.images || [])] as const)
+        .filter(([, images]) => images.length > 0)
+    );
+
+    if (imageMap.size === 0) return;
+
+    listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
+      let changed = false;
+      const nextCachedListings = cachedListings.map((listing) => {
+        const nextImages = imageMap.get(listing.id);
+        if (!nextImages) return listing;
+        changed = true;
+        return { ...listing, images: nextImages };
+      });
+
+      if (changed) {
+        setCachedCollegeListings(listingsCacheRef.current, cacheKey, nextCachedListings);
+      }
+    });
+
+    setListings((prev) => {
+      let changed = false;
+      const nextListings = prev.map((listing) => {
+        const nextImages = imageMap.get(listing.id);
+        if (!nextImages) return listing;
+        changed = true;
+        return { ...listing, images: nextImages };
+      });
+      return changed ? nextListings : prev;
+    });
   }, []);
 
   const fetchCollegeListingsData = useCallback(async (collegeName: string) => {
