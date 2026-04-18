@@ -304,7 +304,7 @@ export function Navbar() {
       <div className="h-16" aria-hidden="true" />
 
       {mobileMenuMounted && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className={`fixed inset-0 z-40 md:hidden ${mobileMenu ? "" : "pointer-events-none"}`}>
           <button
             type="button"
             aria-label="Close mobile menu"
