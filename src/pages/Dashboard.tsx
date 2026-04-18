@@ -449,8 +449,9 @@ const Dashboard = () => {
                       <img
                         src={selectedAvatar}
                         alt="Profile avatar"
-                        loading="lazy"
-                        decoding="async"
+                        loading="eager"
+                        decoding="sync"
+                        fetchPriority="high"
                         className="h-20 w-20 object-cover"
                       />
                     </div>
@@ -644,7 +645,7 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {myListings.map((listing) => {
+              {myListings.map((listing, index) => {
                 const coverImage = getListingCoverImage(listing.category, listing.images);
                 const coverPlaceholder = getListingPreviewPlaceholders(listing.category, listing.images)[0] || coverImage;
                 return (
@@ -658,8 +659,10 @@ const Dashboard = () => {
                           placeholderSrc={coverPlaceholder}
                           className="h-full w-full"
                           imgClassName="h-full w-full object-cover"
-                          loading="lazy"
+                          loading={index < 3 ? "eager" : "lazy"}
                           decoding="async"
+                          fetchPriority={index < 2 ? "high" : "auto"}
+                          sizes="88px"
                         />
                       ) : (
                         <span className="px-2 text-center text-[10px] text-muted-foreground">{listing.category}</span>
