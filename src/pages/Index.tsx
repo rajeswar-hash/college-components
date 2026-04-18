@@ -314,30 +314,6 @@ const Index = () => {
   }, [navigate, requestedCollege, restoreCollegeView]);
 
   useEffect(() => {
-    const warmInstitutions = () => {
-      void loadInstitutionNames();
-    };
-
-    let timeoutId: number | undefined;
-    let idleId: number | undefined;
-
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(() => warmInstitutions(), { timeout: 1200 });
-    } else {
-      timeoutId = window.setTimeout(warmInstitutions, 600);
-    }
-
-    return () => {
-      if (typeof idleId === "number" && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (typeof timeoutId === "number") {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     if (selectedCollege) {
       localStorage.setItem(SELECTED_COLLEGE_STORAGE_KEY, selectedCollege);
     }
@@ -411,8 +387,6 @@ const Index = () => {
         toast.info("This college is no longer available, so we returned you to the homepage.");
       }
     };
-
-    void validateSelectedCollege();
 
     const handleCollegeListUpdated = () => {
       void validateSelectedCollege();

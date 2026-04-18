@@ -39,15 +39,16 @@ export function FilterBar({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
+    setCollegeQuery(selectedCollege ?? "");
+  }, [selectedCollege]);
+
+  const ensureCollegeDataReady = useCallback(() => {
+    if (dataReady) return;
     loadInstitutionNames().then((names) => {
       setSuggestedColleges(names.slice(0, 6));
       setDataReady(true);
     });
-  }, []);
-
-  useEffect(() => {
-    setCollegeQuery(selectedCollege ?? "");
-  }, [selectedCollege]);
+  }, [dataReady]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -191,11 +192,12 @@ export function FilterBar({
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
-                  placeholder={dataReady ? "Search 40,000+ colleges..." : "Loading..."}
+                  placeholder="Search 40,000+ colleges..."
                   value={collegeQuery}
                   autoComplete="off"
                   onChange={(e) => {
                     const val = e.target.value;
+                    ensureCollegeDataReady();
                     setCollegeQuery(val);
                     setCollegeDropdownOpen(true);
                     clearTimeout(debounceRef.current);
@@ -203,6 +205,7 @@ export function FilterBar({
                     if (!val) onCollegeChange(null);
                   }}
                   onFocus={() => {
+                    ensureCollegeDataReady();
                     if (collegeQuery.length >= 2) {
                       setCollegeDropdownOpen(true);
                       searchColleges(collegeQuery);

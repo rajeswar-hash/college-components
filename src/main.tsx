@@ -5,7 +5,7 @@ import "./index.css";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import { ThemeProvider, useThemeMode } from "./contexts/ThemeContext.tsx";
 import { Toaster } from "sonner";
-import { loadInstitutionNames, canonicalInstitutionName } from "./lib/institutions";
+import { canonicalInstitutionName } from "./lib/institutions";
 import { supabase } from "./integrations/supabase/client";
 import { getBuiltInListingImageUrls, getListingCoverImage } from "./lib/listingImage";
 import { AppErrorBoundary } from "./components/AppErrorBoundary.tsx";
@@ -94,8 +94,6 @@ function BootstrappedApp() {
     let cancelled = false;
     let idleId: number | undefined;
     let timeoutId: number | undefined;
-    let institutionIdleId: number | undefined;
-    let institutionTimeoutId: number | undefined;
 
     const preloadImage = (src: string, priority: "high" | "auto" = "auto") => {
       if (!src) return;
@@ -145,11 +143,6 @@ function BootstrappedApp() {
 
     void warmStartup();
 
-    const warmInstitutions = () => {
-      if (cancelled) return;
-      void loadInstitutionNames();
-    };
-
     const warmRoutes = () => {
       if (cancelled) return;
       preloadCommonRoutes();
@@ -157,10 +150,8 @@ function BootstrappedApp() {
 
     if ("requestIdleCallback" in window) {
       idleId = window.requestIdleCallback(warmRoutes, { timeout: 2200 });
-      institutionIdleId = window.requestIdleCallback(warmInstitutions, { timeout: 3000 });
     } else {
       timeoutId = window.setTimeout(warmRoutes, 1800);
-      institutionTimeoutId = window.setTimeout(warmInstitutions, 2400);
     }
 
     return () => {
@@ -168,14 +159,8 @@ function BootstrappedApp() {
       if (typeof idleId === "number" && "cancelIdleCallback" in window) {
         window.cancelIdleCallback(idleId);
       }
-      if (typeof institutionIdleId === "number" && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(institutionIdleId);
-      }
       if (typeof timeoutId === "number") {
         window.clearTimeout(timeoutId);
-      }
-      if (typeof institutionTimeoutId === "number") {
-        window.clearTimeout(institutionTimeoutId);
       }
     };
   }, []);

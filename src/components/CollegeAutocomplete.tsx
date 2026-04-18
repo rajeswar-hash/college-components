@@ -27,14 +27,14 @@ export function CollegeAutocomplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Preload data on mount
-  useEffect(() => {
-    loadInstitutionNames().then(() => setDataReady(true));
-  }, []);
-
   useEffect(() => {
     setQuery(value);
   }, [value]);
+
+  const ensureCollegeDataReady = useCallback(() => {
+    if (dataReady) return;
+    loadInstitutionNames().then(() => setDataReady(true));
+  }, [dataReady]);
 
   const searchColleges = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
@@ -75,11 +75,12 @@ export function CollegeAutocomplete({
         id="college"
         ref={inputRef}
         value={query}
-        placeholder={dataReady ? "Start typing your college name..." : "Loading colleges..."}
+        placeholder="Start typing your college name..."
         autoComplete="off"
         autoCapitalize="words"
         onChange={(e) => {
           const val = e.target.value;
+          ensureCollegeDataReady();
           setQuery(val);
           onChange(val);
           setOpen(true);
@@ -87,6 +88,7 @@ export function CollegeAutocomplete({
           debounceRef.current = setTimeout(() => searchColleges(val), 150);
         }}
         onFocus={() => {
+          ensureCollegeDataReady();
           inputRef?.current?.scrollIntoView({ block: "center", behavior: "smooth" });
           if (query.length >= 2) {
             setOpen(true);
