@@ -15,6 +15,13 @@ import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listi
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
+import {
+  extractBuiltInAvatarId,
+  getAvatarStorageValue,
+  getDefaultAvatarUrl,
+  PROFILE_AVATARS,
+  resolveAvatarUrl,
+} from "@/lib/avatar";
 
 interface ListingRow {
   id: string;
@@ -26,53 +33,9 @@ interface ListingRow {
   moderation_status?: string | null;
 }
 
-const PROFILE_AVATARS = [
-  {
-    id: "avatar-1",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-1.jpg`,
-  },
-  {
-    id: "avatar-2",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-2.jpg`,
-  },
-  {
-    id: "avatar-3",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-3.jpg`,
-  },
-  {
-    id: "avatar-4",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-4.jpg`,
-  },
-  {
-    id: "avatar-6",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-6.jpg`,
-  },
-  {
-    id: "avatar-7",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-7.jpg`,
-  },
-  {
-    id: "avatar-8",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-8.jpg`,
-  },
-  {
-    id: "avatar-9",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-9.jpg`,
-  },
-  {
-    id: "avatar-10",
-    url: `${import.meta.env.BASE_URL}avatars/avatar-10.jpg`,
-  },
-];
-
-function getDefaultAvatar(name?: string | null, email?: string | null) {
-  const seed = `${name || ""}${email || ""}`;
-  const index = Array.from(seed).reduce((sum, char) => sum + char.charCodeAt(0), 0) % PROFILE_AVATARS.length;
-  return PROFILE_AVATARS[index]?.url || PROFILE_AVATARS[0].url;
-}
-
 const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const MAIN_ADMIN_PIN_HASH_KEY = "campuskart-main-admin-pin-hash";
+const MAIN_ADMIN_PIN_HASH_METADATA_KEY = "campuskart_main_admin_pin_hash";
 const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
 
 async function hashAdminPin(pin: string) {
@@ -119,7 +82,7 @@ const Dashboard = () => {
         name: user.name || "",
         phone: user.phone || "",
         college: user.college || "",
-        avatar_url: user.avatar_url || "",
+        avatar_url: getAvatarStorageValue(user.avatar_url),
       });
     }
   }, [user]);
@@ -163,14 +126,36 @@ const Dashboard = () => {
       return;
     }
 
-    setHasAdminPin(!!localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY));
+    const metadataPinHash = typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
+      ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
+      : "";
+    const localPinHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY) || "";
+    setHasAdminPin(!!(metadataPinHash || localPinHash));
     setAdminPanelUnlocked(localStorage.getItem(MAIN_ADMIN_PIN_UNLOCK_KEY) === "true");
-  }, [isMainAdmin]);
+  }, [isMainAdmin, supabaseUser?.user_metadata]);
+
+  useEffect(() => {
+    if (!isMainAdmin || !supabaseUser) return;
+
+    const metadataPinHash = typeof supabaseUser.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
+      ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
+      : "";
+    const localPinHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY) || "";
+
+    if (metadataPinHash || !localPinHash) return;
+
+    void supabase.auth.updateUser({
+      data: {
+        ...supabaseUser.user_metadata,
+        [MAIN_ADMIN_PIN_HASH_METADATA_KEY]: localPinHash,
+      },
+    });
+  }, [isMainAdmin, supabaseUser]);
 
   const activeListings = myListings.filter((listing) => !listing.sold).length;
   const soldListings = myListings.filter((listing) => listing.sold).length;
   const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
-  const selectedAvatar = profileForm.avatar_url || user?.avatar_url || getDefaultAvatar(user?.name, user?.email);
+  const selectedAvatar = resolveAvatarUrl(profileForm.avatar_url || user?.avatar_url, user?.name, user?.email);
 
   const getListingStatusMeta = (status?: string | null, sold?: boolean) => {
     if (sold) return { label: "Sold", className: "bg-success/10 text-success border-success/20" };
@@ -262,7 +247,9 @@ const Dashboard = () => {
         name: cleanName,
         phone: normalizedPhone,
         college: cleanCollege,
-        avatar_url: profileForm.avatar_url || getDefaultAvatar(profileForm.name, user?.email),
+        avatar_url: getAvatarStorageValue(
+          profileForm.avatar_url || user?.avatar_url || getDefaultAvatarUrl(profileForm.name, user?.email)
+        ),
       });
       setIsEditingProfile(false);
       toast.success("Profile updated");
@@ -279,7 +266,7 @@ const Dashboard = () => {
       name: user?.name || "",
       phone: user?.phone || "",
       college: user?.college || "",
-      avatar_url: user?.avatar_url || "",
+      avatar_url: getAvatarStorageValue(user?.avatar_url),
     });
     setIsEditingProfile(false);
   };
@@ -299,6 +286,13 @@ const Dashboard = () => {
     setSavingAdminPin(true);
     try {
       const hashedPin = await hashAdminPin(newAdminPin);
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          ...supabaseUser?.user_metadata,
+          [MAIN_ADMIN_PIN_HASH_METADATA_KEY]: hashedPin,
+        },
+      });
+      if (error) throw error;
       localStorage.setItem(MAIN_ADMIN_PIN_HASH_KEY, hashedPin);
       localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
       setHasAdminPin(true);
@@ -312,7 +306,10 @@ const Dashboard = () => {
   };
 
   const handleUnlockAdminPanel = async () => {
-    const storedHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
+    const storedHash =
+      (typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
+        ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
+        : "") || localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
     if (!storedHash) {
       toast.error("Create your admin PIN first");
       return;
@@ -340,7 +337,10 @@ const Dashboard = () => {
   };
 
   const handleResetAdminPin = async () => {
-    const storedHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
+    const storedHash =
+      (typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
+        ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
+        : "") || localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
     if (!storedHash) {
       toast.error("Create your admin PIN first");
       return;
@@ -363,6 +363,13 @@ const Dashboard = () => {
       }
 
       const nextHash = await hashAdminPin(resetNewPin);
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          ...supabaseUser?.user_metadata,
+          [MAIN_ADMIN_PIN_HASH_METADATA_KEY]: nextHash,
+        },
+      });
+      if (error) throw error;
       localStorage.setItem(MAIN_ADMIN_PIN_HASH_KEY, nextHash);
       localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
       setAdminPanelUnlocked(true);
@@ -532,12 +539,13 @@ const Dashboard = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {PROFILE_AVATARS.map((avatar) => {
-                    const isSelected = (profileForm.avatar_url || selectedAvatar) === avatar.url;
+                    const isSelected =
+                      extractBuiltInAvatarId(profileForm.avatar_url || user?.avatar_url) === avatar.id;
                     return (
                       <button
                         key={avatar.id}
                         type="button"
-                        onClick={() => setProfileForm((prev) => ({ ...prev, avatar_url: avatar.url }))}
+                        onClick={() => setProfileForm((prev) => ({ ...prev, avatar_url: avatar.id }))}
                         className={`overflow-hidden rounded-2xl border p-1 transition ${
                           isSelected
                             ? "border-primary bg-primary/5 shadow-[0_14px_24px_rgba(20,184,166,0.10)]"
