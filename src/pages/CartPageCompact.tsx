@@ -12,6 +12,7 @@ import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { LqipImage } from "@/components/LqipImage";
+import { retrySupabaseOperation } from "@/lib/supabaseRetry";
 
 type SavedListing = Listing;
 
@@ -40,12 +41,14 @@ const CartPageCompact = () => {
           return;
         }
 
-        const { data, error } = await supabase
-          .from("listings")
-          .select("id, title, description, price, category, condition, images, seller_id, college, created_at, sold, likes")
-          .in("id", listingIds)
-          .eq("sold", false)
-          .order("created_at", { ascending: false });
+        const { data, error } = await retrySupabaseOperation(() =>
+          supabase
+            .from("listings")
+            .select("id, title, description, price, category, condition, images, seller_id, college, created_at, sold, likes")
+            .in("id", listingIds)
+            .eq("sold", false)
+            .order("created_at", { ascending: false })
+        );
 
         if (error || !data) throw error;
 

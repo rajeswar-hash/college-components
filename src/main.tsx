@@ -13,6 +13,7 @@ import { installGlobalErrorTracking } from "./lib/errorTracking";
 import { heroDesktopPlaceholder, heroMobilePlaceholder } from "./lib/staticImagePlaceholders";
 import { preloadCommonRoutes } from "./lib/routePreload";
 import { getBuiltInAvatarUrls } from "./lib/avatar";
+import { retrySupabaseOperation } from "./lib/supabaseRetry";
 
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const STARTUP_IMAGE_PRELOAD_COUNT = 4;
@@ -125,12 +126,15 @@ function BootstrappedApp() {
       if (!savedCollege) return;
 
       const canonicalCollege = canonicalInstitutionName(savedCollege);
-      const { data, error } = await supabase
-        .from("listings")
-        .select("id, category, images, moderation_status, created_at, college")
-        .eq("college", canonicalCollege)
-        .order("created_at", { ascending: false })
-        .limit(STARTUP_LISTING_FETCH_LIMIT);
+      const { data, error } = await retrySupabaseOperation(() =>
+        supabase
+          .from("listings")
+          .select("id, category, images, moderation_status, created_at, college")
+          .eq("college", canonicalCollege)
+          .eq("sold", false)
+          .order("created_at", { ascending: false })
+          .limit(STARTUP_LISTING_FETCH_LIMIT)
+      );
 
       if (cancelled || error || !data) return;
 

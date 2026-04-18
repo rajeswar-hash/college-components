@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
+import { retrySupabaseOperation } from "@/lib/supabaseRetry";
 import { LqipImage } from "@/components/LqipImage";
 import { heroDesktopPlaceholder, heroMobilePlaceholder } from "@/lib/staticImagePlaceholders";
 
@@ -185,10 +186,12 @@ const Index = () => {
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
 
-    const { data, error } = await supabase
-      .from("listings")
-      .select("id, images")
-      .in("id", listingIds);
+    const { data, error } = await retrySupabaseOperation(() =>
+      supabase
+        .from("listings")
+        .select("id, images")
+        .in("id", listingIds)
+    );
 
     if (error || !data) return;
 
@@ -226,21 +229,27 @@ const Index = () => {
       let data: any[] | null = null;
       let error: any = null;
 
-      const primaryResponse = await supabase
-        .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status, images")
-        .eq("college", canonicalCollege)
-        .order("created_at", { ascending: false });
+      const primaryResponse = await retrySupabaseOperation(() =>
+        supabase
+          .from("listings")
+          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status, images")
+          .eq("college", canonicalCollege)
+          .eq("sold", false)
+          .order("created_at", { ascending: false })
+      );
 
       data = primaryResponse.data;
       error = primaryResponse.error;
 
       if (error) {
-        const fallbackResponse = await supabase
-          .from("listings")
-          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, images")
-          .eq("college", canonicalCollege)
-          .order("created_at", { ascending: false });
+        const fallbackResponse = await retrySupabaseOperation(() =>
+          supabase
+            .from("listings")
+            .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, images")
+            .eq("college", canonicalCollege)
+            .eq("sold", false)
+            .order("created_at", { ascending: false })
+        );
         data = fallbackResponse.data;
         error = fallbackResponse.error;
       }
