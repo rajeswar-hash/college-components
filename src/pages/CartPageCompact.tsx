@@ -42,7 +42,7 @@ const CartPageCompact = () => {
 
         const { data, error } = await supabase
           .from("listings")
-          .select("id, title, description, price, category, condition, images, seller_id, college, created_at, sold, likes")
+          .select("id, title, description, price, category, condition, seller_id, college, created_at, sold, likes")
           .in("id", listingIds)
           .eq("sold", false)
           .order("created_at", { ascending: false });
@@ -59,7 +59,7 @@ const CartPageCompact = () => {
             price: listing.price,
             category: normalizeCategory(listing.category) as Listing["category"],
             condition: normalizeCondition(listing.condition) as Listing["condition"],
-            images: listing.images || [],
+            images: [],
             sellerId: listing.seller_id,
             sellerName: "",
             sellerPhone: "",

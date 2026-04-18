@@ -185,46 +185,7 @@ const Index = () => {
 
   const fetchListingImages = useCallback(async (listingIds: string[]) => {
     if (listingIds.length === 0) return;
-
-    const { data, error } = await supabase
-      .from("listings")
-      .select("id, images")
-      .in("id", listingIds);
-
-    if (error || !data) return;
-
-    const imageMap = new Map(
-      data
-        .map((row) => [row.id, row.images || []] as const)
-        .filter(([, images]) => images.length > 0)
-    );
-
-    if (imageMap.size === 0) return;
-
-    listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
-      let changed = false;
-      const nextCachedListings = cachedListings.map((listing) => {
-        const nextImages = imageMap.get(listing.id);
-        if (!nextImages) return listing;
-        changed = true;
-        return { ...listing, images: nextImages };
-      });
-
-      if (changed) {
-        setCachedCollegeListings(listingsCacheRef.current, cacheKey, nextCachedListings);
-      }
-    });
-
-    setListings((prev) => {
-      let changed = false;
-      const nextListings = prev.map((listing) => {
-        const nextImages = imageMap.get(listing.id);
-        if (!nextImages) return listing;
-        changed = true;
-        return { ...listing, images: nextImages };
-      });
-      return changed ? nextListings : prev;
-    });
+    return;
   }, []);
 
   const fetchCollegeListingsData = useCallback(async (collegeName: string) => {
@@ -241,7 +202,7 @@ const Index = () => {
 
       const primaryResponse = await supabase
         .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status, images")
+        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
         .eq("college", canonicalCollege)
         .order("created_at", { ascending: false });
 
@@ -251,7 +212,7 @@ const Index = () => {
       if (error) {
         const fallbackResponse = await supabase
           .from("listings")
-          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, images")
+          .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at")
           .eq("college", canonicalCollege)
           .order("created_at", { ascending: false });
         data = fallbackResponse.data;

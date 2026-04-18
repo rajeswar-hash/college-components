@@ -183,15 +183,6 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
-function blobToDataUrl(blob: Blob) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("Could not prepare fallback image"));
-    reader.readAsDataURL(blob);
-  });
-}
-
 function loadImage(dataUrl: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
@@ -600,7 +591,6 @@ const SellPage = () => {
       let aiVerificationStatus = "manual_review";
       let moderationStatus = "pending_review";
       let listingImages: string[] = [];
-      let usedDatabaseImageFallback = false;
 
       if (canUploadImages && images.length > 0) {
         try {
@@ -614,8 +604,7 @@ const SellPage = () => {
             listingId,
             imageCount: images.length,
           });
-          listingImages = await Promise.all(images.map((image) => blobToDataUrl(image.file)));
-          usedDatabaseImageFallback = true;
+          throw new Error("Image upload could not be completed right now. Please try again with a smaller square image.");
         }
       }
 
@@ -677,7 +666,7 @@ const SellPage = () => {
       }
 
       toast.success(
-        usedLegacyFallback || usedDatabaseImageFallback
+        usedLegacyFallback
           ? "Sent for manual review. It will go live after approval, usually within 12 hours."
           : "Sent for manual review. It will go live after approval, usually within 12 hours."
       );
