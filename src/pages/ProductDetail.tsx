@@ -67,7 +67,7 @@ const ProductDetail = () => {
     const fetchListing = async () => {
       const { data, error } = await supabase
         .from("listings")
-        .select("id, title, description, price, category, condition, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
+        .select("id, title, description, price, category, condition, images, seller_id, college, sold, likes, created_at, moderation_status, report_count, resource_link, ai_verification_status")
         .eq("id", id)
         .single();
 
@@ -86,7 +86,7 @@ const ProductDetail = () => {
 
       setListing({
         ...data,
-        images: [],
+          images: data.images || [],
         seller_name: contact?.seller_name || "Unknown",
         seller_phone: contact?.seller_phone || "",
       });
