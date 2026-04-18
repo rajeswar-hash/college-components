@@ -124,6 +124,26 @@ export async function uploadListingImages(
   return uploadedPaths;
 }
 
+export async function listListingImageRefs(
+  sellerId?: string | null,
+  listingId?: string | null,
+  limit = 1,
+) {
+  if (!sellerId || !listingId) return [];
+
+  const folderPath = `${sellerId}/${listingId}`;
+  const { data, error } = await supabase.storage.from(LISTING_MEDIA_BUCKET).list(folderPath, {
+    limit,
+    sortBy: { column: "name", order: "asc" },
+  });
+
+  if (error || !data) return [];
+
+  return data
+    .filter((item) => Boolean(item.name))
+    .map((item) => `${folderPath}/${item.name}`);
+}
+
 export async function deleteListingImages(imageRefs?: string[] | null) {
   const storagePaths = (imageRefs || []).filter(isStorageImagePath);
   if (storagePaths.length === 0) return;

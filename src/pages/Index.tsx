@@ -16,7 +16,7 @@ import { canonicalInstitutionName, loadInstitutionNames, normalizeInstitutionKey
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
-import { deleteListingImages } from "@/lib/storage";
+import { deleteListingImages, listListingImageRefs } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
 import { heroDesktopPlaceholder, heroMobilePlaceholder } from "@/lib/staticImagePlaceholders";
@@ -183,9 +183,47 @@ const Index = () => {
     setCollegeQuery(canonicalCollege);
   }, []);
 
-  const fetchListingImages = useCallback(async (listingIds: string[]) => {
-    if (listingIds.length === 0) return;
-    return;
+  const fetchListingImages = useCallback(async (targetListings: Array<Pick<ListingRow, "id" | "seller_id">>) => {
+    if (targetListings.length === 0) return;
+
+    const resolvedImages = await Promise.all(
+      targetListings.map(async (listing) => {
+        const imageRefs = await listListingImageRefs(listing.seller_id, listing.id, 1);
+        if (imageRefs.length === 0) return null;
+        return [listing.id, imageRefs] as const;
+      })
+    );
+
+    const imageMap = new Map(
+      resolvedImages.filter((entry): entry is readonly [string, string[]] => Boolean(entry))
+    );
+
+    if (imageMap.size === 0) return;
+
+    listingsCacheRef.current.forEach((cachedListings, cacheKey) => {
+      let changed = false;
+      const nextCachedListings = cachedListings.map((listing) => {
+        const nextImages = imageMap.get(listing.id);
+        if (!nextImages) return listing;
+        changed = true;
+        return { ...listing, images: nextImages };
+      });
+
+      if (changed) {
+        setCachedCollegeListings(listingsCacheRef.current, cacheKey, nextCachedListings);
+      }
+    });
+
+    setListings((prev) => {
+      let changed = false;
+      const nextListings = prev.map((listing) => {
+        const nextImages = imageMap.get(listing.id);
+        if (!nextImages) return listing;
+        changed = true;
+        return { ...listing, images: nextImages };
+      });
+      return changed ? nextListings : prev;
+    });
   }, []);
 
   const fetchCollegeListingsData = useCallback(async (collegeName: string) => {
@@ -449,15 +487,16 @@ const Index = () => {
     const collegesToWarm = collegeResults.slice(0, 4);
     collegesToWarm.forEach((college) => {
       void fetchCollegeListingsData(college).then((warmedListings) => {
-        const warmedImageIds = warmedListings
+        const warmedImageTargets = warmedListings
           .slice(0, INITIAL_VISIBLE_IMAGE_BATCH)
+          .filter((listing) => listing.category !== "Notes")
           .filter((listing) => !listing.images || listing.images.length === 0)
           .filter((listing) => !checkedMissingImageIdsRef.current.has(listing.id))
-          .map((listing) => listing.id);
+          .map((listing) => ({ id: listing.id, seller_id: listing.seller_id }));
 
-        if (warmedImageIds.length > 0) {
-          warmedImageIds.forEach((id) => checkedMissingImageIdsRef.current.add(id));
-          void fetchListingImages(warmedImageIds);
+        if (warmedImageTargets.length > 0) {
+          warmedImageTargets.forEach((listing) => checkedMissingImageIdsRef.current.add(listing.id));
+          void fetchListingImages(warmedImageTargets);
         }
       });
     });
@@ -517,12 +556,13 @@ const Index = () => {
   useEffect(() => {
     const missingVisibleImages = filteredListings
       .slice(0, visibleImageCount)
+      .filter((listing) => listing.category !== "Notes")
       .filter((listing) => !listing.images || listing.images.length === 0)
       .filter((listing) => !checkedMissingImageIdsRef.current.has(listing.id))
-      .map((listing) => listing.id);
+      .map((listing) => ({ id: listing.id, seller_id: listing.seller_id }));
 
     if (missingVisibleImages.length > 0) {
-      missingVisibleImages.forEach((id) => checkedMissingImageIdsRef.current.add(id));
+      missingVisibleImages.forEach((listing) => checkedMissingImageIdsRef.current.add(listing.id));
       void fetchListingImages(missingVisibleImages);
     }
   }, [fetchListingImages, filteredListings, visibleImageCount]);
