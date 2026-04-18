@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Loader2 } from "lucide-react";
-import { loadInstitutionNames, searchInstitutionNames } from "@/lib/institutions";
+import { loadInstitutionNames, searchInstitutionNames, warmInstitutionNames } from "@/lib/institutions";
 
 interface CollegeAutocompleteProps {
   value: string;
@@ -30,6 +30,22 @@ export function CollegeAutocomplete({
   useEffect(() => {
     setQuery(value);
   }, [value]);
+
+  useEffect(() => {
+    const warm = () => warmInstitutionNames();
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(warm);
+      return () => {
+        if ("cancelIdleCallback" in window) {
+          (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    const timeoutId = window.setTimeout(warm, 180);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   const ensureCollegeDataReady = useCallback(() => {
     if (dataReady) return;

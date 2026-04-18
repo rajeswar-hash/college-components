@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Search, Store, X, ShieldCheck, MessageCircle, Wallet, ChevronRight } from "lucide-react";
-import { canonicalInstitutionName, loadInstitutionNames, normalizeInstitutionKey, searchInstitutionNames } from "@/lib/institutions";
+import { canonicalInstitutionName, loadInstitutionNames, normalizeInstitutionKey, searchInstitutionNames, warmInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
@@ -286,6 +286,22 @@ const Index = () => {
       setRequestCooldownUntil(savedCooldown);
     }
   }, [navigate, requestedCollege, restoreCollegeView]);
+
+  useEffect(() => {
+    const warm = () => warmInstitutionNames();
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(warm);
+      return () => {
+        if ("cancelIdleCallback" in window) {
+          (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    const timeoutId = window.setTimeout(warm, 180);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     if (selectedCollege) {

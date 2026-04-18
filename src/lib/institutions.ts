@@ -23,6 +23,7 @@ interface CollegeOverrideEntry {
 let cachedInstitutions: string[] | null = null;
 let loadingPromise: Promise<string[]> | null = null;
 let baseInstitutionsPromise: Promise<string[]> | null = null;
+let cachedInstitutionSearchEntries: Array<{ name: string; key: string }> | null = null;
 
 const INSTITUTION_ALIASES: Record<string, string> = {
   "goa college of engineering gec": "Govt. of Goa College of Engineering, Goa, Farmagudi, Ponda",
@@ -184,15 +185,25 @@ export async function loadInstitutionNames(): Promise<string[]> {
     }
 
     cachedInstitutions = sortInstitutions([...institutionMap.values()]);
+    cachedInstitutionSearchEntries = cachedInstitutions.map((name) => ({
+      name,
+      key: normalizeInstitutionKey(name),
+    }));
     return cachedInstitutions;
   })();
 
   return loadingPromise;
 }
 
+export function warmInstitutionNames() {
+  if (cachedInstitutions || loadingPromise) return;
+  void loadInstitutionNames().catch(() => undefined);
+}
+
 export function invalidateInstitutionNamesCache() {
   cachedInstitutions = null;
   loadingPromise = null;
+  cachedInstitutionSearchEntries = null;
 }
 
 export async function searchInstitutionNames(query: string, limit = 40): Promise<string[]> {
@@ -201,12 +212,14 @@ export async function searchInstitutionNames(query: string, limit = 40): Promise
     return [];
   }
 
-  const institutions = await loadInstitutionNames();
+  if (!cachedInstitutionSearchEntries) {
+    await loadInstitutionNames();
+  }
+  const institutions = cachedInstitutionSearchEntries || [];
   const queryWords = normalizedQuery.split(" ").filter(Boolean);
 
   return institutions
-    .map((name) => {
-      const key = normalizeInstitutionKey(name);
+    .map(({ name, key }) => {
       const startsWith = key.startsWith(normalizedQuery);
       const allWordsMatch = queryWords.every((word) => key.includes(word));
       return { name, key, startsWith, allWordsMatch };
