@@ -8,12 +8,25 @@ interface ThemeContextValue {
 }
 
 const THEME_STORAGE_KEY = "campuskart-theme";
+const THEME_META_COLOR: Record<ThemeMode, string> = {
+  light: "#ffffff",
+  dark: "#0c111b",
+};
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function applyTheme(theme: ThemeMode) {
   if (typeof document === "undefined") return;
   document.documentElement.classList.toggle("dark", theme === "dark");
+
+  const themeColor = THEME_META_COLOR[theme];
+  let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (!themeColorMeta) {
+    themeColorMeta = document.createElement("meta");
+    themeColorMeta.setAttribute("name", "theme-color");
+    document.head.appendChild(themeColorMeta);
+  }
+  themeColorMeta.setAttribute("content", themeColor);
 }
 
 function getInitialTheme(): ThemeMode {
