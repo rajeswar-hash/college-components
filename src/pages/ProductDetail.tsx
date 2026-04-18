@@ -13,7 +13,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
 import { getListingDetailImages, getListingDetailPlaceholders } from "@/lib/listingImage";
 import { trackHandledError } from "@/lib/errorTracking";
-import { retrySupabaseOperation } from "@/lib/supabaseRetry";
 import { LqipImage } from "@/components/LqipImage";
 
 function formatPhone(phone: string): string | null {
@@ -66,13 +65,11 @@ const ProductDetail = () => {
   useEffect(() => {
     if (!id) return;
     const fetchListing = async () => {
-      const { data, error } = await retrySupabaseOperation(() =>
-        supabase
-          .from("listings")
-          .select("*")
-          .eq("id", id)
-          .single()
-      );
+      const { data, error } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("id", id)
+        .single();
 
       if (error || !data) {
         if (error) {
@@ -82,11 +79,9 @@ const ProductDetail = () => {
         return;
       }
 
-      const { data: contactRows } = await retrySupabaseOperation(() =>
-        supabase.rpc("get_listing_contact", {
-          p_listing_id: data.id,
-        })
-      );
+      const { data: contactRows } = await supabase.rpc("get_listing_contact", {
+        p_listing_id: data.id,
+      });
       const contact = contactRows?.[0];
 
       setListing({
@@ -295,11 +290,9 @@ const ProductDetail = () => {
 
     setOpeningWhatsapp(true);
     try {
-      const { data: contactRows, error } = await retrySupabaseOperation(() =>
-        supabase.rpc("get_listing_contact", {
-          p_listing_id: listing.id,
-        })
-      );
+      const { data: contactRows, error } = await supabase.rpc("get_listing_contact", {
+        p_listing_id: listing.id,
+      });
 
       if (error) {
         throw error;
