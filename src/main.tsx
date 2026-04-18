@@ -7,11 +7,12 @@ import { ThemeProvider, useThemeMode } from "./contexts/ThemeContext.tsx";
 import { Toaster } from "sonner";
 import { loadInstitutionNames, canonicalInstitutionName } from "./lib/institutions";
 import { supabase } from "./integrations/supabase/client";
-import { getListingCoverImage } from "./lib/listingImage";
+import { getBuiltInListingImageUrls, getListingCoverImage } from "./lib/listingImage";
 import { AppErrorBoundary } from "./components/AppErrorBoundary.tsx";
 import { installGlobalErrorTracking } from "./lib/errorTracking";
 import { heroDesktopPlaceholder, heroMobilePlaceholder } from "./lib/staticImagePlaceholders";
 import { preloadCommonRoutes } from "./lib/routePreload";
+import { getBuiltInAvatarUrls } from "./lib/avatar";
 
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const STARTUP_IMAGE_PRELOAD_COUNT = 4;
@@ -94,20 +95,23 @@ function BootstrappedApp() {
     let idleId: number | undefined;
     let timeoutId: number | undefined;
 
-    const preloadImage = (src: string) => {
+    const preloadImage = (src: string, priority: "high" | "auto" = "auto") => {
       if (!src) return;
       const image = new Image();
       image.decoding = "async";
-      image.fetchPriority = "high";
+      image.fetchPriority = priority;
       image.src = src;
     };
 
     const warmStartup = async () => {
-      preloadImage(`${import.meta.env.BASE_URL}campuskart-logo.jpeg`);
-      preloadImage(`${import.meta.env.BASE_URL}campus-hero-mobile.jpg`);
-      preloadImage(`${import.meta.env.BASE_URL}campus-hero-desktop.jpg`);
-      preloadImage(heroMobilePlaceholder);
-      preloadImage(heroDesktopPlaceholder);
+      preloadImage(`${import.meta.env.BASE_URL}campuskart-logo.jpeg`, "high");
+      preloadImage(`${import.meta.env.BASE_URL}campus-hero-mobile.jpg`, "high");
+      preloadImage(`${import.meta.env.BASE_URL}campus-hero-desktop.jpg`, "high");
+      preloadImage(heroMobilePlaceholder, "high");
+      preloadImage(heroDesktopPlaceholder, "high");
+
+      getBuiltInListingImageUrls().forEach((src) => preloadImage(src));
+      getBuiltInAvatarUrls().forEach((src) => preloadImage(src));
 
       await loadInstitutionNames();
 

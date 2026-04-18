@@ -15,6 +15,10 @@ export const PROFILE_AVATARS = PROFILE_AVATAR_IDS.map((id) => ({
   url: getAvatarAssetUrl(id),
 }));
 
+export function getBuiltInAvatarUrls() {
+  return PROFILE_AVATAR_IDS.map((id) => getAvatarAssetUrl(id));
+}
+
 export function getAvatarAssetUrl(id: string) {
   const relativePath = `${import.meta.env.BASE_URL}avatars/${id}.jpg`;
   if (typeof window === "undefined") return relativePath;
