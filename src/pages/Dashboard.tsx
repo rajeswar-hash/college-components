@@ -638,61 +638,79 @@ const Dashboard = () => {
                 const coverImage = getListingCoverImage(listing.category, listing.images);
                 const coverPlaceholder = getListingPreviewPlaceholders(listing.category, listing.images)[0] || coverImage;
                 return (
-                <div key={listing.id} className="glass rounded-xl p-4 flex items-center gap-4 animate-fade-in">
-                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    {coverImage ? (
-                      <LqipImage
-                        src={coverImage}
-                        alt={listing.title}
-                        placeholderSrc={coverPlaceholder}
-                        className="w-full h-full rounded-lg"
-                        imgClassName="w-full h-full rounded-lg object-cover"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">{listing.category}</span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-display font-semibold text-foreground truncate">{listing.title}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="font-display font-bold gradient-text">Rs. {listing.price}</span>
-                      <Badge variant="outline" className={getListingStatusMeta(listing.moderation_status, listing.sold).className}>
-                        {getListingStatusMeta(listing.moderation_status, listing.sold).label}
-                      </Badge>
+                <div key={listing.id} className="glass animate-fade-in rounded-2xl border border-border/70 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
+                      {coverImage ? (
+                        <LqipImage
+                          src={coverImage}
+                          alt={listing.title}
+                          placeholderSrc={coverPlaceholder}
+                          className="h-full w-full"
+                          imgClassName="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span className="px-2 text-center text-[10px] text-muted-foreground">{listing.category}</span>
+                      )}
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {listing.sold
-                        ? "This sold listing should be deleted now."
-                        : listing.moderation_status === "pending_review"
-                          ? "This listing is under verification and is waiting for moderator approval."
-                          : listing.moderation_status === "rejected"
-                            ? "This listing was rejected by moderation and is not public."
-                            : "This listing was approved and is visible to buyers."}
-                    </p>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="line-clamp-2 font-display text-sm font-semibold leading-5 text-foreground sm:text-base">
+                          {listing.title}
+                        </h3>
+                        <Badge
+                          variant="outline"
+                          className={`shrink-0 text-[10px] ${getListingStatusMeta(listing.moderation_status, listing.sold).className}`}
+                        >
+                          {getListingStatusMeta(listing.moderation_status, listing.sold).label}
+                        </Badge>
+                      </div>
+
+                      <p className="mt-1 font-display text-lg font-bold leading-none gradient-text">
+                        Rs. {listing.price}
+                      </p>
+
+                      <p className="mt-2 line-clamp-3 text-[11px] leading-5 text-muted-foreground sm:text-xs">
+                        {listing.sold
+                          ? "This sold listing should be deleted now."
+                          : listing.moderation_status === "pending_review"
+                            ? "This listing is under verification and is waiting for moderator approval."
+                            : listing.moderation_status === "rejected"
+                              ? "This listing was rejected by moderation and is not public."
+                              : "This listing was approved and is visible to buyers."}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex gap-2 shrink-0">
+
+                  <div className="mt-4 grid grid-cols-[1fr_auto] gap-2 sm:flex sm:justify-end">
                     <Button
                       size="sm"
                       variant="outline"
-                      className={
+                      className={`h-10 w-full justify-center ${
                         listing.sold
                           ? "border-amber-500/25 text-amber-700 hover:border-amber-500/35 hover:text-amber-800"
                           : "border-emerald-500/25 text-emerald-700 hover:border-emerald-500/35 hover:text-emerald-800"
-                      }
+                      }`}
                       onClick={() => handleSoldToggle(listing.id, !listing.sold)}
                       disabled={updatingSoldId === listing.id}
                     >
                       {updatingSoldId === listing.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircle2 className="h-4 w-4" />
                       )}
                       <span className="ml-2">{listing.sold ? "Unmark Sold" : "Mark Sold"}</span>
                     </Button>
-                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleDelete(listing.id)}>
-                      <Trash2 className="w-4 h-4" />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-10 w-10 shrink-0 px-0 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(listing.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
