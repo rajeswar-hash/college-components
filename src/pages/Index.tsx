@@ -54,6 +54,7 @@ const INITIAL_VISIBLE_IMAGE_BATCH = 8;
 const VISIBLE_IMAGE_BATCH_STEP = 12;
 const MIN_FILTER_PRICE = 4;
 const MAX_FILTER_PRICE = 40000;
+const MAX_COLLEGE_LISTING_CACHE_SIZE = 12;
 const SELECTED_COLLEGE_STORAGE_KEY = "campuskart-selected-college";
 const LISTING_ORDER_SEED_STORAGE_KEY = "campuskart-listing-order-seed";
 const LISTING_ORDER_ORIGIN_STORAGE_KEY = "campuskart-listing-order-origin";
@@ -62,6 +63,24 @@ const REQUEST_COOLDOWN_MS = 60 * 1000;
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 
 let homeViewStateCache: StoredHomeState | null = null;
+
+function setCachedCollegeListings(
+  cache: Map<string, ListingRow[]>,
+  collegeName: string,
+  nextListings: ListingRow[],
+) {
+  const canonicalCollege = canonicalInstitutionName(collegeName);
+  if (cache.has(canonicalCollege)) {
+    cache.delete(canonicalCollege);
+  }
+  cache.set(canonicalCollege, nextListings);
+
+  while (cache.size > MAX_COLLEGE_LISTING_CACHE_SIZE) {
+    const oldestKey = cache.keys().next().value;
+    if (!oldestKey) break;
+    cache.delete(oldestKey);
+  }
+}
 
 function hashListingOrder(value: string) {
   let hash = 0;
@@ -127,6 +146,8 @@ const Index = () => {
   const listingsLoadMoreRef = useRef<HTMLDivElement>(null);
   const listingsCacheRef = useRef<Map<string, ListingRow[]>>(new Map());
   const listingFetchPromiseRef = useRef<Map<string, Promise<ListingRow[]>>>(new Map());
+  const listingLoadRequestRef = useRef(0);
+  const collegeSearchRequestRef = useRef(0);
   const skipNextCollegeFetchRef = useRef(false);
   const didRestoreInitialCollegeRef = useRef(false);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -153,7 +174,7 @@ const Index = () => {
         Math.max(INITIAL_VISIBLE_IMAGE_BATCH, homeViewStateCache.visibleImageCount || INITIAL_VISIBLE_IMAGE_BATCH)
       );
       setListings(restoredListings);
-      listingsCacheRef.current.set(canonicalCollege, restoredListings);
+      setCachedCollegeListings(listingsCacheRef.current, canonicalCollege, restoredListings);
       return;
     }
 
@@ -182,7 +203,7 @@ const Index = () => {
       });
 
       if (changed) {
-        listingsCacheRef.current.set(cacheKey, nextCachedListings);
+        setCachedCollegeListings(listingsCacheRef.current, cacheKey, nextCachedListings);
       }
     });
 
@@ -243,7 +264,7 @@ const Index = () => {
         moderation_status: listing.moderation_status ?? "active",
       }));
 
-      listingsCacheRef.current.set(canonicalCollege, nextListings);
+      setCachedCollegeListings(listingsCacheRef.current, canonicalCollege, nextListings);
       return nextListings;
     })();
 
@@ -258,13 +279,16 @@ const Index = () => {
 
   const runCollegeSearch = useCallback(async (query: string) => {
     const cleanedQuery = query.trim();
+    const requestId = ++collegeSearchRequestRef.current;
     if (cleanedQuery.length < 2) {
       setCollegeResults([]);
+      setSearchingCollege(false);
       return;
     }
 
     setSearchingCollege(true);
     const matches = await searchInstitutionNames(cleanedQuery, 12);
+    if (requestId !== collegeSearchRequestRef.current) return;
     setCollegeResults(matches);
     setSearchingCollege(false);
   }, []);
@@ -436,6 +460,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!selectedCollege) {
+      listingLoadRequestRef.current += 1;
       if (requestedCollege) {
         return;
       }
@@ -452,6 +477,7 @@ const Index = () => {
     }
 
     const fetchCollegeListings = async () => {
+      const requestId = ++listingLoadRequestRef.current;
       setLoading(true);
       setSearch("");
       setSelectedCategory(null);
@@ -460,6 +486,7 @@ const Index = () => {
       setVisibleImageCount(INITIAL_VISIBLE_IMAGE_BATCH);
 
       const nextListings = await fetchCollegeListingsData(selectedCollege);
+      if (requestId !== listingLoadRequestRef.current) return;
       setListings(nextListings);
       setLoading(false);
     };
@@ -588,6 +615,7 @@ const Index = () => {
   };
 
   const handleChangeCollege = () => {
+    listingLoadRequestRef.current += 1;
     localStorage.removeItem(SELECTED_COLLEGE_STORAGE_KEY);
     homeViewStateCache = null;
     resetCollegeSelection();

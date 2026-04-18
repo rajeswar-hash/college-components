@@ -46,6 +46,19 @@ async function hashAdminPin(pin: string) {
     .join("");
 }
 
+function getStoredMainAdminPinHash(supabaseUser: { user_metadata?: Record<string, unknown> } | null) {
+  const metadataPinHash =
+    typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
+      ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
+      : "";
+
+  if (metadataPinHash) {
+    return metadataPinHash;
+  }
+
+  return localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY) || "";
+}
+
 const Dashboard = () => {
   const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile, loading: authLoading } = useAuth();
   const { theme, setTheme } = useThemeMode();
@@ -126,11 +139,14 @@ const Dashboard = () => {
       return;
     }
 
-    const metadataPinHash = typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
-      ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
-      : "";
-    const localPinHash = localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY) || "";
-    setHasAdminPin(!!(metadataPinHash || localPinHash));
+    const metadataPinHash =
+      typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
+        ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
+        : "";
+    if (metadataPinHash) {
+      localStorage.removeItem(MAIN_ADMIN_PIN_HASH_KEY);
+    }
+    setHasAdminPin(!!getStoredMainAdminPinHash(supabaseUser));
     setAdminPanelUnlocked(localStorage.getItem(MAIN_ADMIN_PIN_UNLOCK_KEY) === "true");
   }, [isMainAdmin, supabaseUser?.user_metadata]);
 
@@ -293,7 +309,7 @@ const Dashboard = () => {
         },
       });
       if (error) throw error;
-      localStorage.setItem(MAIN_ADMIN_PIN_HASH_KEY, hashedPin);
+      localStorage.removeItem(MAIN_ADMIN_PIN_HASH_KEY);
       localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
       setHasAdminPin(true);
       setAdminPanelUnlocked(true);
@@ -306,10 +322,7 @@ const Dashboard = () => {
   };
 
   const handleUnlockAdminPanel = async () => {
-    const storedHash =
-      (typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
-        ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
-        : "") || localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
+    const storedHash = getStoredMainAdminPinHash(supabaseUser);
     if (!storedHash) {
       toast.error("Create your admin PIN first");
       return;
@@ -337,10 +350,7 @@ const Dashboard = () => {
   };
 
   const handleResetAdminPin = async () => {
-    const storedHash =
-      (typeof supabaseUser?.user_metadata?.[MAIN_ADMIN_PIN_HASH_METADATA_KEY] === "string"
-        ? String(supabaseUser.user_metadata[MAIN_ADMIN_PIN_HASH_METADATA_KEY])
-        : "") || localStorage.getItem(MAIN_ADMIN_PIN_HASH_KEY);
+    const storedHash = getStoredMainAdminPinHash(supabaseUser);
     if (!storedHash) {
       toast.error("Create your admin PIN first");
       return;
@@ -370,7 +380,7 @@ const Dashboard = () => {
         },
       });
       if (error) throw error;
-      localStorage.setItem(MAIN_ADMIN_PIN_HASH_KEY, nextHash);
+      localStorage.removeItem(MAIN_ADMIN_PIN_HASH_KEY);
       localStorage.setItem(MAIN_ADMIN_PIN_UNLOCK_KEY, "true");
       setAdminPanelUnlocked(true);
       setResetCurrentPin("");

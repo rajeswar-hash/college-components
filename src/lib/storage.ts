@@ -4,8 +4,32 @@ export const LISTING_MEDIA_BUCKET = "listing-media";
 const STORAGE_PREVIEW_SIZE = 480;
 const STORAGE_DETAIL_SIZE = 1800;
 const STORAGE_TINY_SIZE = 36;
+const MAX_PUBLIC_URL_CACHE_ENTRIES = 800;
 
 const publicUrlCache = new Map<string, string>();
+
+function setPublicUrlCache(cacheKey: string, value: string) {
+  if (publicUrlCache.has(cacheKey)) {
+    publicUrlCache.delete(cacheKey);
+  }
+  publicUrlCache.set(cacheKey, value);
+
+  while (publicUrlCache.size > MAX_PUBLIC_URL_CACHE_ENTRIES) {
+    const oldestKey = publicUrlCache.keys().next().value;
+    if (!oldestKey) break;
+    publicUrlCache.delete(oldestKey);
+  }
+}
+
+function clearPublicUrlCacheForImageRef(imageRef: string) {
+  const keysToDelete: string[] = [];
+  publicUrlCache.forEach((_value, key) => {
+    if (key.endsWith(`:${imageRef}`)) {
+      keysToDelete.push(key);
+    }
+  });
+  keysToDelete.forEach((key) => publicUrlCache.delete(key));
+}
 
 function isAbsoluteImageUrl(value: string) {
   return /^(data:|blob:|https?:\/\/|\/)/i.test(value);
@@ -40,7 +64,7 @@ export function getListingImageUrl(imageRef?: string | null, variant: "preview" 
         };
 
   const { data } = supabase.storage.from(LISTING_MEDIA_BUCKET).getPublicUrl(imageRef, { transform });
-  publicUrlCache.set(cacheKey, data.publicUrl);
+  setPublicUrlCache(cacheKey, data.publicUrl);
   return data.publicUrl;
 }
 
@@ -68,7 +92,7 @@ export function getListingImagePlaceholderUrl(imageRef?: string | null, variant:
         };
 
   const { data } = supabase.storage.from(LISTING_MEDIA_BUCKET).getPublicUrl(imageRef, { transform });
-  publicUrlCache.set(cacheKey, data.publicUrl);
+  setPublicUrlCache(cacheKey, data.publicUrl);
   return data.publicUrl;
 }
 
@@ -106,6 +130,7 @@ export async function deleteListingImages(imageRefs?: string[] | null) {
 
   try {
     await supabase.storage.from(LISTING_MEDIA_BUCKET).remove(storagePaths);
+    storagePaths.forEach(clearPublicUrlCacheForImageRef);
   } catch {
     // Best-effort cleanup only.
   }
