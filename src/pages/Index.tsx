@@ -1018,12 +1018,12 @@ const Index = () => {
                 </div>
               </div>
             ) : filteredListings.length === 0 ? (
-              <div className="animate-fade-in rounded-3xl border border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.85),rgba(255,255,255,1))] px-5 py-14 text-center shadow-[0_18px_40px_rgba(20,184,166,0.08)]">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="animate-fade-in rounded-3xl border border-primary/10 bg-[linear-gradient(180deg,rgba(240,253,250,0.85),rgba(255,255,255,1))] px-5 py-14 text-center shadow-[0_18px_40px_rgba(20,184,166,0.08)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98))] dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)]">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-primary/12">
                   <Store className="h-7 w-7" />
                 </div>
-                <p className="text-2xl font-semibold text-foreground">No items listed yet</p>
-                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                <p className="text-2xl font-semibold text-foreground dark:text-slate-50">No items listed yet</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground dark:text-slate-400">
                   Be the first to sell something in your college and help others!
                 </p>
                 <Button className="mt-6 gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => navigate("/sell")}>
