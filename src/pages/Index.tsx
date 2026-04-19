@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, Condition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
@@ -8,14 +8,11 @@ import { ProductCard } from "@/components/ProductCard";
 import { CollegeListingsFilterBar } from "@/components/CollegeListingsFilterBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Search, Store, X, ShieldCheck, MessageCircle, Wallet, ChevronRight } from "lucide-react";
 import { canonicalInstitutionName, loadInstitutionNames, normalizeInstitutionKey, searchInstitutionNames, warmInstitutionNames } from "@/lib/institutions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
@@ -112,6 +109,7 @@ function getPersistentListingOrderSeed() {
 const Index = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { collegeParam } = useParams<{ collegeParam?: string }>();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -123,11 +121,6 @@ const Index = () => {
   const [collegeDropdownOpen, setCollegeDropdownOpen] = useState(false);
   const [listings, setListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [requestModalOpen, setRequestModalOpen] = useState(false);
-  const [requestCollegeName, setRequestCollegeName] = useState("");
-  const [requestState, setRequestState] = useState("");
-  const [requestCity, setRequestCity] = useState("");
-  const [submittingRequest, setSubmittingRequest] = useState(false);
   const [searchingCollege, setSearchingCollege] = useState(false);
   const [viewportHeight, setViewportHeight] = useState<number>(
     typeof window !== "undefined" ? window.visualViewport?.height || window.innerHeight : 800
@@ -286,6 +279,21 @@ const Index = () => {
       setRequestCooldownUntil(savedCooldown);
     }
   }, [navigate, requestedCollege, restoreCollegeView]);
+
+  useEffect(() => {
+    const state = location.state as { requestedCollegeName?: string; collegeRequestSubmitted?: boolean } | null;
+    if (!state?.requestedCollegeName) return;
+
+    setCollegeQuery(state.requestedCollegeName);
+    if (state.collegeRequestSubmitted) {
+      const cooldownUntil = Date.now() + REQUEST_COOLDOWN_MS;
+      localStorage.setItem(COLLEGE_REQUEST_COOLDOWN_KEY, String(cooldownUntil));
+      setRequestCooldownUntil(cooldownUntil);
+      toast.success("Your request has been submitted. The college will be added within 24 hours if valid.");
+    }
+
+    navigate(`${location.pathname}${location.search}${location.hash}`, { replace: true, state: null });
+  }, [location.hash, location.pathname, location.search, location.state, navigate]);
 
   useEffect(() => {
     const warm = () => warmInstitutionNames();
@@ -636,49 +644,20 @@ const Index = () => {
     }
   };
 
-  const resetCollegeRequestForm = () => {
-    setRequestCollegeName("");
-    setRequestState("");
-    setRequestCity("");
-  };
-
-  const handleCollegeRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const openCollegeRequestPage = () => {
     if (requestCooldownUntil > Date.now()) {
       toast.error("Please wait a moment before sending another request.");
       return;
     }
-    if (!requestCollegeName.trim() || !requestState.trim() || !requestCity.trim()) {
-      toast.error("Please fill in college name, state, and city.");
-      return;
-    }
 
-    setSubmittingRequest(true);
-    try {
-      const safeCollegeName = sanitizeSingleLineInput(requestCollegeName);
-      const safeState = sanitizeSingleLineInput(requestState);
-      const safeCity = sanitizeSingleLineInput(requestCity);
-      const { error } = await supabase.from("college_requests").insert({
-        college_name: safeCollegeName,
-        state: safeState,
-        city: safeCity,
-        requester_name: sanitizeSingleLineInput(user?.name || ""),
-        requester_email: sanitizeSingleLineInput(user?.email || "").toLowerCase(),
-      });
-
-      if (error) throw error;
-
-      const cooldownUntil = Date.now() + REQUEST_COOLDOWN_MS;
-      localStorage.setItem(COLLEGE_REQUEST_COOLDOWN_KEY, String(cooldownUntil));
-      setRequestCooldownUntil(cooldownUntil);
-      toast.success("Your request has been submitted. The college will be added within 24 hours if valid.");
-      setRequestModalOpen(false);
-      resetCollegeRequestForm();
-    } catch (error: any) {
-      toast.error(error.message || "Could not send college request right now.");
-    } finally {
-      setSubmittingRequest(false);
-    }
+    navigate("/request-college", {
+      state: {
+        returnTo: `${location.pathname}${location.search}${location.hash}`,
+        collegeName: collegeQuery.trim(),
+        requesterName: user?.name || "",
+        requesterEmail: user?.email || "",
+      },
+    });
   };
 
   const handleAdminDeleteListing = async (listingId: string) => {
@@ -840,10 +819,7 @@ const Index = () => {
                             variant="ghost"
                             className="h-auto rounded-full px-4 py-2 text-xs font-medium text-primary hover:bg-primary/5 hover:text-primary"
                             disabled={requestCooldownUntil > Date.now()}
-                            onClick={() => {
-                              setRequestCollegeName(collegeQuery.trim());
-                              setRequestModalOpen(true);
-                            }}
+                            onClick={openCollegeRequestPage}
                           >
                             Can't find it? Request your college
                           </Button>
@@ -1059,55 +1035,6 @@ const Index = () => {
           </div>
         )}
       </section>
-
-      <Dialog
-        open={requestModalOpen}
-        onOpenChange={(open) => {
-          setRequestModalOpen(open);
-          if (!open && !submittingRequest) {
-            resetCollegeRequestForm();
-          }
-        }}
-      >
-        <DialogContent className="rounded-2xl sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Request to add your college</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCollegeRequest} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">College Name</label>
-              <Input
-                value={requestCollegeName}
-                onChange={(e) => setRequestCollegeName(e.target.value)}
-                placeholder="Enter your college name"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">State</label>
-              <Input
-                value={requestState}
-                onChange={(e) => setRequestState(e.target.value)}
-                placeholder="Enter state"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">City</label>
-              <Input
-                value={requestCity}
-                onChange={(e) => setRequestCity(e.target.value)}
-                placeholder="City as shown on Google Maps"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={submittingRequest || requestCooldownUntil > Date.now()}
-              className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90"
-            >
-              {submittingRequest ? "Sending..." : "Submit Request"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <div className="-mt-14 sm:-mt-12">
         <SiteFooter hideTopBorder />
