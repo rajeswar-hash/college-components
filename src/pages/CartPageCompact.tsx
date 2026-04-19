@@ -22,16 +22,10 @@ const CartPageCompact = () => {
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
-      setItems([]);
-      setLoading(false);
-      return;
-    }
-
     const fetchSavedItems = async () => {
       setLoading(true);
       try {
-        const savedRows = await getSavedListingIds(user.id);
+        const savedRows = await getSavedListingIds(user?.id);
         const listingIds = savedRows.map((row) => row.listing_id);
 
         if (listingIds.length === 0) {
@@ -84,11 +78,11 @@ const CartPageCompact = () => {
   const totalValue = useMemo(() => items.reduce((sum, item) => sum + item.price, 0), [items]);
 
   const handleRemove = async (listingId: string, likes: number) => {
-    if (!supabaseUser || removingId) return;
+    if (removingId) return;
 
     setRemovingId(listingId);
     try {
-      await toggleListingLike(listingId, likes, true);
+      await toggleListingLike(listingId, likes, true, supabaseUser?.id);
       setItems((prev) => prev.filter((item) => item.id !== listingId));
       toast.success("Removed from cart");
     } catch {
@@ -122,13 +116,7 @@ const CartPageCompact = () => {
             </div>
           </div>
 
-          {!isAuthenticated ? (
-            <div className="rounded-3xl border border-border/70 bg-card/70 px-6 py-16 text-center shadow-sm">
-              <ShoppingCart className="mx-auto h-12 w-12 text-primary" />
-              <h2 className="mt-4 font-display text-2xl font-semibold text-foreground">Sign in to view your cart</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Save items you like and find them here any time.</p>
-            </div>
-          ) : loading ? (
+          {loading ? (
             <div className="space-y-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="h-28 animate-pulse rounded-2xl bg-muted/60" />

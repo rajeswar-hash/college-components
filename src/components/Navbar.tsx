@@ -248,18 +248,16 @@ export function Navbar() {
             <Link to="/privacy" {...getLinkPrefetchProps("PrivacyPage")}>
               <Button variant="ghost" size="sm" className={navButtonClass("/privacy")}>Privacy</Button>
             </Link>
-            {isAuthenticated && (
-              <Link to="/cart" {...getLinkPrefetchProps("CartPage")}>
-                <Button variant="ghost" size="sm" className={`relative ${navButtonClass("/cart")}`}>
-                  <ShoppingCart className="w-4 h-4 mr-1" /> Cart
-                  {cartCount > 0 && (
-                    <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-            )}
+            <Link to="/cart" {...getLinkPrefetchProps("CartPage")}>
+              <Button variant="ghost" size="sm" className={`relative ${navButtonClass("/cart")}`}>
+                <ShoppingCart className="w-4 h-4 mr-1" /> Cart
+                {cartCount > 0 && (
+                  <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Button
               size="sm"
               className="gradient-bg text-primary-foreground border-0 hover:opacity-90"
@@ -413,18 +411,16 @@ export function Navbar() {
                 <Link to="/privacy" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("PrivacyPage")}>
                   <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/privacy")}`}>Privacy Policy</Button>
                 </Link>
-                {isAuthenticated && (
-                  <Link to="/cart" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("CartPage")}>
-                    <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/cart")}`}>
-                      <ShoppingCart className="w-4 h-4 mr-2" /> Cart
-                      {cartCount > 0 && (
-                        <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
-                          {cartCount}
-                        </span>
-                      )}
-                    </Button>
-                  </Link>
-                )}
+                <Link to="/cart" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("CartPage")}>
+                  <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/cart")}`}>
+                    <ShoppingCart className="w-4 h-4 mr-2" /> Cart
+                    {cartCount > 0 && (
+                      <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
                 {isAuthenticated && (
                   <Button variant="ghost" className="w-full justify-start" onClick={() => setShowSignOutConfirm(true)}>
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out

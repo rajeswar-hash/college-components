@@ -1,11 +1,30 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const CART_EVENT = "campuskart-cart-updated";
+const GUEST_CART_KEY = "campuskart-guest-cart";
 
 function notifyCartUpdated() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(CART_EVENT));
   }
+}
+
+function readGuestCartIds() {
+  if (typeof window === "undefined") return [] as string[];
+  try {
+    const raw = window.localStorage.getItem(GUEST_CART_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((value): value is string => typeof value === "string");
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestCartIds(ids: string[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(GUEST_CART_KEY, JSON.stringify(ids));
 }
 
 export function onCartUpdated(callback: () => void) {
@@ -14,7 +33,11 @@ export function onCartUpdated(callback: () => void) {
   return () => window.removeEventListener(CART_EVENT, callback);
 }
 
-export async function hasUserLikedListing(listingId: string, userId: string) {
+export async function hasUserLikedListing(listingId: string, userId?: string | null) {
+  if (!userId) {
+    return readGuestCartIds().includes(listingId);
+  }
+
   const { data, error } = await supabase.rpc("has_user_liked_listing", {
     p_listing_id: listingId,
   });
@@ -24,8 +47,22 @@ export async function hasUserLikedListing(listingId: string, userId: string) {
   return !!data && !!userId;
 }
 
-export async function toggleListingLike(listingId: string, currentLikes: number, currentlyLiked: boolean) {
+export async function toggleListingLike(listingId: string, currentLikes: number, currentlyLiked: boolean, userId?: string | null) {
   const nextLiked = !currentlyLiked;
+
+  if (!userId) {
+    const currentGuestIds = readGuestCartIds();
+    const nextGuestIds = nextLiked
+      ? Array.from(new Set([...currentGuestIds, listingId]))
+      : currentGuestIds.filter((id) => id !== listingId);
+    writeGuestCartIds(nextGuestIds);
+    notifyCartUpdated();
+
+    return {
+      liked: nextLiked,
+      likes: currentLikes,
+    };
+  }
 
   const { data, error } = await supabase.rpc("toggle_listing_like_v2", {
     p_listing_id: listingId,
@@ -41,7 +78,14 @@ export async function toggleListingLike(listingId: string, currentLikes: number,
   };
 }
 
-export async function getSavedListingIds(userId: string) {
+export async function getSavedListingIds(userId?: string | null) {
+  if (!userId) {
+    return readGuestCartIds().map((listing_id) => ({
+      listing_id,
+      created_at: new Date(0).toISOString(),
+    }));
+  }
+
   const { data, error } = await supabase
     .from("listing_likes")
     .select("listing_id, created_at")
@@ -53,7 +97,11 @@ export async function getSavedListingIds(userId: string) {
   return data || [];
 }
 
-export async function getSavedListingsCount(userId: string) {
+export async function getSavedListingsCount(userId?: string | null) {
+  if (!userId) {
+    return readGuestCartIds().length;
+  }
+
   const { count, error } = await supabase
     .from("listing_likes")
     .select("listing_id", { count: "exact", head: true })

@@ -96,12 +96,11 @@ const ProductDetail = () => {
   useEffect(() => {
     let cancelled = false;
 
-    if (!listing || !supabaseUser) {
-      setLiked(false);
+    if (!listing) {
       return;
     }
 
-    hasUserLikedListing(listing.id, supabaseUser.id)
+    hasUserLikedListing(listing.id, supabaseUser?.id)
       .then((value) => {
         if (!cancelled) {
           setLiked(value);
@@ -251,14 +250,9 @@ const ProductDetail = () => {
   const handleLike = async () => {
     if (!listing || liking) return;
 
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
     setLiking(true);
     try {
-      const result = await toggleListingLike(listing.id, listing.likes, liked);
+      const result = await toggleListingLike(listing.id, listing.likes, liked, supabaseUser?.id);
       setLiked(result.liked);
       setListing((current) => current ? { ...current, likes: result.likes } : current);
       toast.success(result.liked ? "Item added to cart" : "Item removed from cart");

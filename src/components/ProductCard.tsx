@@ -58,12 +58,7 @@ export function ProductCard({
   useEffect(() => {
     let cancelled = false;
 
-    if (!supabaseUser) {
-      setLiked(false);
-      return;
-    }
-
-    hasUserLikedListing(listing.id, supabaseUser.id)
+    hasUserLikedListing(listing.id, supabaseUser?.id)
       .then((value) => {
         if (!cancelled) {
           setLiked(value);
@@ -84,16 +79,11 @@ export function ProductCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
     if (liking) return;
 
     setLiking(true);
     try {
-      const result = await toggleListingLike(listing.id, likeCount, liked);
+      const result = await toggleListingLike(listing.id, likeCount, liked, supabaseUser?.id);
       setLiked(result.liked);
       setLikeCount(result.likes);
       toast.success(result.liked ? "Item added to cart" : "Item removed from cart");
