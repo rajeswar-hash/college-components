@@ -273,6 +273,13 @@ export function Navbar() {
             >
               <Plus className="w-4 h-4 mr-1" /> Sell
             </Button>
+            {!isAuthenticated && (
+              <Link to="/login" {...getLinkPrefetchProps("LoginPage")}>
+                <Button variant="ghost" size="sm" className={navButtonClass("/login")}>
+                  <User className="w-4 h-4 mr-1" /> Sign In
+                </Button>
+              </Link>
+            )}
             {isAuthenticated && (
               <>
                 <Link to={isAdmin ? "/admin" : "/dashboard"} {...getLinkPrefetchProps(isAdmin ? "AdminDashboard" : "Dashboard")}>
@@ -338,6 +345,13 @@ export function Navbar() {
                 >
                   <Plus className="w-4 h-4 mr-1" /> Sell Item
                 </Button>
+                {!isAuthenticated && (
+                  <Link to="/login" onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps("LoginPage")}>
+                    <Button variant="ghost" className={`w-full justify-start ${navButtonClass("/login")}`}>
+                      <User className="w-4 h-4 mr-2" /> Sign In
+                    </Button>
+                  </Link>
+                )}
                 {isAuthenticated && (
                 <Link to={dashboardRoute} onClick={() => setMobileMenu(false)} {...getLinkPrefetchProps(isAdmin ? "AdminDashboard" : "Dashboard")}>
                     <Button variant="ghost" className={`w-full justify-start ${navButtonClass(dashboardRoute)}`}>
