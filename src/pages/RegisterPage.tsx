@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, isAuthenticated, isAdmin, loading } = useAuth();
   const [registerStep, setRegisterStep] = useState<"form" | "otp">("form");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -46,6 +46,11 @@ export default function RegisterPage() {
     sessionStorage.setItem("campuskart-open-auth", "login");
     navigate("/");
   };
+
+  useEffect(() => {
+    if (loading || !isAuthenticated) return;
+    navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+  }, [isAdmin, isAuthenticated, loading, navigate]);
 
   const sendOtp = async () => {
     if (!normalizedEmail) {
@@ -123,6 +128,18 @@ export default function RegisterPage() {
 
     await verifyRegisterOtp();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.95),rgba(255,255,255,1))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]">
+        <Navbar />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.95),rgba(255,255,255,1))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]">
