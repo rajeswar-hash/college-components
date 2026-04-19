@@ -7,6 +7,7 @@ import { RouteModules } from "./lib/routePreload";
   Index,
   LoginPage,
   RegisterPage,
+  RequestCollegePage,
   ResetPasswordPage,
   AboutPage,
   HelpPage,
@@ -43,6 +44,7 @@ const App = () => (
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/request-college" element={<RequestCollegePage />} />
         <Route path="/college/:collegeParam" element={<Index />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/help" element={<HelpPage />} />

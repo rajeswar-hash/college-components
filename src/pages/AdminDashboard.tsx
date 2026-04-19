@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
+import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, ChevronDown, ChevronUp, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewImages, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { createStudentVerificationSignedUrl, deleteListingImages } from "@/lib/storage";
@@ -110,6 +110,11 @@ interface FrontendErrorRow {
   user_email: string | null;
 }
 
+const PROFILE_ADMIN_SELECT =
+  "id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin, seller_verification_status, student_id_card_path, student_id_rejection_reason, student_id_reviewed_at";
+const PROFILE_ADMIN_FALLBACK_SELECT =
+  "id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin";
+
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const GODADDY_DOMAIN_SETTINGS_URL = "https://dcc.godaddy.com/control/portfolio/campus-kart.in/settings?ventureId=d3acf6f8-981b-4484-a902-86992919704e&referrer=vh-quicklink&itc=mya_vh_buildwebsite_dashboard";
@@ -155,6 +160,7 @@ export default function AdminDashboard() {
   const [healthLoading, setHealthLoading] = useState(false);
   const [systemHealth, setSystemHealth] = useState<SystemHealthRow | null>(null);
   const [recentErrors, setRecentErrors] = useState<FrontendErrorRow[]>([]);
+  const [showRecentErrors, setShowRecentErrors] = useState(false);
   const [healthError, setHealthError] = useState("");
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -182,6 +188,36 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) return;
 
+    const loadProfilesForAdmin = async () => {
+      const primary = await supabase
+        .from("profiles")
+        .select(PROFILE_ADMIN_SELECT)
+        .order("created_at", { ascending: false });
+
+      if (!primary.error) {
+        return primary as { data: ProfileAdminRow[] | null; error: null };
+      }
+
+      const fallback = await supabase
+        .from("profiles")
+        .select(PROFILE_ADMIN_FALLBACK_SELECT)
+        .order("created_at", { ascending: false });
+
+      if (fallback.error) {
+        return fallback as { data: ProfileAdminRow[] | null; error: any };
+      }
+
+      const normalized = ((fallback.data as any[]) || []).map((profile) => ({
+        ...profile,
+        seller_verification_status: null,
+        student_id_card_path: null,
+        student_id_rejection_reason: null,
+        student_id_reviewed_at: null,
+      })) as ProfileAdminRow[];
+
+      return { data: normalized, error: null };
+    };
+
     const fetchAdminData = async () => {
       setLoading(true);
 
@@ -196,10 +232,7 @@ export default function AdminDashboard() {
           .order("created_at", { ascending: false }),
         isPartnerModerator
           ? Promise.resolve({ data: [], error: null } as any)
-          : supabase
-              .from("profiles")
-              .select("id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin, seller_verification_status, student_id_card_path, student_id_rejection_reason, student_id_reviewed_at")
-              .order("created_at", { ascending: false }),
+          : loadProfilesForAdmin(),
         supabase
           .from("college_requests")
           .select("id, college_name, city, state, note, requester_name, requester_email, status, created_at, reviewed_at")
@@ -1280,6 +1313,15 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{recentErrors.length}</Badge>
                       <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-7 w-7"
+                        onClick={() => setShowRecentErrors((current) => !current)}
+                        aria-label={showRecentErrors ? "Hide latest error events" : "Show latest error events"}
+                      >
+                        {showRecentErrors ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      </Button>
+                      <Button
                         size="sm"
                         variant="outline"
                         className="h-7 px-2 text-[11px]"
@@ -1290,7 +1332,9 @@ export default function AdminDashboard() {
                       </Button>
                     </div>
                   </div>
-                  {recentErrors.length === 0 ? (
+                  {!showRecentErrors ? (
+                  <p className="text-xs text-muted-foreground">Press the small arrow button to open the latest error events.</p>
+                ) : recentErrors.length === 0 ? (
                   <p className="text-xs text-muted-foreground">No recent client-side errors were logged.</p>
                 ) : (
                   <div className="space-y-2">

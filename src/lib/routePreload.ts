@@ -14,6 +14,7 @@ export const RouteModules = {
   Index: lazyWithPreload(() => import("../pages/Index")),
   LoginPage: lazyWithPreload(() => import("../pages/LoginPage")),
   RegisterPage: lazyWithPreload(() => import("../pages/RegisterPage")),
+  RequestCollegePage: lazyWithPreload(() => import("../pages/RequestCollegePage")),
   ResetPasswordPage: lazyWithPreload(() => import("../pages/ResetPasswordPage")),
   AboutPage: lazyWithPreload(() => import("../pages/AboutPage")),
   HelpPage: lazyWithPreload(() => import("../pages/HelpPage")),
@@ -41,6 +42,7 @@ export function preloadCommonRoutes() {
   preloadRouteChunk("PrivacyPage");
   preloadRouteChunk("LoginPage");
   preloadRouteChunk("RegisterPage");
+  preloadRouteChunk("RequestCollegePage");
   preloadRouteChunk("SellPage");
   preloadRouteChunk("CartPage");
   preloadRouteChunk("Dashboard");

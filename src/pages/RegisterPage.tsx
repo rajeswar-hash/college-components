@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ShieldCheck, Upload, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register, isAuthenticated, isAdmin, loading } = useAuth();
   const [registerStep, setRegisterStep] = useState<"form" | "otp">("form");
   const [email, setEmail] = useState("");
@@ -25,11 +25,6 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
   const [studentIdFile, setStudentIdFile] = useState<File | null>(null);
-  const [requestCollegeOpen, setRequestCollegeOpen] = useState(false);
-  const [requestCollegeName, setRequestCollegeName] = useState("");
-  const [requestCity, setRequestCity] = useState("");
-  const [requestState, setRequestState] = useState("");
-  const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const otpRef = useRef<HTMLInputElement>(null);
@@ -61,10 +56,14 @@ export default function RegisterPage() {
   };
 
   const openCollegeRequest = (typedCollege: string) => {
-    setRequestCollegeName(typedCollege || college.trim());
-    setRequestCity("");
-    setRequestState("");
-    setRequestCollegeOpen(true);
+    navigate("/request-college", {
+      state: {
+        returnTo: `${location.pathname}${location.search}${location.hash}`,
+        collegeName: typedCollege || college.trim(),
+        requesterName: name.trim(),
+        requesterEmail: normalizedEmail,
+      },
+    });
   };
 
   useEffect(() => {
@@ -72,39 +71,16 @@ export default function RegisterPage() {
     navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
   }, [isAdmin, isAuthenticated, loading, navigate]);
 
-  const handleCollegeRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const collegeName = requestCollegeName.trim();
-    const requesterName = name.trim();
-    const requesterEmail = normalizedEmail;
-    const city = requestCity.trim();
-    const state = requestState.trim();
+  useEffect(() => {
+    const state = location.state as { requestedCollegeName?: string; collegeRequestSubmitted?: boolean } | null;
+    if (!state?.requestedCollegeName) return;
 
-    if (!collegeName || !requesterName || !requesterEmail || !city || !state) {
-      toast.error("Fill all request details before sending.");
-      return;
-    }
-
-    setRequestSubmitting(true);
-    try {
-      const { error } = await supabase.from("college_requests").insert({
-        college_name: collegeName,
-        state,
-        city,
-        requester_name: requesterName,
-        requester_email: requesterEmail,
-      });
-      if (error) throw error;
-
-      setCollege(collegeName);
-      setRequestCollegeOpen(false);
+    setCollege(state.requestedCollegeName);
+    if (state.collegeRequestSubmitted) {
       toast.success("College request sent. We will review it soon.");
-    } catch (err: any) {
-      toast.error(err.message || "Could not send college request.");
-    } finally {
-      setRequestSubmitting(false);
     }
-  };
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   const sendOtp = async () => {
     if (!normalizedEmail) {
@@ -385,50 +361,6 @@ export default function RegisterPage() {
           </Card>
         </div>
       </div>
-      <Dialog open={requestCollegeOpen} onOpenChange={setRequestCollegeOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Request to add college</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCollegeRequest} className="space-y-4">
-            <div>
-              <Label htmlFor="request-college-name">College name</Label>
-              <Input
-                id="request-college-name"
-                value={requestCollegeName}
-                onChange={(e) => setRequestCollegeName(e.target.value)}
-                placeholder="Enter full college name"
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="request-city">City</Label>
-                <Input
-                  id="request-city"
-                  value={requestCity}
-                  onChange={(e) => setRequestCity(e.target.value)}
-                  placeholder="City"
-                />
-              </div>
-              <div>
-                <Label htmlFor="request-state">State</Label>
-                <Input
-                  id="request-state"
-                  value={requestState}
-                  onChange={(e) => setRequestState(e.target.value)}
-                  placeholder="State"
-                />
-              </div>
-            </div>
-            <p className="text-xs leading-5 text-muted-foreground">
-              We use your name and email from this form so admin can review and add the college faster.
-            </p>
-            <Button type="submit" disabled={requestSubmitting} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
-              {requestSubmitting ? "Sending..." : "Send College Request"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
       <SiteFooter />
     </div>
   );
