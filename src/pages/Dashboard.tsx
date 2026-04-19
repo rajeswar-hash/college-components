@@ -84,7 +84,6 @@ const Dashboard = () => {
   const [profileForm, setProfileForm] = useState({
     name: "",
     phone: "",
-    college: "",
     avatar_url: "",
   });
 
@@ -93,7 +92,6 @@ const Dashboard = () => {
       setProfileForm({
         name: user.name || "",
         phone: user.phone || "",
-        college: user.college || "",
         avatar_url: getAvatarStorageValue(user.avatar_url),
       });
     }
@@ -236,16 +234,11 @@ const Dashboard = () => {
 
   const handleSaveProfile = async () => {
     const cleanName = profileForm.name.trim();
-    const cleanCollege = profileForm.college.trim();
     const cleanPhone = profileForm.phone.trim();
     const normalizedPhone = cleanPhone.replace(/\D/g, "");
 
     if (!cleanName) {
       toast.error("Please enter your name");
-      return;
-    }
-    if (!cleanCollege) {
-      toast.error("Please enter your college");
       return;
     }
     if (!cleanPhone) {
@@ -259,13 +252,12 @@ const Dashboard = () => {
 
     try {
       setSavingProfile(true);
-      await updateProfile({
-        name: cleanName,
-        phone: normalizedPhone,
-        college: cleanCollege,
-        avatar_url: getAvatarStorageValue(
-          profileForm.avatar_url || user?.avatar_url || getDefaultAvatarUrl(profileForm.name, user?.email)
-        ),
+        await updateProfile({
+          name: cleanName,
+          phone: normalizedPhone,
+          avatar_url: getAvatarStorageValue(
+            profileForm.avatar_url || user?.avatar_url || getDefaultAvatarUrl(profileForm.name, user?.email)
+          ),
       });
       setIsEditingProfile(false);
       toast.success("Profile updated");
@@ -281,7 +273,6 @@ const Dashboard = () => {
     setProfileForm({
       name: user?.name || "",
       phone: user?.phone || "",
-      college: user?.college || "",
       avatar_url: getAvatarStorageValue(user?.avatar_url),
     });
     setIsEditingProfile(false);
@@ -600,17 +591,7 @@ const Dashboard = () => {
                 </label>
               </div>
 
-              <label className="space-y-2 mt-4 block">
-                <span className="text-sm font-medium text-foreground">College / University</span>
-                <input
-                  value={profileForm.college}
-                  onChange={(event) => setProfileForm((prev) => ({ ...prev, college: event.target.value }))}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
-                  placeholder="Enter your college or university"
-                />
-              </label>
-
-              <div className="mt-6 flex flex-wrap gap-3">
+                <div className="mt-6 flex flex-wrap gap-3">
                 <Button onClick={handleSaveProfile} disabled={savingProfile} className="gradient-bg text-primary-foreground border-0 hover:opacity-90 rounded-full">
                   <Save className="w-4 h-4 mr-2" />
                   {savingProfile ? "Saving..." : "Save Profile"}
