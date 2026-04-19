@@ -90,7 +90,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       }
       return true;
     } catch (err: any) {
-      toast.error(err.message || "Could not send OTP.");
+      const rawMessage = String(err?.message || "");
+      const friendlyMessage =
+        target === "forgot" && /signups not allowed for otp/i.test(rawMessage)
+          ? "This email is not registered on CampusKart."
+          : rawMessage || "Could not send OTP.";
+      toast.error(friendlyMessage);
       return false;
     } finally {
       setSubmitting(false);

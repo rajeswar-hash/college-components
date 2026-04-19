@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Navbar } from "@/components/Navbar";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,9 +109,11 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.95),rgba(255,255,255,1))] px-4 py-10">
+    <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.95),rgba(255,255,255,1))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]">
+      <Navbar />
+      <div className="px-4 py-10">
       <div className="mx-auto max-w-md">
-        <Card className="glass border-border/70 shadow-[0_20px_60px_rgba(20,184,166,0.10)]">
+        <Card className="border-border/70 bg-background/90 shadow-[0_20px_60px_rgba(20,184,166,0.10)] backdrop-blur dark:border-white/10 dark:bg-slate-900/88 dark:shadow-[0_24px_70px_rgba(2,6,23,0.45)]">
           <CardHeader className="space-y-3 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl gradient-bg text-primary-foreground shadow-sm">
               <KeyRound className="h-6 w-6" />
@@ -140,7 +144,7 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter new password"
                       autoComplete="new-password"
-                      className="pr-11"
+                      className="pr-11 dark:border-white/10 dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -162,7 +166,7 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm new password"
                       autoComplete="new-password"
-                      className="pr-11"
+                      className="pr-11 dark:border-white/10 dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -190,6 +194,8 @@ export default function ResetPasswordPage() {
           </CardContent>
         </Card>
       </div>
+      </div>
+      <SiteFooter />
     </div>
   );
 }
