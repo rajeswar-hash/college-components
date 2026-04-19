@@ -223,7 +223,9 @@ export default function RegisterPage() {
                         onNextField={() => phoneRef.current?.focus()}
                         dropdownPosition="above"
                         onRequestCollege={openCollegeRequest}
+                        requireSelection
                       />
+                      <p className="-mt-2 text-xs text-muted-foreground">Choose your college from the dropdown list only.</p>
 
                       <div>
                         <Label htmlFor="phone">WhatsApp Number</Label>

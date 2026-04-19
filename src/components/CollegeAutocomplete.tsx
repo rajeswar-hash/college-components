@@ -12,6 +12,7 @@ interface CollegeAutocompleteProps {
   dropdownPosition?: "below" | "above";
   requestButtonLabel?: string;
   onRequestCollege?: (query: string) => void;
+  requireSelection?: boolean;
 }
 
 export function CollegeAutocomplete({
@@ -22,6 +23,7 @@ export function CollegeAutocomplete({
   dropdownPosition = "below",
   requestButtonLabel = "Request to add college",
   onRequestCollege,
+  requireSelection = false,
 }: CollegeAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
@@ -71,12 +73,16 @@ export function CollegeAutocomplete({
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
+        if (requireSelection) {
+          setQuery(value);
+          return;
+        }
         if (query.trim() && !value) onChange(query.trim());
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [query, value, onChange]);
+  }, [onChange, query, requireSelection, value]);
 
   const dropdownClass =
     dropdownPosition === "above"
@@ -103,7 +109,9 @@ export function CollegeAutocomplete({
           const val = e.target.value;
           ensureCollegeDataReady();
           setQuery(val);
-          onChange(val);
+          if (!requireSelection) {
+            onChange(val);
+          }
           setOpen(true);
           clearTimeout(debounceRef.current);
           debounceRef.current = setTimeout(() => searchColleges(val), 150);
@@ -117,16 +125,25 @@ export function CollegeAutocomplete({
           }
         }}
         onBlur={() => {
+          if (requireSelection) {
+            setQuery(value);
+            return;
+          }
           if (query.trim()) onChange(query.trim());
         }}
         onKeyDown={(e) => {
           if (e.key !== "Enter") return;
           e.preventDefault();
 
-          const nextValue = results[0] || query.trim();
+          const exactMatch = results.find((college) => college.toLowerCase() === query.trim().toLowerCase());
+          const nextValue = requireSelection ? exactMatch || "" : results[0] || query.trim();
           if (nextValue) {
             onChange(nextValue);
             setQuery(nextValue);
+          } else if (requireSelection) {
+            setQuery(value);
+            setOpen(true);
+            return;
           }
 
           setOpen(false);
