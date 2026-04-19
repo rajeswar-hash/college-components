@@ -161,7 +161,7 @@ export default function AdminDashboard() {
   const [systemHealth, setSystemHealth] = useState<SystemHealthRow | null>(null);
   const [recentErrors, setRecentErrors] = useState<FrontendErrorRow[]>([]);
   const [showRecentErrors, setShowRecentErrors] = useState(false);
-  const [memberSnapshotFilter, setMemberSnapshotFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [memberSnapshotFilter, setMemberSnapshotFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [healthError, setHealthError] = useState("");
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -427,6 +427,7 @@ export default function AdminDashboard() {
     [profiles]
   );
   const visibleMemberSnapshot = useMemo(() => {
+    if (memberSnapshotFilter === "all") return profiles;
     if (memberSnapshotFilter === "approved") return approvedMembers;
     if (memberSnapshotFilter === "rejected") return rejectedSellerApprovals;
     return pendingSellerApprovals;
@@ -1814,6 +1815,14 @@ export default function AdminDashboard() {
                   >
                     Rejected <Badge variant="secondary" className="ml-2 text-[10px]">{rejectedSellerApprovals.length}</Badge>
                   </Button>
+                  <Button
+                    size="sm"
+                    variant={memberSnapshotFilter === "all" ? "default" : "outline"}
+                    className="h-8 text-xs"
+                    onClick={() => setMemberSnapshotFilter("all")}
+                  >
+                    All Members <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
+                  </Button>
                 </div>
 
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -1823,14 +1832,18 @@ export default function AdminDashboard() {
                         ? "Pending member approvals"
                         : memberSnapshotFilter === "approved"
                         ? "Approved members"
-                        : "Rejected members"}
+                        : memberSnapshotFilter === "rejected"
+                        ? "Rejected members"
+                        : "All members"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {memberSnapshotFilter === "pending"
                         ? "Review college ID cards before users are allowed to sell on CampusKart."
                         : memberSnapshotFilter === "approved"
                         ? "Accounts already approved and active on the platform."
-                        : "Previously rejected verification requests."}
+                        : memberSnapshotFilter === "rejected"
+                        ? "Previously rejected verification requests."
+                        : "Complete member snapshot with all current user records."}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1844,7 +1857,9 @@ export default function AdminDashboard() {
                       ? "No seller approvals are waiting right now."
                       : memberSnapshotFilter === "approved"
                       ? "No approved members are available to show."
-                      : "No rejected member approvals are available to show."}
+                      : memberSnapshotFilter === "rejected"
+                      ? "No rejected member approvals are available to show."
+                      : "No members are available to show."}
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -1875,7 +1890,7 @@ export default function AdminDashboard() {
                               {openingStudentIdFor === profile.id ? "Opening..." : "View ID"}
                             </Button>
                           )}
-                          {memberSnapshotFilter !== "approved" && (
+                          {(memberSnapshotFilter === "pending" || memberSnapshotFilter === "rejected" || (memberSnapshotFilter === "all" && deriveSellerVerificationStatus(profile) !== "approved")) && (
                             <Button
                               size="sm"
                               className="h-8 text-xs"
@@ -1885,7 +1900,7 @@ export default function AdminDashboard() {
                               Approve seller
                             </Button>
                           )}
-                          {memberSnapshotFilter !== "rejected" && (
+                          {(memberSnapshotFilter === "pending" || memberSnapshotFilter === "approved" || (memberSnapshotFilter === "all" && deriveSellerVerificationStatus(profile) !== "rejected")) && !profile.is_admin && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -1896,72 +1911,18 @@ export default function AdminDashboard() {
                               Reject
                             </Button>
                           )}
+                          {!profile.is_admin && memberSnapshotFilter === "all" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 shrink-0 text-xs text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteAccount(profile.id)}
+                            >
+                              <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                            </Button>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">All member records</p>
-                    <p className="text-xs text-muted-foreground">Full member snapshot with status badges.</p>
-                  </div>
-                  <Badge variant="secondary">{profiles.length} total</Badge>
-                </div>
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">Loading members...</p>
-                ) : profiles.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No user profiles available to show.</p>
-                ) : (
-                  <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
-                    {profiles.map((profile) => (
-                    <div key={profile.id} className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3 min-w-0">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-xs font-bold text-primary">
-                          {profile.name?.charAt(0) || "U"}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="truncate text-sm font-medium text-foreground">{profile.name}</p>
-                            {profile.is_admin && <Badge variant="secondary" className="text-[10px]">Admin</Badge>}
-                            {profile.is_banned && <Badge variant="destructive" className="text-[10px]">Banned</Badge>}
-                            {!profile.is_admin && !profile.is_banned && (
-                              <Badge variant="outline" className="text-[10px] capitalize">
-                                {deriveSellerVerificationStatus(profile)}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
-                          <p className="text-xs text-muted-foreground">{profile.college}</p>
-                          {profile.student_id_reviewed_at && (
-                            <p className="text-xs text-muted-foreground">
-                              Seller review: {new Date(profile.student_id_reviewed_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                            </p>
-                          )}
-                          {profile.student_id_rejection_reason && (
-                            <p className="text-xs text-muted-foreground">{profile.student_id_rejection_reason}</p>
-                          )}
-                          {profile.violation_count > 0 && (
-                            <p className="text-xs text-muted-foreground">{profile.violation_count} violation(s)</p>
-                          )}
-                        </div>
-                        </div>
-                        {!profile.is_admin && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 shrink-0 text-xs text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteAccount(profile.id)}
-                          >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
-                          </Button>
-                        )}
-                      </div>
-                    </div>
                     ))}
                   </div>
                 )}
