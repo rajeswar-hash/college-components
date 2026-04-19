@@ -10,6 +10,8 @@ interface CollegeAutocompleteProps {
   inputRef?: React.RefObject<HTMLInputElement>;
   onNextField?: () => void;
   dropdownPosition?: "below" | "above";
+  requestButtonLabel?: string;
+  onRequestCollege?: (query: string) => void;
 }
 
 export function CollegeAutocomplete({
@@ -18,6 +20,8 @@ export function CollegeAutocomplete({
   inputRef,
   onNextField,
   dropdownPosition = "below",
+  requestButtonLabel = "Request to add college",
+  onRequestCollege,
 }: CollegeAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
@@ -80,9 +84,10 @@ export function CollegeAutocomplete({
       : "absolute left-0 right-0 z-[80] mt-1 max-h-56 overflow-auto rounded-lg border border-border bg-popover shadow-lg";
 
   const emptyStateClass =
-    dropdownPosition === "above"
+    (dropdownPosition === "above"
       ? "absolute bottom-full left-0 right-0 z-[80] mb-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground"
-      : "absolute left-0 right-0 z-[80] mt-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground";
+      : "absolute left-0 right-0 z-[80] mt-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground") +
+    (onRequestCollege ? " hidden" : "");
 
   return (
     <div ref={wrapperRef} className="relative overflow-visible">
@@ -151,6 +156,24 @@ export function CollegeAutocomplete({
               <span className={value === c ? "font-medium" : ""}>{c}</span>
             </button>
           ))}
+        </div>
+      )}
+      {open && !loading && query.length >= 2 && results.length === 0 && onRequestCollege && (
+        <div
+          className={
+            dropdownPosition === "above"
+              ? "absolute bottom-full left-0 right-0 z-[80] mb-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground"
+              : "absolute left-0 right-0 z-[80] mt-1 rounded-lg border border-border bg-popover shadow-lg p-3 text-sm text-muted-foreground"
+          }
+        >
+          <p>No match found for this college.</p>
+          <button
+            type="button"
+            onClick={() => onRequestCollege(query.trim())}
+            className="mt-2 font-medium text-primary hover:underline"
+          >
+            {requestButtonLabel}
+          </button>
         </div>
       )}
       {open && !loading && query.length >= 2 && results.length === 0 && (

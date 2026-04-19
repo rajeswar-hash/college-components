@@ -1,12 +1,11 @@
 import { Listing, categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Share2, ShoppingCart, Trash2 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { AuthModal } from "@/components/AuthModal";
 import { getListingCoverImage, getListingPreviewPlaceholders } from "@/lib/listingImage";
 import { LqipImage } from "@/components/LqipImage";
 import { preloadRouteChunk } from "@/lib/routePreload";
@@ -39,11 +38,11 @@ export function ProductCard({
 }: ProductCardProps) {
   const fallbackLogoSrc = `${import.meta.env.BASE_URL}campuskart-logo.jpeg`;
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated, supabaseUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes);
   const [liking, setLiking] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
   const shouldShowCondition = categoryUsesCondition(listing.category) && Boolean(listing.condition);
@@ -86,7 +85,7 @@ export function ProductCard({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      setShowAuth(true);
+      navigate("/login");
       return;
     }
 
@@ -254,7 +253,6 @@ export function ProductCard({
         </div>
       </div>
     </Link>
-    <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </>
   );
 }

@@ -12,6 +12,7 @@ function lazyWithPreload<T extends React.ComponentType<any>>(importer: Importer<
 
 export const RouteModules = {
   Index: lazyWithPreload(() => import("../pages/Index")),
+  LoginPage: lazyWithPreload(() => import("../pages/LoginPage")),
   RegisterPage: lazyWithPreload(() => import("../pages/RegisterPage")),
   ResetPasswordPage: lazyWithPreload(() => import("../pages/ResetPasswordPage")),
   AboutPage: lazyWithPreload(() => import("../pages/AboutPage")),
@@ -38,6 +39,7 @@ export function preloadCommonRoutes() {
   preloadRouteChunk("ContactPage");
   preloadRouteChunk("TermsPage");
   preloadRouteChunk("PrivacyPage");
+  preloadRouteChunk("LoginPage");
   preloadRouteChunk("RegisterPage");
   preloadRouteChunk("SellPage");
   preloadRouteChunk("CartPage");

@@ -10,7 +10,6 @@ import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, no
 import { trackHandledError } from "@/lib/errorTracking";
 import { uploadListingImages } from "@/lib/storage";
 import { Navbar } from "@/components/Navbar";
-import { AuthModal } from "@/components/AuthModal";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -488,9 +487,21 @@ const SellPage = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <p className="text-lg text-muted-foreground">Please sign in to list an item.</p>
-          <AuthModal open={true} onClose={() => navigate("/")} />
+        <div className="container mx-auto max-w-xl px-4 py-20 text-center">
+          <div className="rounded-3xl border border-border/70 bg-card/90 p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/88">
+            <h1 className="font-display text-2xl font-semibold text-foreground">Sign in to post an item</h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              You need a CampusKart account before listing anything for sale.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Button className="gradient-bg border-0 text-primary-foreground" onClick={() => navigate("/login")}>
+                Sign In
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/register")}>
+                Create Account
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );

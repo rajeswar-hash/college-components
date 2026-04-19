@@ -41,7 +41,7 @@ const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 
 function hasValidWhatsappNumber(phone: string) {
   const digits = phone.replace(/\D/g, "").replace(/^0+/, "");
-  return digits.length >= 10;
+  return digits.length === 10;
 }
 
 function isEmailConfirmed(user: SupabaseUser | null) {

@@ -5,6 +5,7 @@ import { RouteModules } from "./lib/routePreload";
 
   const {
   Index,
+  LoginPage,
   RegisterPage,
   ResetPasswordPage,
   AboutPage,
@@ -40,6 +41,7 @@ const App = () => (
     <Suspense fallback={<RouteLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/college/:collegeParam" element={<Index />} />
         <Route path="/about" element={<AboutPage />} />

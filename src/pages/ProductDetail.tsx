@@ -10,7 +10,6 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
 import { useAuth } from "@/contexts/AuthContext";
-import { AuthModal } from "@/components/AuthModal";
 import { getListingDetailImages, getListingDetailPlaceholders } from "@/lib/listingImage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
@@ -53,7 +52,6 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [liking, setLiking] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [hasReported, setHasReported] = useState(false);
   const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
@@ -254,7 +252,7 @@ const ProductDetail = () => {
     if (!listing || liking) return;
 
     if (!isAuthenticated) {
-      setShowAuth(true);
+      navigate("/login");
       return;
     }
 
@@ -355,7 +353,7 @@ const ProductDetail = () => {
     if (!listing || reporting) return;
 
     if (!isAuthenticated) {
-      setShowAuth(true);
+      navigate("/login");
       return;
     }
 
@@ -561,7 +559,6 @@ const ProductDetail = () => {
         </div>
       </div>
       <SiteFooter />
-      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </div>
   );
 };

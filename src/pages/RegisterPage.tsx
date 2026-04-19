@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ShieldCheck, Upload, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,6 +25,11 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
   const [studentIdFile, setStudentIdFile] = useState<File | null>(null);
+  const [requestCollegeOpen, setRequestCollegeOpen] = useState(false);
+  const [requestCollegeName, setRequestCollegeName] = useState("");
+  const [requestCity, setRequestCity] = useState("");
+  const [requestState, setRequestState] = useState("");
+  const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const otpRef = useRef<HTMLInputElement>(null);
@@ -33,6 +39,14 @@ export default function RegisterPage() {
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPhone = phone.replace(/\D/g, "").slice(0, 10);
+  const isFormComplete =
+    name.trim().length > 0 &&
+    college.trim().length > 0 &&
+    normalizedPhone.length === 10 &&
+    normalizedEmail.length > 0 &&
+    password.length >= 6 &&
+    !!studentIdFile;
 
   const moveOnEnter =
     (nextRef?: React.RefObject<HTMLInputElement>) =>
@@ -43,14 +57,54 @@ export default function RegisterPage() {
     };
 
   const openLoginPopup = () => {
-    sessionStorage.setItem("campuskart-open-auth", "login");
-    navigate("/");
+    navigate("/login");
+  };
+
+  const openCollegeRequest = (typedCollege: string) => {
+    setRequestCollegeName(typedCollege || college.trim());
+    setRequestCity("");
+    setRequestState("");
+    setRequestCollegeOpen(true);
   };
 
   useEffect(() => {
     if (loading || !isAuthenticated) return;
     navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
   }, [isAdmin, isAuthenticated, loading, navigate]);
+
+  const handleCollegeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const collegeName = requestCollegeName.trim();
+    const requesterName = name.trim();
+    const requesterEmail = normalizedEmail;
+    const city = requestCity.trim();
+    const state = requestState.trim();
+
+    if (!collegeName || !requesterName || !requesterEmail || !city || !state) {
+      toast.error("Fill all request details before sending.");
+      return;
+    }
+
+    setRequestSubmitting(true);
+    try {
+      const { error } = await supabase.from("college_requests").insert({
+        college_name: collegeName,
+        state,
+        city,
+        requester_name: requesterName,
+        requester_email: requesterEmail,
+      });
+      if (error) throw error;
+
+      setCollege(collegeName);
+      setRequestCollegeOpen(false);
+      toast.success("College request sent. We will review it soon.");
+    } catch (err: any) {
+      toast.error(err.message || "Could not send college request.");
+    } finally {
+      setRequestSubmitting(false);
+    }
+  };
 
   const sendOtp = async () => {
     if (!normalizedEmail) {
@@ -94,7 +148,7 @@ export default function RegisterPage() {
       });
       if (error) throw error;
 
-      await register(email, password, name, phone, college, studentIdFile as File);
+      await register(email, password, name, normalizedPhone, college, studentIdFile as File);
       toast.success("Account submitted for admin verification. You can sign in while approval is pending.");
       openLoginPopup();
     } catch (err: any) {
@@ -113,8 +167,12 @@ export default function RegisterPage() {
         toast.error("Please enter a password with at least 6 characters.");
         return;
       }
-      if (!name || !phone || !college) {
+      if (!name.trim() || !college.trim() || !normalizedEmail) {
         toast.error("Please fill in all fields.");
+        return;
+      }
+      if (normalizedPhone.length !== 10) {
+        toast.error("WhatsApp number must be exactly 10 digits.");
         return;
       }
       if (!studentIdFile) {
@@ -187,6 +245,7 @@ export default function RegisterPage() {
                         inputRef={collegeRef}
                         onNextField={() => phoneRef.current?.focus()}
                         dropdownPosition="above"
+                        onRequestCollege={openCollegeRequest}
                       />
 
                       <div>
@@ -195,11 +254,12 @@ export default function RegisterPage() {
                           id="phone"
                           ref={phoneRef}
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                           onKeyDown={moveOnEnter(emailRef)}
                           placeholder="9876543210"
                           autoComplete="tel"
                           inputMode="tel"
+                          maxLength={10}
                         />
                         <p className="mt-1 text-xs text-muted-foreground">Enter a valid 10-digit WhatsApp number so buyers can reach you.</p>
                       </div>
@@ -306,7 +366,11 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <Button type="submit" disabled={submitting} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
+                <Button
+                  type="submit"
+                  disabled={submitting || (registerStep === "form" && !isFormComplete)}
+                  className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90"
+                >
                   {submitting ? "Please wait..." : registerStep === "form" ? "Create Account" : "Verify OTP"}
                 </Button>
 
@@ -321,6 +385,50 @@ export default function RegisterPage() {
           </Card>
         </div>
       </div>
+      <Dialog open={requestCollegeOpen} onOpenChange={setRequestCollegeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request to add college</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCollegeRequest} className="space-y-4">
+            <div>
+              <Label htmlFor="request-college-name">College name</Label>
+              <Input
+                id="request-college-name"
+                value={requestCollegeName}
+                onChange={(e) => setRequestCollegeName(e.target.value)}
+                placeholder="Enter full college name"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="request-city">City</Label>
+                <Input
+                  id="request-city"
+                  value={requestCity}
+                  onChange={(e) => setRequestCity(e.target.value)}
+                  placeholder="City"
+                />
+              </div>
+              <div>
+                <Label htmlFor="request-state">State</Label>
+                <Input
+                  id="request-state"
+                  value={requestState}
+                  onChange={(e) => setRequestState(e.target.value)}
+                  placeholder="State"
+                />
+              </div>
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              We use your name and email from this form so admin can review and add the college faster.
+            </p>
+            <Button type="submit" disabled={requestSubmitting} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
+              {requestSubmitting ? "Sending..." : "Send College Request"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
       <SiteFooter />
     </div>
   );

@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, User, LogOut, Menu, X, Shield, Trash2, Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AuthModal } from "@/components/AuthModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,7 +22,6 @@ import { preloadRouteChunk } from "@/lib/routePreload";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isAdmin, deleteAccount } = useAuth();
-  const [showAuth, setShowAuth] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [mobileMenuMounted, setMobileMenuMounted] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -57,9 +55,9 @@ export function Navbar() {
     const requestedAuthMode = sessionStorage.getItem("campuskart-open-auth");
     if (requestedAuthMode === "login") {
       sessionStorage.removeItem("campuskart-open-auth");
-      setShowAuth(true);
+      navigate("/login");
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (mobileMenu) {
@@ -271,7 +269,7 @@ export function Navbar() {
                 if (isAuthenticated) {
                   navigate("/sell");
                 } else {
-                  setShowAuth(true);
+                  navigate("/login");
                 }
               }}
             >
@@ -336,7 +334,7 @@ export function Navbar() {
                     if (isAuthenticated) {
                       navigate("/sell");
                     } else {
-                      setShowAuth(true);
+                      navigate("/login");
                     }
                   }}
                 >
@@ -452,8 +450,6 @@ export function Navbar() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
     </>
   );
 }
