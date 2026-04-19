@@ -54,6 +54,20 @@ function isProfileComplete(profile: Pick<Profile, "name" | "phone" | "college"> 
   return [profile.name, profile.phone, profile.college].every((value) => value.trim().length > 0);
 }
 
+function deriveSellerVerificationStatus(
+  profile: Pick<Profile, "name" | "phone" | "college" | "student_id_card_path" | "seller_verification_status" | "is_admin"> | null
+) {
+  if (!profile) return "pending" as const;
+  if (profile.is_admin) return "approved" as const;
+  if (profile.seller_verification_status === "approved" || profile.seller_verification_status === "rejected") {
+    return profile.seller_verification_status;
+  }
+  if (!profile.student_id_card_path && isProfileComplete(profile)) {
+    return "approved" as const;
+  }
+  return "pending" as const;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
@@ -68,6 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("id", userId)
       .single();
     if (data) {
+      const sellerVerificationStatus = deriveSellerVerificationStatus({
+        name: data.name,
+        phone: data.phone,
+        college: data.college,
+        student_id_card_path: data.student_id_card_path ?? null,
+        seller_verification_status: (data.seller_verification_status ?? null) as "pending" | "approved" | "rejected" | null,
+        is_admin: data.is_admin ?? false,
+      });
       const nextProfile = {
         id: data.id,
         name: data.name,
@@ -79,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ban_reason: data.ban_reason ?? null,
         violation_count: data.violation_count ?? 0,
         avatar_url: data.avatar_url ?? undefined,
-        seller_verification_status: (data.seller_verification_status ?? "pending") as "pending" | "approved" | "rejected",
+        seller_verification_status: sellerVerificationStatus,
         student_id_card_path: data.student_id_card_path ?? null,
         student_id_reviewed_at: data.student_id_reviewed_at ?? null,
         student_id_rejection_reason: data.student_id_rejection_reason ?? null,

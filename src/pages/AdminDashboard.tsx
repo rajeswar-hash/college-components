@@ -66,6 +66,17 @@ interface ProfileAdminRow {
   violation_count: number;
 }
 
+function deriveSellerVerificationStatus(profile: Pick<ProfileAdminRow, "seller_verification_status" | "student_id_card_path" | "is_admin" | "college" | "name">) {
+  if (profile.is_admin) return "approved" as const;
+  if (profile.seller_verification_status === "approved" || profile.seller_verification_status === "rejected") {
+    return profile.seller_verification_status;
+  }
+  if (!profile.student_id_card_path && profile.name?.trim() && profile.college?.trim()) {
+    return "approved" as const;
+  }
+  return "pending" as const;
+}
+
 interface CollegeRequestRow {
   id: string;
   college_name: string;
@@ -346,14 +357,18 @@ export default function AdminDashboard() {
   const pendingSellerApprovals = useMemo(
     () =>
       profiles.filter(
-        (profile) => !profile.is_admin && !profile.is_banned && (profile.seller_verification_status ?? "pending") === "pending"
+        (profile) =>
+          !profile.is_admin &&
+          !profile.is_banned &&
+          !!profile.student_id_card_path &&
+          deriveSellerVerificationStatus(profile) === "pending"
       ),
     [profiles]
   );
   const rejectedSellerApprovals = useMemo(
     () =>
       profiles.filter(
-        (profile) => !profile.is_admin && (profile.seller_verification_status ?? "pending") === "rejected"
+        (profile) => !profile.is_admin && !!profile.student_id_card_path && deriveSellerVerificationStatus(profile) === "rejected"
       ),
     [profiles]
   );
@@ -1790,7 +1805,7 @@ export default function AdminDashboard() {
                             {profile.is_banned && <Badge variant="destructive" className="text-[10px]">Banned</Badge>}
                             {!profile.is_admin && !profile.is_banned && (
                               <Badge variant="outline" className="text-[10px] capitalize">
-                                {profile.seller_verification_status ?? "pending"}
+                                {deriveSellerVerificationStatus(profile)}
                               </Badge>
                             )}
                           </div>
