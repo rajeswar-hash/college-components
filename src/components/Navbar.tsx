@@ -54,6 +54,14 @@ export function Navbar() {
   });
 
   useEffect(() => {
+    const requestedAuthMode = sessionStorage.getItem("campuskart-open-auth");
+    if (requestedAuthMode === "login") {
+      sessionStorage.removeItem("campuskart-open-auth");
+      setShowAuth(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (mobileMenu) {
       setMobileMenuMounted(true);
       return;

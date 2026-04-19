@@ -63,6 +63,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   };
 
   const normalizedEmail = email.trim().toLowerCase();
+  const openRegisterPage = () => {
+    resetForm();
+    onClose();
+    navigate("/register");
+  };
 
   const sendOtp = async (target: "register" | "forgot") => {
     if (!normalizedEmail) {
@@ -265,12 +270,9 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               </Button>
               <Button
                 type="button"
-                variant={mode === "register" ? "default" : "ghost"}
-                className={mode === "register" ? "gradient-bg text-primary-foreground border-0" : "text-muted-foreground"}
-                onClick={() => {
-                  resetForm();
-                  setMode("register");
-                }}
+                variant="ghost"
+                className="text-muted-foreground"
+                onClick={openRegisterPage}
               >
                 Register
               </Button>
@@ -518,8 +520,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   <button
                     type="button"
                     onClick={() => {
+                      if (mode === "login") {
+                        openRegisterPage();
+                        return;
+                      }
                       resetForm();
-                      setMode(mode === "login" ? "register" : "login");
+                      setMode("login");
                     }}
                     className="text-primary font-medium hover:underline"
                   >

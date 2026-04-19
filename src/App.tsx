@@ -3,8 +3,9 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { RouteModules } from "./lib/routePreload";
 
-const {
+  const {
   Index,
+  RegisterPage,
   ResetPasswordPage,
   AboutPage,
   HelpPage,
@@ -39,6 +40,7 @@ const App = () => (
     <Suspense fallback={<RouteLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/college/:collegeParam" element={<Index />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/help" element={<HelpPage />} />
