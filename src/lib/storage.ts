@@ -148,7 +148,13 @@ export async function uploadStudentVerificationImage(userId: string, file: File)
     upsert: true,
   });
 
-  if (error) throw error;
+  if (error) {
+    const message = String(error.message || "");
+    if (/bucket/i.test(message) && /not found/i.test(message)) {
+      throw new Error("Your account could not be sent for approval right now. Please try again in a moment.");
+    }
+    throw error;
+  }
   return path;
 }
 

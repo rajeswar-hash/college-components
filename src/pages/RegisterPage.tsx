@@ -125,10 +125,11 @@ export default function RegisterPage() {
       if (error) throw error;
 
       await register(email, password, name, normalizedPhone, college, studentIdFile as File);
-      toast.success("Account submitted for admin verification. You can sign in while approval is pending.");
+      toast.success("Account sent for approval. You will receive an email after it is approved.");
       openLoginPopup();
     } catch (err: any) {
-      toast.error(err.message || "Incorrect OTP. Please try again.");
+      const message = String(err?.message || "");
+      toast.error(message || "Incorrect OTP. Please try again.");
     } finally {
       setSubmitting(false);
     }
