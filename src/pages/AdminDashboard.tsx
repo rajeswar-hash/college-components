@@ -161,6 +161,7 @@ export default function AdminDashboard() {
   const [systemHealth, setSystemHealth] = useState<SystemHealthRow | null>(null);
   const [recentErrors, setRecentErrors] = useState<FrontendErrorRow[]>([]);
   const [showRecentErrors, setShowRecentErrors] = useState(false);
+  const [memberSnapshotFilter, setMemberSnapshotFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [healthError, setHealthError] = useState("");
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -425,6 +426,11 @@ export default function AdminDashboard() {
       ),
     [profiles]
   );
+  const visibleMemberSnapshot = useMemo(() => {
+    if (memberSnapshotFilter === "approved") return approvedMembers;
+    if (memberSnapshotFilter === "rejected") return rejectedSellerApprovals;
+    return pendingSellerApprovals;
+  }, [approvedMembers, memberSnapshotFilter, pendingSellerApprovals, rejectedSellerApprovals]);
   const usageTone =
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
   const usageLabel =
@@ -1783,31 +1789,72 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="mb-5 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={memberSnapshotFilter === "pending" ? "default" : "outline"}
+                    className="h-8 text-xs"
+                    onClick={() => setMemberSnapshotFilter("pending")}
+                  >
+                    Pending <Badge variant="secondary" className="ml-2 text-[10px]">{pendingSellerApprovals.length}</Badge>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={memberSnapshotFilter === "approved" ? "default" : "outline"}
+                    className="h-8 text-xs"
+                    onClick={() => setMemberSnapshotFilter("approved")}
+                  >
+                    Approved <Badge variant="secondary" className="ml-2 text-[10px]">{approvedMembers.length}</Badge>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={memberSnapshotFilter === "rejected" ? "default" : "outline"}
+                    className="h-8 text-xs"
+                    onClick={() => setMemberSnapshotFilter("rejected")}
+                  >
+                    Rejected <Badge variant="secondary" className="ml-2 text-[10px]">{rejectedSellerApprovals.length}</Badge>
+                  </Button>
+                </div>
+
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Pending member approvals</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {memberSnapshotFilter === "pending"
+                        ? "Pending member approvals"
+                        : memberSnapshotFilter === "approved"
+                        ? "Approved members"
+                        : "Rejected members"}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Review college ID cards before users are allowed to sell on CampusKart.
+                      {memberSnapshotFilter === "pending"
+                        ? "Review college ID cards before users are allowed to sell on CampusKart."
+                        : memberSnapshotFilter === "approved"
+                        ? "Accounts already approved and active on the platform."
+                        : "Previously rejected verification requests."}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{pendingMembers.length} pending</Badge>
-                    <Badge variant="outline">{approvedMembers.length} approved</Badge>
-                    <Badge variant="outline">{rejectedSellerApprovals.length} rejected</Badge>
+                    <Badge variant="secondary">{visibleMemberSnapshot.length} shown</Badge>
                   </div>
                 </div>
 
-                {pendingMembers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No seller approvals are waiting right now.</p>
+                {visibleMemberSnapshot.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {memberSnapshotFilter === "pending"
+                      ? "No seller approvals are waiting right now."
+                      : memberSnapshotFilter === "approved"
+                      ? "No approved members are available to show."
+                      : "No rejected member approvals are available to show."}
+                  </p>
                 ) : (
                   <div className="space-y-3">
-                    {pendingMembers.map((profile) => (
+                    {visibleMemberSnapshot.map((profile) => (
                       <div key={`seller-approval-${profile.id}`} className="grid gap-3 rounded-2xl border border-border/70 bg-background/80 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center dark:bg-slate-900/80">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="text-sm font-semibold text-foreground">{profile.name}</p>
                             <Badge variant="outline" className="text-[10px] uppercase tracking-[0.18em] text-amber-700 border-amber-500/20">
-                              Pending
+                              {deriveSellerVerificationStatus(profile)}
                             </Badge>
                           </div>
                           <p className="mt-1 text-xs text-muted-foreground">{profile.email}</p>
@@ -1817,77 +1864,38 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2 md:justify-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs"
-                            onClick={() => void openStudentIdCard(profile)}
-                            disabled={openingStudentIdFor === profile.id}
-                          >
-                            {openingStudentIdFor === profile.id ? "Opening..." : "View ID"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="h-8 text-xs"
-                            onClick={() => void handleSellerVerificationUpdate(profile, "approved")}
-                            disabled={updatingSellerApprovalId === profile.id}
-                          >
-                            Approve seller
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs text-destructive hover:text-destructive"
-                            onClick={() => void handleSellerVerificationUpdate(profile, "rejected")}
-                            disabled={updatingSellerApprovalId === profile.id}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-5 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Approved members</p>
-                    <p className="text-xs text-muted-foreground">Accounts already approved and active on the platform.</p>
-                  </div>
-                  <Badge variant="secondary">{approvedMembers.length} approved</Badge>
-                </div>
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">Loading approved members...</p>
-                ) : approvedMembers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No approved members available to show.</p>
-                ) : (
-                  <div className="max-h-[360px] space-y-2 overflow-y-auto pr-1">
-                    {approvedMembers.map((profile) => (
-                      <div key={`approved-member-${profile.id}`} className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3 min-w-0">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-xs font-bold text-primary">
-                            {profile.name?.charAt(0) || "U"}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="truncate text-sm font-medium text-foreground">{profile.name}</p>
-                              <Badge variant="outline" className="text-[10px] capitalize">approved</Badge>
-                            </div>
-                            <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
-                            <p className="text-xs text-muted-foreground">{profile.college}</p>
-                          </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 shrink-0 text-xs text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteAccount(profile.id)}
-                          >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
-                          </Button>
+                          {!!profile.student_id_card_path && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs"
+                              onClick={() => void openStudentIdCard(profile)}
+                              disabled={openingStudentIdFor === profile.id}
+                            >
+                              {openingStudentIdFor === profile.id ? "Opening..." : "View ID"}
+                            </Button>
+                          )}
+                          {memberSnapshotFilter !== "approved" && (
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs"
+                              onClick={() => void handleSellerVerificationUpdate(profile, "approved")}
+                              disabled={updatingSellerApprovalId === profile.id}
+                            >
+                              Approve seller
+                            </Button>
+                          )}
+                          {memberSnapshotFilter !== "rejected" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs text-destructive hover:text-destructive"
+                              onClick={() => void handleSellerVerificationUpdate(profile, "rejected")}
+                              disabled={updatingSellerApprovalId === profile.id}
+                            >
+                              Reject
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
