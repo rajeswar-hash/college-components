@@ -171,6 +171,7 @@ const Dashboard = () => {
   const soldListings = myListings.filter((listing) => listing.sold).length;
   const listingValue = useMemo(() => myListings.reduce((sum, listing) => sum + listing.price, 0), [myListings]);
   const selectedAvatar = resolveAvatarUrl(profileForm.avatar_url || user?.avatar_url, user?.name, user?.email);
+  const sellerVerificationStatus = user?.seller_verification_status ?? "pending";
 
   const getListingStatusMeta = (status?: string | null, sold?: boolean) => {
     if (sold) return { label: "Sold", className: "bg-success/10 text-success border-success/20" };
@@ -622,13 +623,25 @@ const Dashboard = () => {
             </div>
           )}
 
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
-          </div>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
+            </div>
 
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800">
-            Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
-          </div>
+            {sellerVerificationStatus !== "approved" && (
+              <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm leading-6 ${
+                sellerVerificationStatus === "rejected"
+                  ? "border-destructive/20 bg-destructive/5 text-destructive"
+                  : "border-amber-500/20 bg-amber-500/5 text-amber-800"
+              }`}>
+                {sellerVerificationStatus === "rejected"
+                  ? user?.student_id_rejection_reason || "Your seller verification was rejected. Upload a clear college ID image during registration so CampusKart admin can approve selling access."
+                  : "Your seller verification is still pending. You can sign in and use your dashboard, but posting items will unlock only after CampusKart admin approves your college ID card."}
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800">
+              Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
+            </div>
 
           {loading ? (
             <div className="text-center py-16 glass rounded-xl">

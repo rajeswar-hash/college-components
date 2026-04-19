@@ -297,6 +297,8 @@ const SellPage = () => {
   const formLocked = !category;
   const firstName = (user?.name || "").trim().split(/\s+/)[0] || "Student";
   const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`.slice(0, MAX_TITLE_LENGTH);
+  const sellerVerificationStatus = user?.seller_verification_status ?? "pending";
+  const canSell = sellerVerificationStatus === "approved";
 
   const handleCategoryChange = (value: Category) => {
     const nextCategory = value as Category;
@@ -490,6 +492,53 @@ const SellPage = () => {
           <p className="text-lg text-muted-foreground">Please sign in to list an item.</p>
           <AuthModal open={true} onClose={() => navigate("/")} />
         </div>
+      </div>
+    );
+  }
+
+  if (!canSell) {
+    const statusCopy =
+      sellerVerificationStatus === "rejected"
+        ? {
+            title: "Seller verification was rejected",
+            body:
+              user?.student_id_rejection_reason ||
+              "Your college ID could not be approved yet. Please contact CampusKart admin or register again with a clear student ID image.",
+          }
+        : {
+            title: "Seller verification is pending",
+            body:
+              "Your account is created and your email is verified. CampusKart admin is still checking your college ID card before selling is enabled.",
+          };
+
+    return (
+      <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.9),rgba(255,255,255,1))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]">
+        <Navbar />
+        <div className="container mx-auto max-w-3xl px-4 py-6 sm:py-8">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-5 rounded-xl px-2 text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+
+          <div className="rounded-3xl border border-border/70 bg-card/80 p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/80">
+            <Badge variant="outline" className="mb-4 rounded-full px-3 py-1 text-xs uppercase tracking-[0.2em]">
+              Seller approval
+            </Badge>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">{statusCopy.title}</h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{statusCopy.body}</p>
+            <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-6 text-muted-foreground">
+              Email OTP confirms the inbox belongs to you. Your college ID card is checked by admin to confirm you are a real college student before selling is enabled on CampusKart.
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button onClick={() => navigate("/dashboard")} className="gradient-bg border-0 text-primary-foreground">
+                Open Dashboard
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/")}>
+                Go Home
+              </Button>
+            </div>
+          </div>
+        </div>
+        <SiteFooter />
       </div>
     );
   }

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CollegeAutocomplete } from "@/components/CollegeAutocomplete";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
@@ -33,6 +33,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [college, setCollege] = useState("");
+  const [studentIdFile, setStudentIdFile] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const otpRef = useRef<HTMLInputElement>(null);
@@ -56,6 +57,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setName("");
     setPhone("");
     setCollege("");
+    setStudentIdFile(null);
     setRegisterStep("form");
     setForgotStep("email");
   };
@@ -110,8 +112,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       });
       if (error) throw error;
 
-      await register(email, password, name, phone, college);
-      toast.success("Account created successfully. You can now sign in with your email and password.");
+      await register(email, password, name, phone, college, studentIdFile as File);
+      toast.success("Account submitted for admin verification. You can sign in while approval is pending.");
       onClose();
       resetForm();
     } catch (err: any) {
@@ -176,6 +178,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           toast.error("Please fill in all fields");
           return;
         }
+        if (!studentIdFile) {
+          toast.error("Please upload your college ID card.");
+          return;
+        }
 
         await sendOtp("register");
         return;
@@ -222,7 +228,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         }
       }}
     >
-      <DialogContent className="glass w-[calc(100%-1.5rem)] max-w-md max-h-[85vh] overflow-visible rounded-2xl p-0">
+      <DialogContent className={`glass w-[calc(100%-1.5rem)] ${mode === "register" ? "max-w-2xl" : "max-w-md"} max-h-[85vh] overflow-visible rounded-2xl p-0`}>
         <div className="max-h-[85vh] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
           <DialogHeader className="pr-8 text-center sm:text-center">
             <DialogTitle className="font-display text-2xl text-center">
@@ -233,8 +239,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 ? "Sign in to publish listings, like products, and manage your dashboard."
                 : mode === "register"
                   ? registerStep === "otp"
-                    ? "Enter the OTP sent to your email to finish creating your account."
-                    : "Create your account to start selling, liking, and managing your listings."
+                    ? "Enter the OTP sent to your email. After that, your student ID goes to admin review before selling is enabled."
+                    : "Create your account, verify your email, and upload your college ID card for admin approval."
                   : "Enter your account email and verify the OTP from your inbox before resetting your password."}
             </p>
           </DialogHeader>
@@ -267,10 +273,19 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           )}
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            {mode === "register" && registerStep === "form" && (
+              <Alert className="border-primary/20 bg-primary/5">
+                <ShieldCheck className="h-4 w-4" />
+                <AlertDescription className="text-xs leading-5">
+                  Email OTP confirms the account belongs to you. Your college ID card is checked by admin to confirm you are a college student before selling is enabled.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {mode !== "register" || registerStep === "form" ? (
               <>
                 {mode === "register" && (
-                  <>
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <Label htmlFor="name">Full Name</Label>
                       <Input
@@ -303,7 +318,37 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                       />
                       <p className="mt-1 text-xs text-muted-foreground">Enter a valid 10-digit WhatsApp number so buyers can reach you.</p>
                     </div>
-                  </>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="student-id">College ID Card</Label>
+                      <label
+                        htmlFor="student-id"
+                        className="mt-2 flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-4 transition hover:border-primary/40 hover:bg-primary/5"
+                      >
+                        <div className="min-w-0">
+                          <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <Upload className="h-4 w-4 text-primary" />
+                            Upload student ID image
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Upload a clear photo of your current college ID card. JPG, PNG, or WEBP only.
+                          </p>
+                          {studentIdFile && (
+                            <p className="mt-2 truncate text-xs font-medium text-primary">{studentIdFile.name}</p>
+                          )}
+                        </div>
+                        <span className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium text-foreground">
+                          Choose file
+                        </span>
+                      </label>
+                      <Input
+                        id="student-id"
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(event) => setStudentIdFile(event.target.files?.[0] || null)}
+                      />
+                    </div>
+                  </div>
                 )}
 
                 <div>
@@ -328,7 +373,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     spellCheck={false}
                   />
                   {mode === "register" && (
-                    <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email. After OTP verification, your account will wait for admin approval.</p>
                   )}
                 </div>
               </>
@@ -356,6 +401,9 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     Resend OTP
                   </button>
                 </div>
+                <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                  Once the OTP is verified, your college ID will be sent to CampusKart admin for approval. You will be able to sign in immediately, but selling stays locked until approval is complete.
+                </p>
               </div>
             )}
 

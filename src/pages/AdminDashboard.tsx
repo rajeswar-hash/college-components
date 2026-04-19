@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Database, ExternalLink, HardDrive, IndianRupee, Layers3, MapPin, Shield, Tag, Trash2, Users, Wallet, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage, getListingPreviewImages, getListingPreviewPlaceholders } from "@/lib/listingImage";
-import { deleteListingImages } from "@/lib/storage";
+import { createStudentVerificationSignedUrl, deleteListingImages } from "@/lib/storage";
 import { trackHandledError } from "@/lib/errorTracking";
 import { LqipImage } from "@/components/LqipImage";
 
@@ -59,6 +59,10 @@ interface ProfileAdminRow {
   email: string;
   college: string;
   created_at: string;
+  seller_verification_status?: "pending" | "approved" | "rejected";
+  student_id_card_path?: string | null;
+  student_id_rejection_reason?: string | null;
+  student_id_reviewed_at?: string | null;
   violation_count: number;
 }
 
@@ -127,6 +131,8 @@ export default function AdminDashboard() {
   const [pendingRemoveCollegeName, setPendingRemoveCollegeName] = useState<string | null>(null);
   const [previewListing, setPreviewListing] = useState<ListingAdminRow | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
+  const [openingStudentIdFor, setOpeningStudentIdFor] = useState<string | null>(null);
+  const [updatingSellerApprovalId, setUpdatingSellerApprovalId] = useState<string | null>(null);
   const [showCollegesWithListings, setShowCollegesWithListings] = useState(false);
   const [collegeList, setCollegeList] = useState<string[]>([]);
   const [loadingColleges, setLoadingColleges] = useState(false);
@@ -181,7 +187,7 @@ export default function AdminDashboard() {
           ? Promise.resolve({ data: [], error: null } as any)
           : supabase
               .from("profiles")
-              .select("id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin")
+              .select("id, name, email, college, created_at, is_banned, violation_count, ban_reason, banned_at, is_admin, seller_verification_status, student_id_card_path, student_id_rejection_reason, student_id_reviewed_at")
               .order("created_at", { ascending: false }),
         supabase
           .from("college_requests")
@@ -337,6 +343,20 @@ export default function AdminDashboard() {
         return left.college.localeCompare(right.college);
       });
   }, [listings]);
+  const pendingSellerApprovals = useMemo(
+    () =>
+      profiles.filter(
+        (profile) => !profile.is_admin && !profile.is_banned && (profile.seller_verification_status ?? "pending") === "pending"
+      ),
+    [profiles]
+  );
+  const rejectedSellerApprovals = useMemo(
+    () =>
+      profiles.filter(
+        (profile) => !profile.is_admin && (profile.seller_verification_status ?? "pending") === "rejected"
+      ),
+    [profiles]
+  );
   const usageTone =
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
   const usageLabel =
@@ -499,6 +519,82 @@ export default function AdminDashboard() {
     void refreshSystemHealth();
     toast.success("User banned for repeated violations.");
     setPendingBanProfileId(null);
+  };
+
+  const openStudentIdCard = async (profile: ProfileAdminRow) => {
+    if (!profile.student_id_card_path) {
+      toast.error("No college ID card is uploaded for this account.");
+      return;
+    }
+
+    setOpeningStudentIdFor(profile.id);
+    try {
+      const signedUrl = await createStudentVerificationSignedUrl(profile.student_id_card_path);
+      if (!signedUrl) throw new Error("Missing signed URL");
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      trackHandledError("admin.open-student-id", error, { profileId: profile.id });
+      toast.error("Could not open this student ID card right now.");
+    } finally {
+      setOpeningStudentIdFor(null);
+    }
+  };
+
+  const sendSellerApprovalEmail = async (profile: ProfileAdminRow) => {
+    try {
+      await supabase.functions.invoke("notify-seller-approval", {
+        body: {
+          email: profile.email,
+          name: profile.name,
+          college: profile.college,
+        },
+      });
+    } catch {
+      // Best-effort only. Approval should still succeed even if email backend is not configured yet.
+    }
+  };
+
+  const handleSellerVerificationUpdate = async (profile: ProfileAdminRow, nextStatus: "approved" | "rejected") => {
+    setUpdatingSellerApprovalId(profile.id);
+    try {
+      const updates = {
+        seller_verification_status: nextStatus,
+        student_id_reviewed_at: new Date().toISOString(),
+        student_id_rejection_reason:
+          nextStatus === "rejected"
+            ? "Your college ID card could not be approved. Please contact CampusKart admin and register again with a clear current student ID."
+            : null,
+      };
+
+      const { error } = await supabase.from("profiles").update(updates).eq("id", profile.id);
+      if (error) throw error;
+
+      setProfiles((current) =>
+        current.map((entry) =>
+          entry.id === profile.id
+            ? {
+                ...entry,
+                ...updates,
+              }
+            : entry
+        )
+      );
+
+      if (nextStatus === "approved") {
+        void sendSellerApprovalEmail(profile);
+        toast.success("Seller approved. Selling is now enabled for this account.");
+      } else {
+        toast.success("Seller verification rejected.");
+      }
+    } catch (error) {
+      trackHandledError("admin.update-seller-verification", error, {
+        profileId: profile.id,
+        nextStatus,
+      });
+      toast.error(`Could not ${nextStatus === "approved" ? "approve" : "reject"} this seller right now.`);
+    } finally {
+      setUpdatingSellerApprovalId(null);
+    }
   };
 
   const handleDeleteAccount = async (profileId: string) => {
@@ -1607,6 +1703,73 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
+              <div className="mb-5 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Seller verification approvals</p>
+                    <p className="text-xs text-muted-foreground">
+                      Review college ID cards before users are allowed to sell on CampusKart.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">{pendingSellerApprovals.length} pending</Badge>
+                    <Badge variant="outline">{rejectedSellerApprovals.length} rejected</Badge>
+                  </div>
+                </div>
+
+                {pendingSellerApprovals.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No seller approvals are waiting right now.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingSellerApprovals.map((profile) => (
+                      <div key={`seller-approval-${profile.id}`} className="grid gap-3 rounded-2xl border border-border/70 bg-background/80 p-3 shadow-sm md:grid-cols-[1fr_auto] md:items-center dark:bg-slate-900/80">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">{profile.name}</p>
+                            <Badge variant="outline" className="text-[10px] uppercase tracking-[0.18em] text-amber-700 border-amber-500/20">
+                              Pending
+                            </Badge>
+                          </div>
+                          <p className="mt-1 text-xs text-muted-foreground">{profile.email}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">{profile.college}</p>
+                          <p className="mt-2 text-[11px] text-muted-foreground">
+                            Registered {new Date(profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 md:justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs"
+                            onClick={() => void openStudentIdCard(profile)}
+                            disabled={openingStudentIdFor === profile.id}
+                          >
+                            {openingStudentIdFor === profile.id ? "Opening..." : "View ID"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => void handleSellerVerificationUpdate(profile, "approved")}
+                            disabled={updatingSellerApprovalId === profile.id}
+                          >
+                            Approve seller
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs text-destructive hover:text-destructive"
+                            onClick={() => void handleSellerVerificationUpdate(profile, "rejected")}
+                            disabled={updatingSellerApprovalId === profile.id}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading members...</p>
               ) : profiles.length === 0 ? (
@@ -1625,9 +1788,22 @@ export default function AdminDashboard() {
                             <p className="truncate text-sm font-medium text-foreground">{profile.name}</p>
                             {profile.is_admin && <Badge variant="secondary" className="text-[10px]">Admin</Badge>}
                             {profile.is_banned && <Badge variant="destructive" className="text-[10px]">Banned</Badge>}
+                            {!profile.is_admin && !profile.is_banned && (
+                              <Badge variant="outline" className="text-[10px] capitalize">
+                                {profile.seller_verification_status ?? "pending"}
+                              </Badge>
+                            )}
                           </div>
                           <p className="truncate text-xs text-muted-foreground">{profile.email}</p>
                           <p className="text-xs text-muted-foreground">{profile.college}</p>
+                          {profile.student_id_reviewed_at && (
+                            <p className="text-xs text-muted-foreground">
+                              Seller review: {new Date(profile.student_id_reviewed_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          )}
+                          {profile.student_id_rejection_reason && (
+                            <p className="text-xs text-muted-foreground">{profile.student_id_rejection_reason}</p>
+                          )}
                           {profile.violation_count > 0 && (
                             <p className="text-xs text-muted-foreground">{profile.violation_count} violation(s)</p>
                           )}

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { canonicalInstitutionName } from "@/lib/institutions";
 import { sanitizeEmailInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
+import { uploadStudentVerificationImage } from "@/lib/storage";
 
 interface Profile {
   id: string;
@@ -10,6 +11,10 @@ interface Profile {
   email: string;
   phone: string;
   college: string;
+  seller_verification_status?: "pending" | "approved" | "rejected";
+  student_id_card_path?: string | null;
+  student_id_reviewed_at?: string | null;
+  student_id_rejection_reason?: string | null;
   is_admin?: boolean;
   is_banned?: boolean;
   ban_reason?: string | null;
@@ -21,7 +26,7 @@ interface AuthContextType {
   user: Profile | null;
   supabaseUser: SupabaseUser | null;
   login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
-  register: (email: string, password: string, name: string, phone: string, college: string) => Promise<void>;
+  register: (email: string, password: string, name: string, phone: string, college: string, studentIdFile: File) => Promise<void>;
   logout: () => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
   updateProfile: (updates: Partial<Pick<Profile, "name" | "phone" | "college" | "avatar_url">>) => Promise<void>;
@@ -74,6 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ban_reason: data.ban_reason ?? null,
         violation_count: data.violation_count ?? 0,
         avatar_url: data.avatar_url ?? undefined,
+        seller_verification_status: (data.seller_verification_status ?? "pending") as "pending" | "approved" | "rejected",
+        student_id_card_path: data.student_id_card_path ?? null,
+        student_id_reviewed_at: data.student_id_reviewed_at ?? null,
+        student_id_rejection_reason: data.student_id_rejection_reason ?? null,
       };
       const isPartnerAdmin = nextProfile.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
       setProfile(isProfileComplete(nextProfile) || nextProfile.is_admin || isPartnerAdmin ? nextProfile : null);
@@ -112,11 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const profileComplete = isProfileComplete(profile);
 
-  const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string) => {
+  const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string, studentIdFile: File) => {
     const normalizedEmail = sanitizeEmailInput(email);
     const normalizedName = sanitizeSingleLineInput(name);
     const normalizedPhone = sanitizeSingleLineInput(phone);
     const normalizedCollege = canonicalInstitutionName(sanitizeSingleLineInput(college));
+    if (!studentIdFile) {
+      throw new Error("Please upload your college ID card before continuing.");
+    }
     if (!hasValidWhatsappNumber(normalizedPhone)) {
       throw new Error("Please enter a valid WhatsApp number so buyers can contact you.");
     }
@@ -145,6 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("An account with this email already exists. Sign in or use Forgot password instead.");
     }
 
+    const studentIdCardPath = await uploadStudentVerificationImage(verifiedUser.id, studentIdFile);
+
     const { error: authUpdateError } = await supabase.auth.updateUser({
       password,
       data: {
@@ -152,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: normalizedPhone,
         college: normalizedCollege,
         email: normalizedEmail,
+        seller_verification_status: "pending",
       },
     });
     if (authUpdateError) throw authUpdateError;
@@ -163,6 +178,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: normalizedPhone,
         college: normalizedCollege,
         email: normalizedEmail,
+        seller_verification_status: "pending",
+        student_id_card_path: studentIdCardPath,
+        student_id_reviewed_at: null,
+        student_id_rejection_reason: null,
       })
       .eq("id", verifiedUser.id);
     if (profileError) throw profileError;

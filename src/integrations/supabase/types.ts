@@ -171,6 +171,10 @@ export type Database = {
           is_banned: boolean
           name: string
           phone: string
+          seller_verification_status: string
+          student_id_card_path: string | null
+          student_id_rejection_reason: string | null
+          student_id_reviewed_at: string | null
           updated_at: string
           violation_count: number
         }
@@ -186,6 +190,10 @@ export type Database = {
           is_banned?: boolean
           name: string
           phone?: string
+          seller_verification_status?: string
+          student_id_card_path?: string | null
+          student_id_rejection_reason?: string | null
+          student_id_reviewed_at?: string | null
           updated_at?: string
           violation_count?: number
         }
@@ -201,6 +209,10 @@ export type Database = {
           is_banned?: boolean
           name?: string
           phone?: string
+          seller_verification_status?: string
+          student_id_card_path?: string | null
+          student_id_rejection_reason?: string | null
+          student_id_reviewed_at?: string | null
           updated_at?: string
           violation_count?: number
         }

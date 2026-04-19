@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const LISTING_MEDIA_BUCKET = "listing-media";
+export const STUDENT_VERIFICATION_BUCKET = "student-verification";
 const STORAGE_PREVIEW_SIZE = 480;
 const STORAGE_DETAIL_SIZE = 1800;
 const STORAGE_TINY_SIZE = 36;
@@ -134,4 +135,30 @@ export async function deleteListingImages(imageRefs?: string[] | null) {
   } catch {
     // Best-effort cleanup only.
   }
+}
+
+export async function uploadStudentVerificationImage(userId: string, file: File) {
+  const safeExtension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const fileName = `college-id-${Date.now()}.${safeExtension}`;
+  const path = `${userId}/${fileName}`;
+
+  const { error } = await supabase.storage.from(STUDENT_VERIFICATION_BUCKET).upload(path, file, {
+    cacheControl: "3600",
+    contentType: file.type || "image/jpeg",
+    upsert: true,
+  });
+
+  if (error) throw error;
+  return path;
+}
+
+export async function createStudentVerificationSignedUrl(path?: string | null) {
+  if (!path) return null;
+
+  const { data, error } = await supabase.storage
+    .from(STUDENT_VERIFICATION_BUCKET)
+    .createSignedUrl(path, 60 * 10);
+
+  if (error) throw error;
+  return data.signedUrl;
 }
