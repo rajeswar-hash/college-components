@@ -31,7 +31,32 @@ export function LqipImage({
 
   useEffect(() => {
     setLoaded(false);
-  }, [src]);
+
+    if (!src) {
+      setLoaded(true);
+      return;
+    }
+
+    const preloader = new Image();
+    preloader.decoding = decoding;
+    if (sizes) {
+      preloader.sizes = sizes;
+    }
+
+    const markLoaded = () => setLoaded(true);
+    preloader.onload = markLoaded;
+    preloader.onerror = markLoaded;
+    preloader.src = src;
+
+    if (preloader.complete) {
+      setLoaded(true);
+    }
+
+    return () => {
+      preloader.onload = null;
+      preloader.onerror = null;
+    };
+  }, [decoding, sizes, src]);
 
   return (
     <div className={cn("relative overflow-hidden bg-muted", className)}>
