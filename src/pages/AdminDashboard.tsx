@@ -121,6 +121,8 @@ const GODADDY_DOMAIN_SETTINGS_URL = "https://dcc.godaddy.com/control/portfolio/c
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
+const SELLER_VERIFICATION_SQL_HINT =
+  "Seller approval columns are missing in Supabase. Run the seller verification SQL once in Supabase SQL Editor, then refresh this page.";
 
 function byteSize(value: string) {
   return new TextEncoder().encode(value).length;
@@ -131,6 +133,17 @@ function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+function isMissingSellerVerificationColumnError(error: unknown) {
+  const message = String((error as { message?: string } | null)?.message || "").toLowerCase();
+  return (
+    (message.includes("seller_verification_status") ||
+      message.includes("student_id_card_path") ||
+      message.includes("student_id_reviewed_at") ||
+      message.includes("student_id_rejection_reason")) &&
+    (message.includes("column") || message.includes("schema cache"))
+  );
 }
 
 export default function AdminDashboard() {
@@ -163,6 +176,7 @@ export default function AdminDashboard() {
   const [showRecentErrors, setShowRecentErrors] = useState(false);
   const [memberSnapshotFilter, setMemberSnapshotFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [healthError, setHealthError] = useState("");
+  const [sellerVerificationSchemaMissing, setSellerVerificationSchemaMissing] = useState(false);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
   const isMainAdmin = user?.email?.trim().toLowerCase() === MAIN_ADMIN_EMAIL;
@@ -190,13 +204,20 @@ export default function AdminDashboard() {
     if (!isAuthenticated || !isAdmin) return;
 
     const loadProfilesForAdmin = async () => {
+      let schemaMissing = false;
       const primary = await supabase
         .from("profiles")
         .select(PROFILE_ADMIN_SELECT)
         .order("created_at", { ascending: false });
 
       if (!primary.error) {
-        return primary as { data: ProfileAdminRow[] | null; error: null };
+        setSellerVerificationSchemaMissing(false);
+        return { ...(primary as { data: ProfileAdminRow[] | null; error: null }), schemaMissing };
+      }
+
+      if (isMissingSellerVerificationColumnError(primary.error)) {
+        setSellerVerificationSchemaMissing(true);
+        schemaMissing = true;
       }
 
       const fallback = await supabase
@@ -205,7 +226,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false });
 
       if (fallback.error) {
-        return fallback as { data: ProfileAdminRow[] | null; error: any };
+        return { ...(fallback as { data: ProfileAdminRow[] | null; error: any }), schemaMissing };
       }
 
       const normalized = ((fallback.data as any[]) || []).map((profile) => ({
@@ -216,7 +237,7 @@ export default function AdminDashboard() {
         student_id_reviewed_at: null,
       })) as ProfileAdminRow[];
 
-      return { data: normalized, error: null };
+      return { data: normalized, error: null, schemaMissing };
     };
 
     const fetchAdminData = async () => {
@@ -224,7 +245,7 @@ export default function AdminDashboard() {
 
       const [
         { data: listingData, error: listingError },
-        { data: profileData, error: profileError },
+        { data: profileData, error: profileError, schemaMissing: profileSchemaMissing },
         { data: collegeRequestData, error: collegeRequestError },
       ] = await Promise.all([
         supabase
@@ -252,6 +273,9 @@ export default function AdminDashboard() {
         toast.error("Could not load profile data for the admin dashboard.");
       } else if (!isPartnerModerator) {
         setProfiles((profileData as ProfileAdminRow[]) || []);
+        if (profileSchemaMissing) {
+          toast.error(SELLER_VERIFICATION_SQL_HINT);
+        }
       }
 
       if (collegeRequestError) {
@@ -609,7 +633,11 @@ export default function AdminDashboard() {
       window.open(signedUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       trackHandledError("admin.open-student-id", error, { profileId: profile.id });
-      toast.error("Could not open this student ID card right now.");
+      toast.error(
+        isMissingSellerVerificationColumnError(error)
+          ? SELLER_VERIFICATION_SQL_HINT
+          : "Could not open this student ID card right now."
+      );
     } finally {
       setOpeningStudentIdFor(null);
     }
@@ -666,7 +694,11 @@ export default function AdminDashboard() {
         profileId: profile.id,
         nextStatus,
       });
-      toast.error(`Could not ${nextStatus === "approved" ? "approve" : "reject"} this seller right now.`);
+      toast.error(
+        isMissingSellerVerificationColumnError(error)
+          ? SELLER_VERIFICATION_SQL_HINT
+          : `Could not ${nextStatus === "approved" ? "approve" : "reject"} this seller right now.`
+      );
     } finally {
       setUpdatingSellerApprovalId(null);
     }

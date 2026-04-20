@@ -112,14 +112,9 @@ export function Navbar() {
   }, [mobileMenuMounted]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
-      setCartCount(0);
-      return;
-    }
-
     const syncCartCount = async () => {
       try {
-        const count = await getSavedListingsCount(user.id);
+        const count = await getSavedListingsCount(user?.id);
         setCartCount(count);
       } catch {
         setCartCount(0);
@@ -132,7 +127,7 @@ export function Navbar() {
     });
 
     return unsubscribe;
-  }, [isAuthenticated, user?.id]);
+  }, [user?.id]);
 
   const closeMobileMenu = () => {
     setMobileMenu(false);

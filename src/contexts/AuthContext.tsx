@@ -68,6 +68,17 @@ function deriveSellerVerificationStatus(
   return "pending" as const;
 }
 
+function isMissingSellerVerificationColumnError(error: unknown) {
+  const message = String((error as { message?: string } | null)?.message || "").toLowerCase();
+  return (
+    (message.includes("seller_verification_status") ||
+      message.includes("student_id_card_path") ||
+      message.includes("student_id_reviewed_at") ||
+      message.includes("student_id_rejection_reason")) &&
+    (message.includes("column") || message.includes("schema cache"))
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
@@ -208,7 +219,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, {
         onConflict: "id",
       });
-    if (profileError) throw profileError;
+    if (profileError) {
+      if (isMissingSellerVerificationColumnError(profileError)) {
+        throw new Error("CampusKart seller approval setup is not ready yet. Run the seller verification SQL in Supabase, then try registering again.");
+      }
+      throw profileError;
+    }
   }, [supabaseUser]);
 
   const login = useCallback(async (email: string, password: string) => {
