@@ -161,6 +161,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [profile?.email, profile?.is_admin, profile?.is_banned]);
 
   const profileComplete = isProfileComplete(profile);
+  const verificationStatus = profile
+    ? normalizeVerificationStatus({
+        name: profile.name,
+        phone: profile.phone,
+        college: profile.college,
+        seller_verification_status: profile.seller_verification_status,
+        student_id_card_path: profile.student_id_card_path ?? null,
+        is_admin: profile.is_admin ?? false,
+      })
+    : "pending";
+  const isApprovedAccount = !!supabaseUser && profileComplete && (isAdmin || verificationStatus === "approved");
 
   const register = useCallback(async (email: string, password: string, name: string, phone: string, college: string, studentIdFile: File) => {
     const normalizedEmail = sanitizeEmailInput(email);
@@ -299,7 +310,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!profileData?.is_admin && verificationStatus === "pending") {
       await supabase.auth.signOut();
-      throw new Error("Your account is under verification. You will be informed by email after approval within 12 hours.");
+      throw new Error("This account is not approved yet. You will be informed by email after verification within 12 hours.");
     }
 
     if (!profileData?.is_admin && verificationStatus === "rejected") {
@@ -393,7 +404,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       deleteAccount,
       updateProfile,
-      isAuthenticated: isAdmin || (!!supabaseUser && profileComplete),
+      isAuthenticated: isApprovedAccount,
       isAdmin,
       isBanned,
       loading,
