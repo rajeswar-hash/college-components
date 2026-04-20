@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const LISTING_MEDIA_BUCKET = "listing-media";
 export const STUDENT_VERIFICATION_BUCKET = "student-verification";
+const STUDENT_VERIFICATION_FALLBACK_PREFIX = "listing-media:";
 const STORAGE_PREVIEW_SIZE = 480;
 const STORAGE_DETAIL_SIZE = 1800;
 const STORAGE_TINY_SIZE = 36;
@@ -142,24 +143,46 @@ export async function uploadStudentVerificationImage(userId: string, file: File)
   const fileName = `college-id-${Date.now()}.${safeExtension}`;
   const path = `${userId}/${fileName}`;
 
-  const { error } = await supabase.storage.from(STUDENT_VERIFICATION_BUCKET).upload(path, file, {
-    cacheControl: "3600",
-    contentType: file.type || "image/jpeg",
-    upsert: true,
-  });
+  const uploadToStudentBucket = async () =>
+    supabase.storage.from(STUDENT_VERIFICATION_BUCKET).upload(path, file, {
+      cacheControl: "3600",
+      contentType: file.type || "image/jpeg",
+      upsert: true,
+    });
 
-  if (error) {
-    const message = String(error.message || "");
-    if (/bucket/i.test(message) && /not found/i.test(message)) {
+  const { error } = await uploadToStudentBucket();
+
+  if (!error) {
+    return path;
+  }
+
+  const message = String(error.message || "");
+  if (/bucket/i.test(message) && /not found/i.test(message)) {
+    const fallbackPath = `${userId}/_student-verification/${fileName}`;
+    const fallbackUpload = await supabase.storage.from(LISTING_MEDIA_BUCKET).upload(fallbackPath, file, {
+      cacheControl: "3600",
+      contentType: file.type || "image/jpeg",
+      upsert: true,
+    });
+
+    if (fallbackUpload.error) {
       throw new Error("Your account could not be sent for approval right now. Please try again in a moment.");
     }
-    throw error;
+
+    return `${STUDENT_VERIFICATION_FALLBACK_PREFIX}${fallbackPath}`;
   }
-  return path;
+
+  throw error;
 }
 
 export async function createStudentVerificationSignedUrl(path?: string | null) {
   if (!path) return null;
+
+  if (path.startsWith(STUDENT_VERIFICATION_FALLBACK_PREFIX)) {
+    const fallbackPath = path.slice(STUDENT_VERIFICATION_FALLBACK_PREFIX.length);
+    const { data } = supabase.storage.from(LISTING_MEDIA_BUCKET).getPublicUrl(fallbackPath);
+    return data.publicUrl;
+  }
 
   const { data, error } = await supabase.storage
     .from(STUDENT_VERIFICATION_BUCKET)

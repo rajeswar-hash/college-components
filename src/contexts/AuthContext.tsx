@@ -195,7 +195,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({
+      .upsert({
+        id: verifiedUser.id,
         name: normalizedName,
         phone: normalizedPhone,
         college: normalizedCollege,
@@ -204,12 +205,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         student_id_card_path: studentIdCardPath,
         student_id_reviewed_at: null,
         student_id_rejection_reason: null,
-      })
-      .eq("id", verifiedUser.id);
+      }, {
+        onConflict: "id",
+      });
     if (profileError) throw profileError;
-
-    await fetchProfile(verifiedUser.id);
-  }, [fetchProfile, supabaseUser]);
+  }, [supabaseUser]);
 
   const login = useCallback(async (email: string, password: string) => {
     const normalizedEmail = sanitizeEmailInput(email);

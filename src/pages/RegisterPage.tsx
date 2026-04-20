@@ -16,7 +16,7 @@ import { toast } from "sonner";
 export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { register, isAuthenticated, isAdmin, loading } = useAuth();
+  const { register, logout, isAuthenticated, isAdmin, loading } = useAuth();
   const [registerStep, setRegisterStep] = useState<"form" | "otp">("form");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -125,8 +125,9 @@ export default function RegisterPage() {
       if (error) throw error;
 
       await register(email, password, name, normalizedPhone, college, studentIdFile as File);
+      await logout();
       toast.success("Account sent for approval. You will receive an email after it is approved.");
-      openLoginPopup();
+      navigate("/login", { replace: true });
     } catch (err: any) {
       const message = String(err?.message || "");
       toast.error(message || "Incorrect OTP. Please try again.");

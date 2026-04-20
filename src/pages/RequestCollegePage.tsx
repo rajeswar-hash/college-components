@@ -13,8 +13,6 @@ import { toast } from "sonner";
 interface RequestCollegeLocationState {
   returnTo?: string;
   collegeName?: string;
-  requesterName?: string;
-  requesterEmail?: string;
 }
 
 export default function RequestCollegePage() {
@@ -25,8 +23,6 @@ export default function RequestCollegePage() {
   const [collegeName, setCollegeName] = useState(state?.collegeName || "");
   const [city, setCity] = useState("");
   const [region, setRegion] = useState("");
-  const [requesterName, setRequesterName] = useState(state?.requesterName || "");
-  const [requesterEmail, setRequesterEmail] = useState(state?.requesterEmail || "");
   const [submitting, setSubmitting] = useState(false);
 
   const returnTo = useMemo(() => state?.returnTo || "/register", [state?.returnTo]);
@@ -42,11 +38,11 @@ export default function RequestCollegePage() {
       college_name: collegeName.trim(),
       city: city.trim(),
       state: region.trim(),
-      requester_name: requesterName.trim(),
-      requester_email: requesterEmail.trim().toLowerCase(),
+      requester_name: "",
+      requester_email: "",
     };
 
-    if (!payload.college_name || !payload.city || !payload.state || !payload.requester_name || !payload.requester_email) {
+    if (!payload.college_name || !payload.city || !payload.state) {
       toast.error("Please fill all details before sending the college request.");
       return;
     }
@@ -85,7 +81,7 @@ export default function RequestCollegePage() {
               </div>
               <CardTitle className="font-display text-3xl text-foreground">Request to add college</CardTitle>
               <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">
-                Send the full college details here. After submission, we’ll take you back to the page you were on.
+                Send the college details here. After submission, we’ll take you back to the page you were on.
               </p>
             </CardHeader>
             <CardContent>
@@ -119,30 +115,6 @@ export default function RequestCollegePage() {
                     />
                   </div>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <Label htmlFor="requester-name">Your name</Label>
-                    <Input
-                      id="requester-name"
-                      value={requesterName}
-                      onChange={(e) => setRequesterName(e.target.value)}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="requester-email">Your email</Label>
-                    <Input
-                      id="requester-email"
-                      type="email"
-                      value={requesterEmail}
-                      onChange={(e) => setRequesterEmail(e.target.value)}
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs leading-5 text-muted-foreground">
-                  We use these details so admin can review the request and add the college faster.
-                </p>
                 <Button type="submit" disabled={submitting} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">
                   {submitting ? "Sending..." : "Send College Request"}
                 </Button>
