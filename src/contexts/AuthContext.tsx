@@ -44,6 +44,8 @@ function hasValidWhatsappNumber(phone: string) {
   return digits.length === 10;
 }
 
+type VerificationStatus = "pending" | "approved" | "rejected";
+
 function isEmailConfirmed(user: SupabaseUser | null) {
   if (!user) return false;
   return !!(user.email_confirmed_at || user.confirmed_at);
@@ -66,6 +68,12 @@ function deriveSellerVerificationStatus(
     return "approved" as const;
   }
   return "pending" as const;
+}
+
+function normalizeVerificationStatus(
+  profile: Pick<Profile, "name" | "phone" | "college" | "student_id_card_path" | "seller_verification_status" | "is_admin">
+): VerificationStatus {
+  return deriveSellerVerificationStatus(profile);
 }
 
 function isMissingSellerVerificationColumnError(error: unknown) {
@@ -241,11 +249,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("Verify your email before signing in. Use the verification link sent to your inbox.");
     }
 
-    const { data: profileData } = await supabase
+    const primaryProfileQuery = await supabase
       .from("profiles")
-      .select("is_admin, is_banned, ban_reason, name, phone, college")
+      .select("is_admin, is_banned, ban_reason, name, phone, college, seller_verification_status, student_id_card_path, student_id_rejection_reason")
       .eq("id", userData.user.id)
       .single();
+
+    let profileData = primaryProfileQuery.data as (Profile & { student_id_rejection_reason?: string | null }) | null;
+    if (primaryProfileQuery.error && isMissingSellerVerificationColumnError(primaryProfileQuery.error)) {
+      const fallbackProfileQuery = await supabase
+        .from("profiles")
+        .select("is_admin, is_banned, ban_reason, name, phone, college")
+        .eq("id", userData.user.id)
+        .single();
+      if (fallbackProfileQuery.error) throw fallbackProfileQuery.error;
+      profileData = {
+        ...(fallbackProfileQuery.data as any),
+        seller_verification_status: null,
+        student_id_card_path: null,
+        student_id_rejection_reason: null,
+      };
+    } else if (primaryProfileQuery.error) {
+      throw primaryProfileQuery.error;
+    }
 
     const profileComplete =
       !!profileData &&
@@ -258,6 +284,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (profileData?.is_banned) {
       await supabase.auth.signOut();
       throw new Error(profileData.ban_reason || "This account is restricted. Please contact support.");
+    }
+
+    const verificationStatus = profileData
+      ? normalizeVerificationStatus({
+          name: profileData.name,
+          phone: profileData.phone,
+          college: profileData.college,
+          seller_verification_status: profileData.seller_verification_status,
+          student_id_card_path: profileData.student_id_card_path ?? null,
+          is_admin: profileData.is_admin ?? false,
+        })
+      : "pending";
+
+    if (!profileData?.is_admin && verificationStatus === "pending") {
+      await supabase.auth.signOut();
+      throw new Error("Your account is under verification. You will be informed by email after approval within 12 hours.");
+    }
+
+    if (!profileData?.is_admin && verificationStatus === "rejected") {
+      await supabase.auth.signOut();
+      throw new Error(
+        profileData?.student_id_rejection_reason ||
+          "Your verification was not approved due to a general issue. Please register again carefully with correct details."
+      );
     }
 
     const isPartnerAdmin = normalizedEmail === PARTNER_ADMIN_EMAIL;

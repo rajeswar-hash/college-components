@@ -643,17 +643,19 @@ export default function AdminDashboard() {
     }
   };
 
-  const sendSellerApprovalEmail = async (profile: ProfileAdminRow) => {
+  const sendSellerStatusEmail = async (profile: ProfileAdminRow, status: "approved" | "rejected", rejectionReason?: string | null) => {
     try {
       await supabase.functions.invoke("notify-seller-approval", {
         body: {
           email: profile.email,
           name: profile.name,
           college: profile.college,
+          status,
+          rejectionReason: rejectionReason || null,
         },
       });
     } catch {
-      // Best-effort only. Approval should still succeed even if email backend is not configured yet.
+      // Best-effort only. Seller status update should still succeed even if email backend is not configured yet.
     }
   };
 
@@ -684,9 +686,10 @@ export default function AdminDashboard() {
       );
 
       if (nextStatus === "approved") {
-        void sendSellerApprovalEmail(profile);
+        void sendSellerStatusEmail(profile, "approved");
         toast.success("Seller approved. Selling is now enabled for this account.");
       } else {
+        void sendSellerStatusEmail(profile, "rejected", updates.student_id_rejection_reason);
         toast.success("Seller verification rejected.");
       }
     } catch (error) {
