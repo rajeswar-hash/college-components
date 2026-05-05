@@ -244,7 +244,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       throw profileError;
     }
-  }, [supabaseUser]);
+
+    setSupabaseUser(verifiedUser);
+    await fetchProfile(verifiedUser.id);
+  }, [fetchProfile, supabaseUser]);
 
   const login = useCallback(async (email: string, password: string) => {
     const normalizedEmail = sanitizeEmailInput(email);
