@@ -3,6 +3,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function parseFromEmail(rawFromEmail: string) {
+  const trimmed = rawFromEmail.trim();
+  const match = trimmed.match(/^(.*?)\s*<([^>]+)>$/);
+  if (!match) {
+    return {
+      name: "CampusKart",
+      email: trimmed,
+    };
+  }
+
+  return {
+    name: match[1].trim().replace(/^"|"$/g, "") || "CampusKart",
+    email: match[2].trim(),
+  };
+}
+
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {
     status,
@@ -13,22 +29,28 @@ function json(status: number, body: unknown) {
   });
 }
 
+async function safeJson(response: Response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const brevoApiKey = Deno.env.get("BREVO_API_KEY");
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const fromEmail = Deno.env.get("SELLER_APPROVAL_FROM_EMAIL") || "CampusKart <onboarding@resend.dev>";
+    const sender = parseFromEmail(fromEmail);
 
     const { email, name, college, status, rejectionReason } = await req.json();
     if (!email || !name) {
       return json(400, { error: "Missing email or name" });
-    }
-
-    if (!resendApiKey) {
-      return json(200, { status: "skipped", reason: "RESEND_API_KEY missing" });
     }
 
     const normalizedStatus = status === "rejected" ? "rejected" : "approved";
@@ -59,25 +81,68 @@ Deno.serve(async (req) => {
           </div>
         `;
 
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: fromEmail,
-        to: [email],
-        subject,
-        html,
-      }),
-    });
+    if (brevoApiKey) {
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-key": brevoApiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender,
+          to: [{ email, name }],
+          subject,
+          htmlContent: html,
+        }),
+      });
 
-    if (!response.ok) {
-      return json(200, { status: "skipped", reason: "Email provider request failed" });
+      if (!response.ok) {
+        const errorBody = await safeJson(response);
+        return json(200, {
+          status: "skipped",
+          reason:
+            errorBody?.message ||
+            errorBody?.code ||
+            `Brevo email request failed (${response.status})`,
+          provider: "brevo",
+        });
+      }
+
+      return json(200, { status: "sent", provider: "brevo" });
     }
 
-    return json(200, { status: "sent" });
+    if (resendApiKey) {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [email],
+          subject,
+          html,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await safeJson(response);
+        return json(200, {
+          status: "skipped",
+          reason:
+            errorBody?.message ||
+            errorBody?.error ||
+            `Resend email request failed (${response.status})`,
+          provider: "resend",
+        });
+      }
+
+      return json(200, { status: "sent", provider: "resend" });
+    }
+
+    return json(200, { status: "skipped", reason: "No email provider secret configured" });
   } catch {
     return json(200, { status: "skipped", reason: "Unexpected error" });
   }

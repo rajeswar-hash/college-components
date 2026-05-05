@@ -118,6 +118,8 @@ const PROFILE_ADMIN_FALLBACK_SELECT =
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const GODADDY_DOMAIN_SETTINGS_URL = "https://dcc.godaddy.com/control/portfolio/campus-kart.in/settings?ventureId=d3acf6f8-981b-4484-a902-86992919704e&referrer=vh-quicklink&itc=mya_vh_buildwebsite_dashboard";
+const BREVO_DASHBOARD_URL = "https://app.brevo.com/";
+const BREVO_PRICING_URL = "https://www.brevo.com/pricing/";
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
@@ -644,19 +646,26 @@ export default function AdminDashboard() {
   };
 
   const sendSellerStatusEmail = async (profile: ProfileAdminRow, status: "approved" | "rejected", rejectionReason?: string | null) => {
-    try {
-      await supabase.functions.invoke("notify-seller-approval", {
-        body: {
-          email: profile.email,
-          name: profile.name,
-          college: profile.college,
-          status,
-          rejectionReason: rejectionReason || null,
-        },
-      });
-    } catch {
-      // Best-effort only. Seller status update should still succeed even if email backend is not configured yet.
+    const { data, error } = await supabase.functions.invoke("notify-seller-approval", {
+      body: {
+        email: profile.email,
+        name: profile.name,
+        college: profile.college,
+        status,
+        rejectionReason: rejectionReason || null,
+      },
+    });
+
+    if (error) {
+      throw error;
     }
+
+    const result = data as { status?: string; reason?: string; provider?: string } | null;
+    if (!result || result.status !== "sent") {
+      throw new Error(result?.reason || "Seller status email was not sent.");
+    }
+
+    return result.provider || "email provider";
   };
 
   const handleSellerVerificationUpdate = async (profile: ProfileAdminRow, nextStatus: "approved" | "rejected") => {
@@ -685,12 +694,28 @@ export default function AdminDashboard() {
         )
       );
 
-      if (nextStatus === "approved") {
-        void sendSellerStatusEmail(profile, "approved");
-        toast.success("Seller approved. Selling is now enabled for this account.");
-      } else {
-        void sendSellerStatusEmail(profile, "rejected", updates.student_id_rejection_reason);
-        toast.success("Seller verification rejected.");
+      try {
+        const provider = await sendSellerStatusEmail(
+          profile,
+          nextStatus,
+          nextStatus === "rejected" ? updates.student_id_rejection_reason : null
+        );
+        toast.success(
+          nextStatus === "approved"
+            ? `Seller approved. Selling is now enabled and the approval email was sent via ${provider}.`
+            : `Seller verification rejected and the rejection email was sent via ${provider}.`
+        );
+      } catch (emailError) {
+        trackHandledError("admin.send-seller-status-email", emailError, {
+          profileId: profile.id,
+          nextStatus,
+          sellerEmail: profile.email,
+        });
+        toast.error(
+          nextStatus === "approved"
+            ? "Seller was approved, but the approval email could not be sent."
+            : "Seller was rejected, but the rejection email could not be sent."
+        );
       }
     } catch (error) {
       trackHandledError("admin.update-seller-verification", error, {
@@ -1337,6 +1362,28 @@ export default function AdminDashboard() {
               <CardTitle>Admin actions & recent errors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-950/50">
+                <p className="text-sm font-semibold text-foreground">Brevo email controls</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Check how many emails are left for the day in Brevo, or open their pricing page if you need to buy more email capacity.
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <Button
+                    className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80"
+                    variant="outline"
+                    onClick={() => openExternalPage(BREVO_DASHBOARD_URL)}
+                  >
+                    Open Brevo dashboard <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80"
+                    variant="outline"
+                    onClick={() => openExternalPage(BREVO_PRICING_URL)}
+                  >
+                    Buy more email credits <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
               <Button className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80" variant="outline" onClick={() => openExternalPage(GODADDY_DOMAIN_SETTINGS_URL)}>
                 Open domain renew settings <ExternalLink className="h-4 w-4" />
               </Button>

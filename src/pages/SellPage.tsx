@@ -514,12 +514,12 @@ const SellPage = () => {
             title: "Seller verification was rejected",
             body:
               user?.student_id_rejection_reason ||
-              "Your college ID could not be approved yet. Please contact CampusKart admin or register again with a clear student ID image.",
+              "Your account is active, but selling is disabled because the college ID verification was rejected. Please contact CampusKart admin or register again with a clear current student ID image.",
           }
         : {
             title: "Seller verification is pending",
             body:
-              "Your account is created and your email is verified. CampusKart admin is still checking your college ID card before selling is enabled.",
+              "Your account is created and ready to use, but selling is locked until CampusKart admin reviews your college ID card. Approval or rejection usually happens within 12 hours.",
           };
 
     return (

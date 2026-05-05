@@ -191,14 +191,22 @@ export default function RegisterPage() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-5 text-center">
-                <Alert className="border-primary/20 bg-primary/5 text-left">
+                <Alert className="border-primary/35 bg-primary/10 text-left shadow-[0_0_0_1px_rgba(20,184,166,0.18)]">
                   <ShieldCheck className="h-4 w-4" />
-                  <AlertDescription className="text-sm leading-6">
-                    You will be informed through email after verification, usually within 12 hours. Once approved, your account will be ready to sell items on CampusKart.
+                  <AlertDescription className="space-y-2">
+                    <p className="text-base font-semibold leading-6 text-foreground">
+                      Your account is under verification.
+                    </p>
+                    <p className="text-sm leading-6 text-foreground/90">
+                      You will be informed through email after verification, usually within 12 hours.
+                    </p>
+                    <p className="text-sm font-medium leading-6 text-primary">
+                      Once approved, your account will be ready to sell items on CampusKart.
+                    </p>
                   </AlertDescription>
                 </Alert>
-                <div className="rounded-2xl border border-border/60 bg-muted/30 px-4 py-4 text-sm text-muted-foreground">
-                  Verification email: <span className="font-medium text-foreground">{approvalNoticeEmail}</span>
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-4 text-sm text-muted-foreground">
+                  Verification email: <span className="font-semibold text-foreground">{approvalNoticeEmail}</span>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                   <Button className="gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => navigate("/", { replace: true })}>
