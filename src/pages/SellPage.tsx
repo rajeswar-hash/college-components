@@ -560,10 +560,14 @@ const SellPage = () => {
               Seller approval
             </Badge>
             <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">{statusCopy.title}</h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">{statusCopy.body}</p>
-            <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-6 text-muted-foreground">
-              Email OTP confirms the inbox belongs to you. Your college ID card is checked by admin to confirm you are a real college student before selling is enabled on CampusKart.
-            </div>
+            {sellerVerificationStatus !== "rejected" && (
+              <>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{statusCopy.body}</p>
+                <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-6 text-muted-foreground">
+                  Email OTP confirms the inbox belongs to you. Your college ID card is checked by admin to confirm you are a real college student before selling is enabled on CampusKart.
+                </div>
+              </>
+            )}
             {sellerVerificationStatus === "rejected" && (
               <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-4">
                 <p className="text-sm font-semibold leading-6 text-destructive">
