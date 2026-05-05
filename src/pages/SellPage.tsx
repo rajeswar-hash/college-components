@@ -21,6 +21,8 @@ import {
   ArrowLeft,
   BookOpen,
   Cpu,
+  Eye,
+  EyeOff,
   ExternalLink,
   FileText,
   ImagePlus,  MoreHorizontal,
@@ -267,7 +269,7 @@ interface DraftImage {
 }
 
 const SellPage = () => {
-  const { user, isAuthenticated, supabaseUser } = useAuth();
+  const { user, isAuthenticated, supabaseUser, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -278,6 +280,9 @@ const SellPage = () => {
   const [resourceLink, setResourceLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [processingImages, setProcessingImages] = useState(0);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [deletingRejectedAccount, setDeletingRejectedAccount] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageDraftsRef = useRef<DraftImage[]>([]);
   const lastAutoTitleRef = useRef("");
@@ -298,6 +303,26 @@ const SellPage = () => {
   const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`.slice(0, MAX_TITLE_LENGTH);
   const sellerVerificationStatus = user?.seller_verification_status ?? "pending";
   const canSell = sellerVerificationStatus === "approved";
+
+  const handleRejectedAccountDeletion = async () => {
+    if (!deletePassword.trim()) {
+      toast.error("Enter your password to delete this account permanently.");
+      return;
+    }
+
+    setDeletingRejectedAccount(true);
+    try {
+      await deleteAccount(deletePassword);
+      setDeletePassword("");
+      toast.success("Your account has been deleted permanently.");
+      navigate("/", { replace: true });
+    } catch (error: any) {
+      trackHandledError("sell-page.delete-rejected-account", error, { userId: supabaseUser?.id });
+      toast.error(error?.message || "Could not delete this account right now.");
+    } finally {
+      setDeletingRejectedAccount(false);
+    }
+  };
 
   const handleCategoryChange = (value: Category) => {
     const nextCategory = value as Category;
@@ -514,7 +539,7 @@ const SellPage = () => {
             title: "Seller verification was rejected",
             body:
               user?.student_id_rejection_reason ||
-              "Your account is active, but selling is disabled because the college ID verification was rejected. Please contact CampusKart admin or register again with a clear current student ID image.",
+              "Your college ID card could not be approved due to invalid or false details. Try creating a new account again with valid details and a clear current student ID.",
           }
         : {
             title: "Seller verification is pending",
@@ -539,6 +564,43 @@ const SellPage = () => {
             <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-6 text-muted-foreground">
               Email OTP confirms the inbox belongs to you. Your college ID card is checked by admin to confirm you are a real college student before selling is enabled on CampusKart.
             </div>
+            {sellerVerificationStatus === "rejected" && (
+              <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-4">
+                <p className="text-sm font-semibold leading-6 text-destructive">
+                  Your college ID card could not be approved due to invalid or false details. Try creating a new account again with valid details and a clear current student ID.
+                </p>
+                <p className="mt-1 text-sm leading-6 text-destructive/90">
+                  If you do not want to keep this rejected account, you can delete it permanently below.
+                </p>
+                <div className="mt-4 flex max-w-sm flex-col gap-3">
+                  <div className="relative">
+                    <Input
+                      type={showDeletePassword ? "text" : "password"}
+                      value={deletePassword}
+                      onChange={(event) => setDeletePassword(event.target.value)}
+                      placeholder="Enter your password"
+                      className="pr-11"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletePassword((value) => !value)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                      aria-label={showDeletePassword ? "Hide password" : "Show password"}
+                    >
+                      {showDeletePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleRejectedAccountDeletion}
+                    disabled={deletingRejectedAccount}
+                    className="sm:w-fit"
+                  >
+                    {deletingRejectedAccount ? "Deleting..." : "Delete Account Permanently"}
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="mt-6 flex flex-wrap gap-3">
               <Button onClick={() => navigate("/dashboard")} className="gradient-bg border-0 text-primary-foreground">
                 Open Dashboard
