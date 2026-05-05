@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEmailDispatch } from "@/lib/emailUsage";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ export default function LoginPage() {
       });
       if (error) throw error;
 
+      void trackEmailDispatch("forgot_password_otp", "login_page", normalizedEmail);
       setOtp("");
       setForgotStep("otp");
       toast.success("OTP sent to your email. Enter it to continue.");

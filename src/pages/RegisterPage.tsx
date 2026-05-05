@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEmailDispatch } from "@/lib/emailUsage";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CollegeAutocomplete } from "@/components/CollegeAutocomplete";
@@ -98,6 +99,7 @@ export default function RegisterPage() {
       });
       if (error) throw error;
 
+      void trackEmailDispatch("register_otp", "register_page", normalizedEmail);
       setOtp("");
       setRegisterStep("otp");
       toast.success("OTP sent to your email. Enter the code to continue.");

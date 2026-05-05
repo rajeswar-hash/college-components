@@ -1,5 +1,6 @@
 ﻿import { useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEmailDispatch } from "@/lib/emailUsage";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -85,6 +86,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       });
       if (error) throw error;
 
+      void trackEmailDispatch(
+        target === "register" ? "register_otp" : "forgot_password_otp",
+        "auth_modal",
+        normalizedEmail
+      );
       setOtp("");
       if (target === "register") {
         setRegisterStep("otp");

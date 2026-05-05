@@ -119,7 +119,8 @@ const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DATABASE_LIMIT_BYTES = 500 * 1024 * 1024;
 const GODADDY_DOMAIN_SETTINGS_URL = "https://dcc.godaddy.com/control/portfolio/campus-kart.in/settings?ventureId=d3acf6f8-981b-4484-a902-86992919704e&referrer=vh-quicklink&itc=mya_vh_buildwebsite_dashboard";
 const BREVO_DASHBOARD_URL = "https://app.brevo.com/";
-const BREVO_PRICING_URL = "https://www.brevo.com/pricing/";
+const BREVO_PRICING_URL = "https://app.brevo.com/billing/account/plans/upgrade";
+const BREVO_DAILY_EMAIL_LIMIT = 300;
 const PARTNER_ADMIN_EMAIL = "campuskartpartner@gmail.com";
 const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
@@ -178,6 +179,7 @@ export default function AdminDashboard() {
   const [showRecentErrors, setShowRecentErrors] = useState(false);
   const [memberSnapshotFilter, setMemberSnapshotFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [healthError, setHealthError] = useState("");
+  const [emailsSentToday, setEmailsSentToday] = useState(0);
   const [sellerVerificationSchemaMissing, setSellerVerificationSchemaMissing] = useState(false);
   const sectionContentRef = useRef<HTMLDivElement>(null);
   const isPartnerModerator = user?.email?.trim().toLowerCase() === PARTNER_ADMIN_EMAIL;
@@ -304,7 +306,11 @@ export default function AdminDashboard() {
     setHealthError("");
 
     try {
-      const [{ data: healthData, error: healthRpcError }, { data: recentErrorData, error: recentErrorQueryError }] =
+      const [
+        { data: healthData, error: healthRpcError },
+        { data: recentErrorData, error: recentErrorQueryError },
+        { data: emailCountData, error: emailCountError },
+      ] =
         await Promise.all([
           (supabase as any).rpc("get_admin_system_health"),
           (supabase as any)
@@ -312,13 +318,16 @@ export default function AdminDashboard() {
             .select("id, created_at, route, source, severity, message, user_email")
             .order("created_at", { ascending: false })
             .limit(5),
+          (supabase as any).rpc("get_today_email_dispatch_count"),
         ]);
 
       if (healthRpcError) throw healthRpcError;
       if (recentErrorQueryError) throw recentErrorQueryError;
+      if (emailCountError) throw emailCountError;
 
       setSystemHealth((healthData?.[0] as SystemHealthRow | undefined) || null);
       setRecentErrors((recentErrorData as FrontendErrorRow[]) || []);
+      setEmailsSentToday(Number(emailCountData || 0));
     } catch (error) {
       trackHandledError("admin.load-system-health", error);
       setHealthError("Live system health is not ready yet, so fallback estimates are shown below.");
@@ -462,6 +471,7 @@ export default function AdminDashboard() {
     usagePercent >= 85 ? "text-destructive" : usagePercent >= 60 ? "text-warning" : "text-success";
   const usageLabel =
     usagePercent >= 85 ? "Critical watch" : usagePercent >= 60 ? "Growing steadily" : "Healthy capacity";
+  const estimatedEmailsLeftToday = Math.max(BREVO_DAILY_EMAIL_LIMIT - emailsSentToday, 0);
 
   const getListingSaleMeta = (sold: boolean) =>
     sold
@@ -1325,6 +1335,17 @@ export default function AdminDashboard() {
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   Check how many emails are left for the day in Brevo, or open their pricing page if you need to buy more email capacity.
                 </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-border/60 bg-background/60 px-3 py-2.5 dark:bg-slate-950/50">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Emails sent today</p>
+                    <p className="mt-1 font-display text-lg font-bold leading-none text-foreground">{emailsSentToday}</p>
+                  </div>
+                  <div className="rounded-xl border border-border/60 bg-background/60 px-3 py-2.5 dark:bg-slate-950/50">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Approx left today</p>
+                    <p className="mt-1 font-display text-lg font-bold leading-none text-foreground">{estimatedEmailsLeftToday}</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">Based on Brevo free 300/day</p>
+                  </div>
+                </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   <Button
                     className="h-10 w-full justify-between bg-background/70 text-xs sm:text-sm dark:bg-slate-900/80 dark:hover:bg-slate-800/80"
