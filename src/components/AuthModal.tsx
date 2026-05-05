@@ -217,9 +217,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       if (mode === "login") {
         const result = await login(email, password);
         toast.success(result.isAdmin ? "Admin access granted." : "Welcome back!");
-        if (result.isAdmin) {
-          navigate("/admin");
-        }
+        navigate(result.isAdmin ? "/admin" : "/dashboard");
       }
       onClose();
       resetForm();
