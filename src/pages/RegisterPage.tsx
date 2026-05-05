@@ -16,7 +16,7 @@ import { toast } from "sonner";
 export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { register, logout, isAuthenticated, isAdmin, loading } = useAuth();
+  const { register, isAuthenticated, isAdmin, loading } = useAuth();
   const [registerStep, setRegisterStep] = useState<"form" | "otp">("form");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -27,7 +27,6 @@ export default function RegisterPage() {
   const [studentIdFile, setStudentIdFile] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [approvalNoticeEmail, setApprovalNoticeEmail] = useState("");
   const otpRef = useRef<HTMLInputElement>(null);
   const collegeRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -126,8 +125,8 @@ export default function RegisterPage() {
       if (error) throw error;
 
       await register(email, password, name, normalizedPhone, college, studentIdFile as File);
-      await logout();
-      setApprovalNoticeEmail(normalizedEmail);
+      toast.success("Account created successfully. Your selling access will be reviewed within 12 hours.");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       const message = String(err?.message || "");
       toast.error(message || "Incorrect OTP. Please try again.");
@@ -175,54 +174,6 @@ export default function RegisterPage() {
 
   if (isAuthenticated) {
     return null;
-  }
-
-  if (approvalNoticeEmail) {
-    return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,rgba(240,253,250,0.95),rgba(255,255,255,1))] dark:bg-[linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.98))]">
-        <Navbar />
-        <div className="px-4 py-8 sm:py-10">
-          <div className="mx-auto max-w-2xl">
-            <Card className="border-border/70 bg-background/90 shadow-[0_20px_60px_rgba(20,184,166,0.10)] backdrop-blur dark:border-white/10 dark:bg-slate-900/88 dark:shadow-[0_24px_70px_rgba(2,6,23,0.45)]">
-              <CardHeader className="space-y-3 text-center">
-                <CardTitle className="font-display text-3xl text-foreground">Account Under Verification</CardTitle>
-                <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">
-                  Your registration has been submitted successfully. CampusKart admin will review your details and college ID card.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-5 text-center">
-                <Alert className="border-primary/35 bg-primary/10 text-left shadow-[0_0_0_1px_rgba(20,184,166,0.18)]">
-                  <ShieldCheck className="h-4 w-4" />
-                  <AlertDescription className="space-y-2">
-                    <p className="text-base font-semibold leading-6 text-foreground">
-                      Your account is under verification.
-                    </p>
-                    <p className="text-sm leading-6 text-foreground/90">
-                      You will be informed through email after verification, usually within 12 hours.
-                    </p>
-                    <p className="text-sm font-medium leading-6 text-primary">
-                      Once approved, your account will be ready to sell items on CampusKart.
-                    </p>
-                  </AlertDescription>
-                </Alert>
-                <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-4 text-sm text-muted-foreground">
-                  Verification email: <span className="font-semibold text-foreground">{approvalNoticeEmail}</span>
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                  <Button className="gradient-bg border-0 text-primary-foreground hover:opacity-90" onClick={() => navigate("/", { replace: true })}>
-                    Back to Home
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate("/login", { replace: true })}>
-                    Go to Sign In
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        <SiteFooter />
-      </div>
-    );
   }
 
   return (

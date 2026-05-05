@@ -645,29 +645,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const sendSellerStatusEmail = async (profile: ProfileAdminRow, status: "approved" | "rejected", rejectionReason?: string | null) => {
-    const { data, error } = await supabase.functions.invoke("notify-seller-approval", {
-      body: {
-        email: profile.email,
-        name: profile.name,
-        college: profile.college,
-        status,
-        rejectionReason: rejectionReason || null,
-      },
-    });
-
-    if (error) {
-      throw error;
-    }
-
-    const result = data as { status?: string; reason?: string; provider?: string } | null;
-    if (!result || result.status !== "sent") {
-      throw new Error(result?.reason || "Seller status email was not sent.");
-    }
-
-    return result.provider || "email provider";
-  };
-
   const handleSellerVerificationUpdate = async (profile: ProfileAdminRow, nextStatus: "approved" | "rejected") => {
     setUpdatingSellerApprovalId(profile.id);
     try {
@@ -693,30 +670,11 @@ export default function AdminDashboard() {
             : entry
         )
       );
-
-      try {
-        const provider = await sendSellerStatusEmail(
-          profile,
-          nextStatus,
-          nextStatus === "rejected" ? updates.student_id_rejection_reason : null
-        );
-        toast.success(
-          nextStatus === "approved"
-            ? `Seller approved. Selling is now enabled and the approval email was sent via ${provider}.`
-            : `Seller verification rejected and the rejection email was sent via ${provider}.`
-        );
-      } catch (emailError) {
-        trackHandledError("admin.send-seller-status-email", emailError, {
-          profileId: profile.id,
-          nextStatus,
-          sellerEmail: profile.email,
-        });
-        toast.error(
-          nextStatus === "approved"
-            ? "Seller was approved, but the approval email could not be sent."
-            : "Seller was rejected, but the rejection email could not be sent."
-        );
-      }
+      toast.success(
+        nextStatus === "approved"
+          ? "Seller approved. Selling is now enabled for this account."
+          : "Seller verification rejected. This account will need fresh valid details to sell again."
+      );
     } catch (error) {
       trackHandledError("admin.update-seller-verification", error, {
         profileId: profile.id,

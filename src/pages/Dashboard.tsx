@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, KeyRound, Loader2, Lock, Moon, Pencil, Package, Plus, Save, Shield, Sparkles, Sun, Trash2, Unlock, User, X } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock, Moon, Pencil, Package, Plus, Save, Shield, Sparkles, Sun, Trash2, Unlock, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { getListingCoverImage } from "@/lib/listingImage";
 import { deleteListingImages } from "@/lib/storage";
@@ -59,7 +59,7 @@ function getStoredMainAdminPinHash(supabaseUser: { user_metadata?: Record<string
 }
 
 const Dashboard = () => {
-  const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, supabaseUser, isAdmin, updateProfile, deleteAccount, loading: authLoading } = useAuth();
   const { theme, setTheme } = useThemeMode();
   const navigate = useNavigate();
   const isMainAdmin = user?.email?.trim().toLowerCase() === MAIN_ADMIN_EMAIL;
@@ -77,6 +77,9 @@ const Dashboard = () => {
   const [resetNewPin, setResetNewPin] = useState("");
   const [resetConfirmPin, setResetConfirmPin] = useState("");
   const [savingAdminPin, setSavingAdminPin] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [deletingRejectedAccount, setDeletingRejectedAccount] = useState(false);
   const [banState, setBanState] = useState<{ isBanned: boolean; reason: string | null }>({
     isBanned: false,
     reason: null,
@@ -389,6 +392,26 @@ const Dashboard = () => {
     toast.success("Admin panel locked");
   };
 
+  const handleRejectedAccountDeletion = async () => {
+    if (!deletePassword.trim()) {
+      toast.error("Enter your password to delete this account permanently.");
+      return;
+    }
+
+    setDeletingRejectedAccount(true);
+    try {
+      await deleteAccount(deletePassword);
+      setDeletePassword("");
+      toast.success("Your account has been deleted permanently.");
+      navigate("/", { replace: true });
+    } catch (error: any) {
+      trackHandledError("dashboard.delete-rejected-account", error, { userId: supabaseUser?.id });
+      toast.error(error?.message || "Could not delete this account right now.");
+    } finally {
+      setDeletingRejectedAccount(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -615,8 +638,47 @@ const Dashboard = () => {
                   : "border-amber-500/20 bg-amber-500/5 text-amber-800"
               }`}>
                 {sellerVerificationStatus === "rejected"
-                  ? user?.student_id_rejection_reason || "Your seller verification was rejected. Upload a clear college ID image during registration so CampusKart admin can approve selling access."
+                  ? user?.student_id_rejection_reason || "Your verification was not approved. Please create a new account with valid details and a clear current college ID card if you want selling access on CampusKart."
                   : "Your seller verification is still pending. You can sign in and use your dashboard, but posting items will unlock only after CampusKart admin approves your college ID card."}
+              </div>
+            )}
+
+            {sellerVerificationStatus === "rejected" && (
+              <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-4">
+                <p className="text-sm font-semibold leading-6 text-destructive">
+                  Please create a new account with valid details if you want to sell on CampusKart.
+                </p>
+                <p className="mt-1 text-sm leading-6 text-destructive/90">
+                  This account will remain blocked from selling. If you no longer need it, you can delete it permanently below.
+                </p>
+                <div className="mt-4 flex flex-col gap-3 sm:max-w-sm">
+                  <div className="relative">
+                    <Input
+                      type={showDeletePassword ? "text" : "password"}
+                      value={deletePassword}
+                      onChange={(event) => setDeletePassword(event.target.value)}
+                      placeholder="Enter your password"
+                      className="pr-11"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletePassword((value) => !value)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                      aria-label={showDeletePassword ? "Hide password" : "Show password"}
+                    >
+                      {showDeletePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={handleRejectedAccountDeletion}
+                    disabled={deletingRejectedAccount}
+                    className="sm:w-fit"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {deletingRejectedAccount ? "Deleting..." : "Delete This Account Permanently"}
+                  </Button>
+                </div>
               </div>
             )}
 
