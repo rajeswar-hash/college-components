@@ -663,7 +663,7 @@ export default function AdminDashboard() {
         student_id_reviewed_at: new Date().toISOString(),
         student_id_rejection_reason:
           nextStatus === "rejected"
-            ? "Your college ID card could not be approved. Please contact CampusKart admin and register again with a clear current student ID."
+            ? "Your college ID card could not be approved due to invalid or false details. Try creating a new account again with valid details and a clear current student ID."
             : null,
       };
 

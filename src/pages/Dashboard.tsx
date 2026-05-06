@@ -36,6 +36,10 @@ const MAIN_ADMIN_EMAIL = "rajeswarbind39@gmail.com";
 const MAIN_ADMIN_PIN_HASH_KEY = "campuskart-main-admin-pin-hash";
 const MAIN_ADMIN_PIN_HASH_METADATA_KEY = "campuskart_main_admin_pin_hash";
 const MAIN_ADMIN_PIN_UNLOCK_KEY = "campuskart-main-admin-pin-unlocked";
+const REJECTED_SELLER_MESSAGE =
+  "Your college ID card could not be approved due to invalid or false details. Try creating a new account again with valid details and a clear current student ID.";
+const REJECTED_SELLER_DELETE_MESSAGE =
+  "If you do not want to keep this rejected account, you can delete it permanently below.";
 
 async function hashAdminPin(pin: string) {
   const encoded = new TextEncoder().encode(pin);
@@ -638,7 +642,7 @@ const Dashboard = () => {
                   : "border-amber-500/20 bg-amber-500/5 text-amber-800"
               }`}>
                 {sellerVerificationStatus === "rejected"
-                  ? user?.student_id_rejection_reason || "Your verification was not approved. Please create a new account with valid details and a clear current college ID card if you want selling access on CampusKart."
+                  ? REJECTED_SELLER_MESSAGE
                   : "Your seller verification is still pending. You can sign in and use your dashboard, but posting items will unlock only after CampusKart admin approves your college ID card."}
               </div>
             )}
@@ -646,10 +650,10 @@ const Dashboard = () => {
             {sellerVerificationStatus === "rejected" && (
               <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-4">
                 <p className="text-sm font-semibold leading-6 text-destructive">
-                  Please create a new account with valid details if you want to sell on CampusKart.
+                  {REJECTED_SELLER_MESSAGE}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-destructive/90">
-                  This account will remain blocked from selling. If you no longer need it, you can delete it permanently below.
+                  {REJECTED_SELLER_DELETE_MESSAGE}
                 </p>
                 <div className="mt-4 flex flex-col gap-3 sm:max-w-sm">
                   <div className="relative">
