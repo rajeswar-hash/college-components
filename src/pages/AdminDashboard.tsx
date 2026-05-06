@@ -1869,8 +1869,6 @@ export default function AdminDashboard() {
                   >
                     Pending <Badge variant="secondary" className="ml-2 text-[10px]">{pendingSellerApprovals.length}</Badge>
                   </Button>
-                  {!isPartnerModerator && (
-                    <>
                   <Button
                     size="sm"
                     variant={memberSnapshotFilter === "approved" ? "default" : "outline"}
@@ -1887,6 +1885,8 @@ export default function AdminDashboard() {
                   >
                     Rejected <Badge variant="secondary" className="ml-2 text-[10px]">{rejectedSellerApprovals.length}</Badge>
                   </Button>
+                  {!isPartnerModerator && (
+                    <>
                   <Button
                     size="sm"
                     variant={memberSnapshotFilter === "all" ? "default" : "outline"}
