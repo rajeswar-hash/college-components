@@ -256,9 +256,7 @@ export default function AdminDashboard() {
           .from("listings")
           .select("id, title, description, price, category, condition, college, sold, created_at, images, seller_id, moderation_status, report_count, resource_link, ai_verification_status")
           .order("created_at", { ascending: false }),
-        isPartnerModerator
-          ? Promise.resolve({ data: [], error: null } as any)
-          : loadProfilesForAdmin(),
+        loadProfilesForAdmin(),
         supabase
           .from("college_requests")
           .select("id, college_name, city, state, note, requester_name, requester_email, status, created_at, reviewed_at")
@@ -275,7 +273,7 @@ export default function AdminDashboard() {
       if (profileError) {
         trackHandledError("admin.load-profiles", profileError);
         toast.error("Could not load profile data for the admin dashboard.");
-      } else if (!isPartnerModerator) {
+      } else {
         setProfiles((profileData as ProfileAdminRow[]) || []);
         if (profileSchemaMissing) {
           toast.error(SELLER_VERIFICATION_SQL_HINT);
@@ -1457,11 +1455,11 @@ export default function AdminDashboard() {
                   <CardTitle>{isPartnerModerator ? "Moderation" : "Admin sections"}</CardTitle>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {isPartnerModerator
-                      ? "This partner account can only access listing moderation."
+                      ? "This partner account can review listing submissions and pending seller account approvals."
                       : "Open one section at a time so the panel stays compact as data grows."}
-                  </p>
-                </div>
-                <div className={`grid gap-2 ${isPartnerModerator ? "sm:grid-cols-1" : "sm:grid-cols-4"}`}>
+                    </p>
+                  </div>
+                  <div className={`grid gap-2 ${isPartnerModerator ? "sm:grid-cols-2" : "sm:grid-cols-4"}`}>
                   {!isPartnerModerator && (
                   <Button
                     variant={activeSection === "requests" ? "default" : "outline"}
@@ -1472,17 +1470,27 @@ export default function AdminDashboard() {
                     <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
                   </Button>
                   )}
-                  <Button
-                    variant={activeSection === "listings" ? "default" : "outline"}
-                    className="h-9 w-full justify-between text-xs sm:text-sm"
+                    <Button
+                      variant={activeSection === "listings" ? "default" : "outline"}
+                      className="h-9 w-full justify-between text-xs sm:text-sm"
                     onClick={() => handleSectionChange("listings")}
                   >
-                    <span>Listing Moderation</span>
-                      <Badge variant="secondary" className="ml-2 text-[10px]">{pendingListings.length + flaggedListings.length}</Badge>
-                  </Button>
-                  {!isPartnerModerator && (
-                  <Button
-                    variant={activeSection === "colleges" ? "default" : "outline"}
+                      <span>Listing Moderation</span>
+                        <Badge variant="secondary" className="ml-2 text-[10px]">{pendingListings.length + flaggedListings.length}</Badge>
+                    </Button>
+                    {isPartnerModerator && (
+                    <Button
+                      variant={activeSection === "members" ? "default" : "outline"}
+                      className="h-9 w-full justify-between text-xs sm:text-sm"
+                      onClick={() => handleSectionChange("members")}
+                    >
+                      <span>Seller Approvals</span>
+                      <Badge variant="secondary" className="ml-2 text-[10px]">{pendingSellerApprovals.length}</Badge>
+                    </Button>
+                    )}
+                    {!isPartnerModerator && (
+                    <Button
+                      variant={activeSection === "colleges" ? "default" : "outline"}
                     className="h-9 w-full justify-between text-xs sm:text-sm"
                     onClick={() => handleSectionChange("colleges")}
                   >
@@ -1840,14 +1848,16 @@ export default function AdminDashboard() {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-primary" /> Member snapshot
-                  </CardTitle>
-                  <p className="mt-1 text-xs text-muted-foreground">Newest registered users first.</p>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-primary" /> {isPartnerModerator ? "Seller approval review" : "Member snapshot"}
+                    </CardTitle>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {isPartnerModerator ? "Open the college ID, then approve or reject pending seller accounts." : "Newest registered users first."}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">{isPartnerModerator ? pendingSellerApprovals.length : profiles.length} {isPartnerModerator ? "pending" : "members"}</Badge>
                 </div>
-                <Badge variant="secondary">{profiles.length} members</Badge>
-              </div>
-            </CardHeader>
+              </CardHeader>
             <CardContent>
               <div className="mb-5 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
                 <div className="mb-4 flex flex-wrap gap-2">
@@ -1859,6 +1869,8 @@ export default function AdminDashboard() {
                   >
                     Pending <Badge variant="secondary" className="ml-2 text-[10px]">{pendingSellerApprovals.length}</Badge>
                   </Button>
+                  {!isPartnerModerator && (
+                    <>
                   <Button
                     size="sm"
                     variant={memberSnapshotFilter === "approved" ? "default" : "outline"}
@@ -1883,6 +1895,8 @@ export default function AdminDashboard() {
                   >
                     All Members <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
                   </Button>
+                    </>
+                  )}
                 </div>
 
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
