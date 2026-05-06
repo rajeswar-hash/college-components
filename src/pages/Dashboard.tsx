@@ -635,15 +635,23 @@ const Dashboard = () => {
               <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
             </div>
 
-            {sellerVerificationStatus !== "approved" && sellerVerificationStatus !== "rejected" && (
-              <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm leading-6 ${
-                sellerVerificationStatus === "rejected"
-                  ? "border-destructive/20 bg-destructive/5 text-destructive"
-                  : "border-amber-500/20 bg-amber-500/5 text-amber-800"
-              }`}>
-                {"Your seller verification is still pending. You can sign in and use your dashboard, but posting items will unlock only after CampusKart admin approves your college ID card."}
-              </div>
-            )}
+              {sellerVerificationStatus !== "approved" && sellerVerificationStatus !== "rejected" && (
+                <div className="mb-4 rounded-2xl border border-amber-500/12 bg-[linear-gradient(135deg,rgba(245,158,11,0.055),rgba(245,158,11,0.02))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/12 text-amber-200">
+                      <Shield className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-200/80">
+                        Verification Pending
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-amber-50/88">
+                        You can use your dashboard now. Posting items will unlock after CampusKart admin approves your college ID card.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             {sellerVerificationStatus === "rejected" && (
               <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-4">
@@ -684,10 +692,20 @@ const Dashboard = () => {
               </div>
             )}
 
-            <div className="rounded-2xl border border-amber-500/15 bg-[linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <p className="text-sm font-medium leading-6 text-amber-100/90">
-                Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
-              </p>
+            <div className="rounded-2xl border border-amber-500/12 bg-[linear-gradient(135deg,rgba(245,158,11,0.06),rgba(245,158,11,0.02))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/12 text-amber-100">
+                  <Package className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/75">
+                    Seller Tip
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-amber-50/90">
+                    Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
+                  </p>
+                </div>
+              </div>
             </div>
 
           {loading ? (
