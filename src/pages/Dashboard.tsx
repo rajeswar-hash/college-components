@@ -635,15 +635,13 @@ const Dashboard = () => {
               <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
             </div>
 
-            {sellerVerificationStatus !== "approved" && (
+            {sellerVerificationStatus !== "approved" && sellerVerificationStatus !== "rejected" && (
               <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm leading-6 ${
                 sellerVerificationStatus === "rejected"
                   ? "border-destructive/20 bg-destructive/5 text-destructive"
                   : "border-amber-500/20 bg-amber-500/5 text-amber-800"
               }`}>
-                {sellerVerificationStatus === "rejected"
-                  ? REJECTED_SELLER_MESSAGE
-                  : "Your seller verification is still pending. You can sign in and use your dashboard, but posting items will unlock only after CampusKart admin approves your college ID card."}
+                {"Your seller verification is still pending. You can sign in and use your dashboard, but posting items will unlock only after CampusKart admin approves your college ID card."}
               </div>
             )}
 
