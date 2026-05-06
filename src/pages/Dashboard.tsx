@@ -684,8 +684,10 @@ const Dashboard = () => {
               </div>
             )}
 
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-800">
-              Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
+            <div className="rounded-2xl border border-amber-500/15 bg-[linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <p className="text-sm font-medium leading-6 text-amber-100/90">
+                Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
+              </p>
             </div>
 
           {loading ? (
