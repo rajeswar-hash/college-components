@@ -1,6 +1,6 @@
 ﻿import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Category, categoryUsesCondition, Condition } from "@/lib/types";
@@ -13,8 +13,16 @@ import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
@@ -199,32 +207,57 @@ function isSquareRatio(width: number, height: number) {
   return Math.abs(ratio - 1) <= 0.02;
 }
 
-async function compressImage(file: File) {
+interface DraftImage {
+  id: string;
+  previewUrl: string;
+  file: File;
+}
+
+interface CropSelection {
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+}
+
+interface PendingCropImage {
+  file: File;
+  dataUrl: string;
+  imageWidth: number;
+  imageHeight: number;
+}
+
+async function createOptimizedSquareImage(file: File, cropSelection?: CropSelection) {
   const originalDataUrl = await readFileAsDataUrl(file);
   const image = await loadImage(originalDataUrl);
-  if (!isSquareRatio(image.width, image.height)) {
-    throw new Error("Only 1:1 square images are allowed");
-  }
 
-  const outputSize = Math.max(1, Math.round(Math.min(image.width, image.height, MAX_IMAGE_DIMENSION)));
+  const baseCropSize = Math.min(image.width, image.height);
+  const zoom = cropSelection?.zoom ?? 1;
+  const cropSize = Math.max(1, Math.round(baseCropSize / zoom));
+  const maxSourceX = Math.max(0, image.width - cropSize);
+  const maxSourceY = Math.max(0, image.height - cropSize);
+  const sourceX = Math.round(((cropSelection?.offsetX ?? 50) / 100) * maxSourceX);
+  const sourceY = Math.round(((cropSelection?.offsetY ?? 50) / 100) * maxSourceY);
+  const outputSize = Math.max(1, Math.round(Math.min(cropSize, MAX_IMAGE_DIMENSION)));
 
   const canvas = document.createElement("canvas");
   canvas.width = outputSize;
   canvas.height = outputSize;
 
   const context = canvas.getContext("2d");
-  if (!context) return originalDataUrl;
+  if (!context) {
+    throw new Error("Could not prepare image");
+  }
 
   context.drawImage(
     image,
-    0,
-    0,
-    image.width,
-    image.height,
+    sourceX,
+    sourceY,
+    cropSize,
+    cropSize,
     0,
     0,
     outputSize,
-    outputSize
+    outputSize,
   );
 
   const canvasToBlob = (quality: number) =>
@@ -262,12 +295,6 @@ async function compressImage(file: File) {
   };
 }
 
-interface DraftImage {
-  id: string;
-  previewUrl: string;
-  file: File;
-}
-
 const SellPage = () => {
   const { user, isAuthenticated, supabaseUser, deleteAccount } = useAuth();
   const navigate = useNavigate();
@@ -283,8 +310,15 @@ const SellPage = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [deletingRejectedAccount, setDeletingRejectedAccount] = useState(false);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [pendingCropImage, setPendingCropImage] = useState<PendingCropImage | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffsetX, setCropOffsetX] = useState(50);
+  const [cropOffsetY, setCropOffsetY] = useState(50);
+  const [applyingCrop, setApplyingCrop] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageDraftsRef = useRef<DraftImage[]>([]);
+  const cropResolverRef = useRef<((value: DraftImage | null) => void) | null>(null);
   const lastAutoTitleRef = useRef("");
   const lastAutoDescriptionRef = useRef("");
   const hasValidSellerPhone = hasValidWhatsappNumber(user?.phone || "");
@@ -303,6 +337,73 @@ const SellPage = () => {
   const handwritingDefaultTitle = `${HANDWRITING_TITLE_EMOJI} Handwriting Service by ${firstName}`.slice(0, MAX_TITLE_LENGTH);
   const sellerVerificationStatus = user?.seller_verification_status ?? "pending";
   const canSell = sellerVerificationStatus === "approved";
+  const cropBaseScale = pendingCropImage
+    ? pendingCropImage.imageWidth >= pendingCropImage.imageHeight
+      ? 100 / pendingCropImage.imageHeight
+      : 100 / pendingCropImage.imageWidth
+    : 1;
+  const cropPreviewWidthPercent = pendingCropImage ? pendingCropImage.imageWidth * cropBaseScale * cropZoom : 100;
+  const cropPreviewHeightPercent = pendingCropImage ? pendingCropImage.imageHeight * cropBaseScale * cropZoom : 100;
+  const cropPreviewLeftPercent = Math.max(0, (cropPreviewWidthPercent - 100) * (cropOffsetX / 100));
+  const cropPreviewTopPercent = Math.max(0, (cropPreviewHeightPercent - 100) * (cropOffsetY / 100));
+
+  const closeCropDialog = () => {
+    setCropDialogOpen(false);
+    setPendingCropImage(null);
+    setCropZoom(1);
+    setCropOffsetX(50);
+    setCropOffsetY(50);
+    setApplyingCrop(false);
+  };
+
+  const promptSquareCrop = async (file: File) => {
+    const dataUrl = await readFileAsDataUrl(file);
+    const image = await loadImage(dataUrl);
+
+    return new Promise<DraftImage | null>((resolve) => {
+      cropResolverRef.current = resolve;
+      setPendingCropImage({
+        file,
+        dataUrl,
+        imageWidth: image.width,
+        imageHeight: image.height,
+      });
+      setCropZoom(1);
+      setCropOffsetX(50);
+      setCropOffsetY(50);
+      setCropDialogOpen(true);
+    });
+  };
+
+  const handleCropCancel = () => {
+    cropResolverRef.current?.(null);
+    cropResolverRef.current = null;
+    closeCropDialog();
+  };
+
+  const handleApplyCrop = async () => {
+    if (!pendingCropImage) return;
+
+    setApplyingCrop(true);
+    try {
+      const cropped = await createOptimizedSquareImage(pendingCropImage.file, {
+        zoom: cropZoom,
+        offsetX: cropOffsetX,
+        offsetY: cropOffsetY,
+      });
+      cropResolverRef.current?.({
+        id: crypto.randomUUID(),
+        previewUrl: cropped.previewUrl,
+        file: cropped.file,
+      });
+      cropResolverRef.current = null;
+      closeCropDialog();
+    } catch (error) {
+      trackHandledError("sell.apply-image-crop", error, { fileName: pendingCropImage.file.name });
+      toast.error(`Could not crop ${pendingCropImage.file.name}`);
+      setApplyingCrop(false);
+    }
+  };
 
   const handleRejectedAccountDeletion = async () => {
     if (!deletePassword.trim()) {
@@ -429,22 +530,30 @@ const SellPage = () => {
       }
 
       try {
-        const compressed = await compressImage(file);
-        setImages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            previewUrl: compressed.previewUrl,
-            file: compressed.file,
-          },
-        ]);
+        const originalDataUrl = await readFileAsDataUrl(file);
+        const image = await loadImage(originalDataUrl);
+
+        if (isSquareRatio(image.width, image.height)) {
+          const compressed = await createOptimizedSquareImage(file);
+          setImages((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              previewUrl: compressed.previewUrl,
+              file: compressed.file,
+            },
+          ]);
+        } else {
+          const cropped = await promptSquareCrop(file);
+          if (cropped) {
+            setImages((prev) => [...prev, cropped]);
+          } else {
+            toast.message(`${file.name} was skipped because square crop was not completed.`);
+          }
+        }
       } catch (error) {
         trackHandledError("sell.process-image", error, { fileName: file.name });
-        const message =
-          error instanceof Error && error.message === "Only 1:1 square images are allowed"
-            ? `${file.name} must be a 1:1 square image`
-            : `Could not process ${file.name}`;
-        toast.error(message);
+        toast.error(`Could not process ${file.name}`);
       } finally {
         setProcessingImages((count) => Math.max(0, count - 1));
       }
@@ -959,8 +1068,8 @@ const SellPage = () => {
                 <p className="text-sm font-semibold text-foreground">
                   {category === "Handwriting Service" ? "Tap to upload handwriting samples" : "Tap to upload item photos"}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB each. Only 1:1 square images are allowed.</p>
-              </div>
+                  <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB each. Non-square images will be cropped to 1:1 before upload.</p>
+                </div>
 
               {processingImages > 0 && (
                 <p className="text-xs text-muted-foreground">
@@ -1133,6 +1242,79 @@ const SellPage = () => {
           </form>
         </div>
       </div>
+      <Dialog open={cropDialogOpen} onOpenChange={(open) => !open && handleCropCancel()}>
+        <DialogContent className="max-w-xl rounded-3xl border-border/70 bg-background/95 p-5 dark:border-white/10 dark:bg-slate-950/95">
+          <DialogHeader>
+            <DialogTitle>Crop image to 1:1</DialogTitle>
+            <DialogDescription>
+              {pendingCropImage
+                ? `${pendingCropImage.file.name} needs a square crop before it can be uploaded.`
+                : "Adjust the square crop and continue."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingCropImage && (
+            <div className="space-y-4">
+              <div className="overflow-hidden rounded-3xl border border-border/70 bg-muted/40 p-3 dark:border-white/10 dark:bg-slate-900/80">
+                <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-2xl bg-slate-950/90">
+                  <img
+                    src={pendingCropImage.dataUrl}
+                    alt="Crop preview"
+                    className="pointer-events-none absolute max-w-none select-none"
+                    style={{
+                      width: `${cropPreviewWidthPercent}%`,
+                      height: `${cropPreviewHeightPercent}%`,
+                      left: `-${cropPreviewLeftPercent}%`,
+                      top: `-${cropPreviewTopPercent}%`,
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 border border-white/15" />
+                </div>
+              </div>
+
+              <div className="space-y-4 rounded-2xl border border-border/70 bg-card/70 p-4 dark:border-white/10 dark:bg-slate-900/70">
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
+                    <span>Zoom</span>
+                    <span>{cropZoom.toFixed(1)}x</span>
+                  </div>
+                  <Slider value={[cropZoom]} min={1} max={2.5} step={0.1} onValueChange={([value]) => setCropZoom(value)} />
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
+                    <span>Left / Right</span>
+                    <span>{Math.round(cropOffsetX)}%</span>
+                  </div>
+                  <Slider value={[cropOffsetX]} min={0} max={100} step={1} onValueChange={([value]) => setCropOffsetX(value)} />
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
+                    <span>Top / Bottom</span>
+                    <span>{Math.round(cropOffsetY)}%</span>
+                  </div>
+                  <Slider value={[cropOffsetY]} min={0} max={100} step={1} onValueChange={([value]) => setCropOffsetY(value)} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Button type="button" variant="outline" className="rounded-2xl" onClick={handleCropCancel} disabled={applyingCrop}>
+                  Skip image
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-2xl bg-[linear-gradient(135deg,rgb(20,184,166),rgb(59,130,246))] text-primary-foreground"
+                  onClick={() => void handleApplyCrop()}
+                  disabled={applyingCrop}
+                >
+                  {applyingCrop ? "Cropping..." : "Crop & upload"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
       <SiteFooter />
     </div>
   );
