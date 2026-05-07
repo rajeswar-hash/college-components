@@ -178,7 +178,7 @@ export default function LoginPage() {
                       }
                     }}
                     placeholder="you@example.com"
-                    autoComplete={mode === "login" ? "email" : "username"}
+                    autoComplete="username"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}

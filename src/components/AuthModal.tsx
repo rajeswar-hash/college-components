@@ -129,7 +129,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       if (error) throw error;
 
       await register(email, password, name, phone, college, studentIdFile as File);
-      toast.success("Account submitted for admin verification. You can sign in while approval is pending.");
+        toast.success("Account created successfully. You can sign in while seller approval is pending.");
       onClose();
       resetForm();
     } catch (err: any) {
@@ -253,8 +253,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 ? "Sign in to publish listings, like products, and manage your dashboard."
                 : mode === "register"
                   ? registerStep === "otp"
-                    ? "Enter the OTP sent to your email. After that, your student ID goes to admin review before selling is enabled."
-                    : "Create your account, verify your email, and upload your college ID card for admin approval."
+                    ? "Enter the OTP sent to your email to finish account creation. Selling will unlock only after your college ID review is approved."
+                    : "Create your account, verify your email, and upload your college ID card so seller approval can be reviewed."
                   : "Enter your account email and verify the OTP from your inbox before resetting your password."}
             </p>
           </DialogHeader>
@@ -384,7 +384,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     spellCheck={false}
                   />
                   {mode === "register" && (
-                    <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email. After OTP verification, your account will wait for admin approval.</p>
+                      <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email. After OTP verification, your account is created and selling stays locked until approval.</p>
                   )}
                 </div>
               </>
@@ -413,7 +413,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   </button>
                 </div>
                 <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                  Once the OTP is verified, your college ID will be sent to CampusKart admin for approval. You will be able to sign in immediately, but selling stays locked until approval is complete.
+                    Once the OTP is verified, your college ID stays in the seller approval queue. You will be able to sign in immediately, but selling stays locked until approval is complete.
                 </p>
               </div>
             )}

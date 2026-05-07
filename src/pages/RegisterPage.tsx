@@ -188,8 +188,8 @@ export default function RegisterPage() {
               <CardTitle className="font-display text-3xl text-foreground">Join CampusKart</CardTitle>
               <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">
                 {registerStep === "otp"
-                  ? "Enter the OTP sent to your email. After that, your student ID goes to admin review before selling is enabled."
-                  : "Create your account, verify your email, and upload your college ID card for admin approval."}
+                    ? "Enter the OTP sent to your email to finish account creation. Selling will unlock only after your college ID review is approved."
+                    : "Create your account, verify your email, and upload your college ID card so seller approval can be reviewed."}
               </p>
             </CardHeader>
             <CardContent>
@@ -260,7 +260,7 @@ export default function RegisterPage() {
                           autoCorrect="off"
                           spellCheck={false}
                         />
-                        <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email. After OTP verification, your account will wait for admin approval.</p>
+                          <p className="mt-1 text-xs text-muted-foreground">When you press Create Account, we will send an OTP to this email. After OTP verification, your account is created and selling stays locked until approval.</p>
                       </div>
 
                       <div>
@@ -332,7 +332,7 @@ export default function RegisterPage() {
                       autoComplete="one-time-code"
                     />
                     <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-                      <span className="text-muted-foreground">Enter the OTP from your email inbox to finish account creation.</span>
+                        <span className="text-muted-foreground">Enter the OTP from your email inbox to finish account creation.</span>
                       <button
                         type="button"
                         onClick={() => void sendOtp()}
@@ -342,7 +342,7 @@ export default function RegisterPage() {
                       </button>
                     </div>
                     <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                      Once the OTP is verified, your college ID will be sent to CampusKart admin for approval. You will be able to sign in immediately, but selling stays locked until approval is complete.
+                        Once the OTP is verified, your college ID stays in the seller approval queue. You will be able to sign in immediately, but selling stays locked until approval is complete.
                     </p>
                   </div>
                 )}

@@ -14,7 +14,7 @@ const faqs = [
   {
     question: "How do I create an account?",
     answer:
-      "Open the sign in modal, switch to Register, fill in the full form, and press Create Account. CampusKart then sends an email OTP. After you verify that OTP, your account setup is completed.",
+      "Open the Register page, fill in the full form, and press Create Account. CampusKart then sends an email OTP. After you verify that OTP, your account is created right away, and selling stays locked until your college ID review is approved.",
   },
   {
     question: "How do I publish a listing?",
@@ -34,12 +34,12 @@ const faqs = [
   {
     question: "Why is my sell button disabled?",
     answer:
-      "If your WhatsApp number is missing or invalid, CampusKart blocks posting. Update your profile with a valid WhatsApp number before you list an item.",
+      "Selling can stay locked if your WhatsApp number is missing or invalid, or if your seller verification is still pending or rejected. Update your profile with a valid WhatsApp number and wait for seller approval before posting.",
   },
   {
     question: "What should I do after my item is sold?",
     answer:
-      "Delete the listing once the item is sold so buyers do not waste time opening unavailable products.",
+      "Mark the listing as sold once the deal is completed. If the deal gets canceled, you can make it active again. After the item is finally given away, delete the listing to keep the marketplace clean.",
   },
   {
     question: "Why is my listing not visible immediately after posting?",

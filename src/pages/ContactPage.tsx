@@ -57,6 +57,7 @@ export default function ContactPage() {
         headers: {
           Accept: "application/json",
         },
+        referrerPolicy: "no-referrer",
       });
 
       const result = await response.json();
@@ -132,7 +133,7 @@ export default function ContactPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">Name</Label>
-                <Input id="contact-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+                <Input id="contact-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-email">Email</Label>
@@ -142,6 +143,7 @@ export default function ContactPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  autoComplete="email"
                   inputMode="email"
                   autoCapitalize="none"
                   autoCorrect="off"
@@ -157,7 +159,7 @@ export default function ContactPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact-subject">Subject</Label>
-              <Input id="contact-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Feedback, issue report, or suggestion" />
+              <Input id="contact-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Feedback, issue report, or suggestion" autoComplete="off" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact-message">Message</Label>
@@ -167,6 +169,7 @@ export default function ContactPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 rows={6}
                 placeholder="Write your feedback or suggestion here..."
+                autoComplete="off"
               />
             </div>
             <Button onClick={handleSendFeedback} disabled={sending} className="w-full gradient-bg border-0 text-primary-foreground hover:opacity-90">

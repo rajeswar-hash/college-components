@@ -8,7 +8,7 @@ const sections = [
   },
   {
     title: "User responsibilities",
-    body: "Users must provide correct account information, including a valid email for OTP verification and a valid WhatsApp number if they want to sell, avoid misleading listings, and use the platform lawfully. Prohibited, unsafe, or dishonest listings should not be posted.",
+    body: "Users must provide correct account information, including a valid email for OTP verification, a valid WhatsApp number if they want to sell, and a clear current college ID card for seller verification. Misleading, false, unsafe, or dishonest information should not be submitted.",
   },
   {
     title: "Listings and pricing",
@@ -25,6 +25,10 @@ const sections = [
   {
     title: "Account access and recovery",
     body: "Users are responsible for keeping their password secure. Account creation currently includes email OTP verification, password reset uses an email OTP plus reset page flow, and users may permanently delete their own account through the in-app delete-account option.",
+  },
+  {
+    title: "Seller verification and approval",
+    body: "Account creation and seller approval are separate steps. A user account may be created after email OTP verification, while selling remains locked until the uploaded college ID card is reviewed. CampusKart may approve or reject seller access based on the submitted verification details.",
   },
   {
     title: "Platform actions",

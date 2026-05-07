@@ -75,11 +75,11 @@ export default function AboutPage() {
             <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Students register with their name, college, WhatsApp number, email, password, and a final email OTP verification step.</p>
+                <p>Students register with their name, college, WhatsApp number, email, password, current college ID card, and a final email OTP verification step.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <p>Sellers can post listings with up to five square-cropped photos, a clean title, product details, condition where required, category, and price.</p>
+                <p>After OTP verification, the account is ready to use immediately, while selling stays locked until the uploaded college ID is approved. Approved sellers can then post listings with up to five square-cropped photos, a clean title, product details, condition where required, category, and price.</p>
               </div>
               <div className="flex items-start gap-3">
                 <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
