@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackEmailDispatch } from "@/lib/emailUsage";
+import { notifyAdminSellerVerificationPending } from "@/lib/adminNotifications";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CollegeAutocomplete } from "@/components/CollegeAutocomplete";
@@ -127,6 +128,12 @@ export default function RegisterPage() {
       if (error) throw error;
 
       await register(email, password, name, normalizedPhone, college, studentIdFile as File);
+      await notifyAdminSellerVerificationPending({
+        name: name.trim(),
+        email: normalizedEmail,
+        college: college.trim(),
+        phone: normalizedPhone,
+      });
       toast.success("Account created successfully. Your selling access will be reviewed within 12 hours.");
       navigate("/dashboard", { replace: true });
     } catch (err: any) {

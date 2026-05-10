@@ -8,6 +8,7 @@ import { canonicalInstitutionName } from "@/lib/institutions";
 import { sanitizeMultilineInput, sanitizeSingleLineInput } from "@/lib/inputSecurity";
 import { CATEGORY_RULES, countWords, hasYearSubjectBranch, isGoogleDriveLink, normalizeListingTitle } from "@/lib/listingRules";
 import { trackHandledError } from "@/lib/errorTracking";
+import { notifyAdminListingPendingReview } from "@/lib/adminNotifications";
 import { uploadListingImages } from "@/lib/storage";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -905,6 +906,13 @@ const SellPage = () => {
           ? "Sent for manual review. It will go live after approval, usually within 12 hours."
           : "Sent for manual review. It will go live after approval, usually within 12 hours."
       );
+      await notifyAdminListingPendingReview({
+        title: safeTitle,
+        price: parsedPrice,
+        category,
+        college: postingCollege,
+        sellerName: user?.name || "CampusKart seller",
+      });
       navigate("/dashboard");
     } catch (err: any) {
       trackHandledError("sell.submit-listing", err, {
