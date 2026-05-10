@@ -209,6 +209,14 @@ const Dashboard = () => {
   const handleSoldToggle = async (id: string, nextSoldState: boolean) => {
     if (updatingSoldId) return;
 
+    const targetListing = myListings.find((listing) => listing.id === id);
+    if (!targetListing) return;
+
+    if (targetListing.moderation_status === "pending_review" && nextSoldState) {
+      toast.error("You can mark this item as sold only after verification is approved.");
+      return;
+    }
+
     setUpdatingSoldId(id);
     try {
       const { error } = await supabase
@@ -723,6 +731,7 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-4">
               {myListings.map((listing, index) => {
+                const soldActionBlocked = listing.moderation_status === "pending_review" && !listing.sold;
                 const coverImage = getListingCoverImage(listing.category, listing.images);
                 return (
                 <div key={listing.id} className="glass animate-fade-in rounded-2xl border border-border/70 p-4">
@@ -782,7 +791,7 @@ const Dashboard = () => {
                           : "border-emerald-500/25 text-emerald-700 hover:border-emerald-500/35 hover:text-emerald-800"
                       }`}
                       onClick={() => handleSoldToggle(listing.id, !listing.sold)}
-                      disabled={updatingSoldId === listing.id}
+                      disabled={updatingSoldId === listing.id || soldActionBlocked}
                     >
                       {updatingSoldId === listing.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
