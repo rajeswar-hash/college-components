@@ -20,6 +20,7 @@ import { RouteModules } from "./lib/routePreload";
   Dashboard,
   AdminDashboard,
   ProductDetail,
+  SellerListingsPage,
   NotFound,
 } = RouteModules;
 
@@ -58,6 +59,7 @@ const App = () => (
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/seller/:sellerId" element={<SellerListingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

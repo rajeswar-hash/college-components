@@ -27,6 +27,7 @@ export const RouteModules = {
   Dashboard: lazyWithPreload(() => import("../pages/Dashboard")),
   AdminDashboard: lazyWithPreload(() => import("../pages/AdminDashboard")),
   ProductDetail: lazyWithPreload(() => import("../pages/ProductDetail")),
+  SellerListingsPage: lazyWithPreload(() => import("../pages/SellerListingsPage")),
   NotFound: lazyWithPreload(() => import("../pages/NotFound")),
 };
 
@@ -47,4 +48,5 @@ export function preloadCommonRoutes() {
   preloadRouteChunk("CartPage");
   preloadRouteChunk("Dashboard");
   preloadRouteChunk("ProductDetail");
+  preloadRouteChunk("SellerListingsPage");
 }

@@ -1,11 +1,22 @@
-﻿import { useParams, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { categoryUsesCondition, normalizeCategory, normalizeCondition } from "@/lib/types";
 import { Navbar } from "@/components/Navbar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Share2, MessageCircle, ChevronLeft, ChevronRight, ShieldAlert, ShoppingCart, ImageIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Share2,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+  ShieldAlert,
+  ShoppingCart,
+  ImageIcon,
+  Store,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { hasUserLikedListing, toggleListingLike } from "@/lib/likes";
@@ -48,6 +59,7 @@ const ProductDetail = () => {
   const { isAuthenticated, supabaseUser, isAdmin } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -84,7 +96,7 @@ const ProductDetail = () => {
 
       setListing({
         ...data,
-          images: data.images || [],
+        images: data.images || [],
         seller_name: contact?.seller_name || "Unknown",
         seller_phone: contact?.seller_phone || "",
       });
@@ -162,7 +174,9 @@ const ProductDetail = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground text-lg">Listing not found.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Go Home</Button>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>
+            Go Home
+          </Button>
         </div>
       </div>
     );
@@ -178,7 +192,9 @@ const ProductDetail = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground text-lg">This listing is under review and is not public yet.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Go Home</Button>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>
+            Go Home
+          </Button>
         </div>
       </div>
     );
@@ -190,7 +206,9 @@ const ProductDetail = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
           <p className="text-muted-foreground text-lg">This listing has been marked sold and is no longer public.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>Go Home</Button>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>
+            Go Home
+          </Button>
         </div>
       </div>
     );
@@ -202,9 +220,10 @@ const ProductDetail = () => {
   const displayCategory = normalizeCategory(listing.category);
   const displayCondition = normalizeCondition(listing.condition);
   const shouldShowCondition = categoryUsesCondition(listing.category) && Boolean(listing.condition);
-  const displayPrice = displayCategory === "Handwriting Service"
-    ? `₹${Number(listing.price).toLocaleString("en-IN")}/page`
-    : `₹${Number(listing.price).toLocaleString("en-IN")}`;
+  const displayPrice =
+    displayCategory === "Handwriting Service"
+      ? `₹${Number(listing.price).toLocaleString("en-IN")}/page`
+      : `₹${Number(listing.price).toLocaleString("en-IN")}`;
   const hasMultipleImages = displayImages.length > 1;
   const safeCurrentImage = currentImage >= displayImages.length ? 0 : currentImage;
 
@@ -254,7 +273,7 @@ const ProductDetail = () => {
     try {
       const result = await toggleListingLike(listing.id, listing.likes, liked, supabaseUser?.id);
       setLiked(result.liked);
-      setListing((current) => current ? { ...current, likes: result.likes } : current);
+      setListing((current) => (current ? { ...current, likes: result.likes } : current));
       toast.success(result.liked ? "Item added to cart" : "Item removed from cart");
     } catch {
       toast.error("Could not update cart right now");
@@ -267,7 +286,7 @@ const ProductDetail = () => {
 
   const buildWhatsappUrl = (phone: string) => {
     const msg = encodeURIComponent(
-      `Hi! I'm interested in your listing on CampusKart:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`
+      `Hi! I'm interested in your listing on CampusKart:\n\n*${listing.title}*\nPrice: ₹${listing.price}\n\nIs this still available?`,
     );
     return `https://wa.me/${phone}?text=${msg}`;
   };
@@ -306,7 +325,7 @@ const ProductDetail = () => {
                 seller_phone: contact.seller_phone,
                 seller_name: contact.seller_name || current.seller_name,
               }
-            : current
+            : current,
         );
       }
 
@@ -370,7 +389,7 @@ const ProductDetail = () => {
               moderation_status: nextStatus,
               report_count: nextCount,
             }
-          : current
+          : current,
       );
       setHasReported(nextHasReported);
       if (nextHasReported) {
@@ -387,11 +406,32 @@ const ProductDetail = () => {
   };
 
   const dateStr = new Date(listing.created_at).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 
   const handleBack = () => {
+    const from =
+      typeof location.state === "object" && location.state && "from" in location.state
+        ? location.state.from
+        : null;
+
+    if (typeof from === "string" && from.trim()) {
+      navigate(from);
+      return;
+    }
+
     navigate(`/college/${encodeURIComponent(listing.college)}`);
+  };
+
+  const handleViewSellerItems = () => {
+    navigate(`/seller/${listing.seller_id}`, {
+      state: {
+        sellerName: listing.seller_name,
+        from: `${location.pathname}${location.search}${location.hash}`,
+      },
+    });
   };
 
   return (
@@ -442,7 +482,9 @@ const ProductDetail = () => {
                         <button
                           key={i}
                           onClick={() => changeImage(i > safeCurrentImage ? "left" : "right", i)}
-                          className={`h-2.5 rounded-full transition-all ${i === safeCurrentImage ? "w-6 bg-primary" : "w-2.5 bg-background/70"}`}
+                          className={`h-2.5 rounded-full transition-all ${
+                            i === safeCurrentImage ? "w-6 bg-primary" : "w-2.5 bg-background/70"
+                          }`}
                         />
                       ))}
                     </div>
@@ -458,7 +500,7 @@ const ProductDetail = () => {
             )}
             {listing.sold && (
               <div className="absolute inset-0 flex items-center justify-center bg-foreground/60">
-                <span className="font-display text-4xl font-bold text-background rotate-[-12deg]">SOLD</span>
+                <span className="font-display rotate-[-12deg] text-4xl font-bold text-background">SOLD</span>
               </div>
             )}
           </div>
@@ -475,29 +517,41 @@ const ProductDetail = () => {
                   <h1 className="break-words text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                     {listing.title}
                   </h1>
-                  <p className="text-2xl font-extrabold leading-none text-primary sm:text-3xl">
-                    {displayPrice}
-                  </p>
+                  <p className="text-2xl font-extrabold leading-none text-primary sm:text-3xl">{displayPrice}</p>
                 </div>
               </div>
 
               <div className="space-y-3 border-t border-border/70 pt-5">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Description</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Description
+                  </p>
                   <div className="mt-3 rounded-2xl border border-border/70 bg-background/70 p-4">
                     <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
                       {listing.description}
                     </p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Sold by <span className="font-medium text-foreground">{listing.seller_name}</span>
-                </p>
+                <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Sold by <span className="font-medium text-foreground">{listing.seller_name}</span>
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-10 rounded-xl sm:min-w-[220px]"
+                    onClick={handleViewSellerItems}
+                  >
+                    <Store className="mr-2 h-4 w-4" />
+                    View seller&apos;s other items
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-3 border-t border-border/70 pt-5">
-                {!listing.sold && (
-                  isOwnListing ? (
+                {!listing.sold &&
+                  (isOwnListing ? (
                     <Button className="h-12 w-full rounded-xl border-0 bg-muted text-muted-foreground" disabled>
                       <MessageCircle className="mr-2 h-4 w-4" /> Your Listing
                     </Button>
@@ -510,8 +564,7 @@ const ProductDetail = () => {
                       <MessageCircle className="mr-2 h-4 w-4" />
                       {openingWhatsapp ? "Opening WhatsApp..." : "Contact Seller"}
                     </Button>
-                  )
-                )}
+                  ))}
 
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" size="lg" onClick={handleLike} disabled={liking} className="h-12 rounded-xl">
@@ -542,11 +595,14 @@ const ProductDetail = () => {
                       <MapPin className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">College</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        College
+                      </p>
                       <p className="mt-1 text-sm font-medium leading-6 text-foreground">{listing.college}</p>
                     </div>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground">Listed on {dateStr}</p>
               </div>
             </div>
           </div>
@@ -558,4 +614,3 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-
