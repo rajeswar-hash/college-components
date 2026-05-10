@@ -412,16 +412,6 @@ const ProductDetail = () => {
   });
 
   const handleBack = () => {
-    const from =
-      typeof location.state === "object" && location.state && "from" in location.state
-        ? location.state.from
-        : null;
-
-    if (typeof from === "string" && from.trim()) {
-      navigate(from);
-      return;
-    }
-
     navigate(`/college/${encodeURIComponent(listing.college)}`);
   };
 
