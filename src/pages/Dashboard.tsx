@@ -639,21 +639,34 @@ const Dashboard = () => {
             </div>
           )}
 
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="font-display font-semibold text-xl text-foreground">Your Listings</h2>
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="font-display text-[1.55rem] font-semibold text-foreground">Your Listings</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Manage what buyers can see, track review status, and keep your seller page tidy.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="rounded-full px-3 py-1 text-[11px]">
+                  {activeListings} active
+                </Badge>
+                <Badge variant="outline" className="rounded-full px-3 py-1 text-[11px]">
+                  {soldListings} sold
+                </Badge>
+              </div>
             </div>
 
               {sellerVerificationStatus !== "approved" && sellerVerificationStatus !== "rejected" && (
-                <div className="mb-4 rounded-2xl border border-amber-500/12 bg-[linear-gradient(135deg,rgba(245,158,11,0.055),rgba(245,158,11,0.02))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="mb-4 rounded-[22px] border border-sky-500/12 bg-[linear-gradient(135deg,rgba(14,165,233,0.07),rgba(59,130,246,0.025))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/12 text-amber-200">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500/12 text-sky-200">
                       <Shield className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-200/80">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-200/80">
                         Verification Pending
                       </p>
-                      <p className="mt-1 text-sm leading-6 text-amber-50/88">
+                      <p className="mt-1 text-sm leading-6 text-slate-200/92">
                         You can use your dashboard now. Posting items will unlock after CampusKart admin approves your college ID card.
                       </p>
                     </div>
@@ -662,11 +675,11 @@ const Dashboard = () => {
               )}
 
             {sellerVerificationStatus === "rejected" && (
-              <div className="mb-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-4">
-                <p className="text-sm font-semibold leading-6 text-destructive">
+              <div className="mb-4 rounded-[22px] border border-destructive/18 bg-[linear-gradient(135deg,rgba(239,68,68,0.07),rgba(239,68,68,0.03))] px-4 py-4">
+                <p className="text-sm font-semibold leading-6 text-destructive/95">
                   {REJECTED_SELLER_MESSAGE}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-destructive/90">
+                <p className="mt-2 text-sm leading-6 text-destructive/82">
                   {REJECTED_SELLER_DELETE_MESSAGE}
                 </p>
                 <div className="mt-4 flex flex-col gap-3 sm:max-w-sm">
@@ -700,16 +713,16 @@ const Dashboard = () => {
               </div>
             )}
 
-            <div className="rounded-2xl border border-amber-500/12 bg-[linear-gradient(135deg,rgba(245,158,11,0.06),rgba(245,158,11,0.02))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="rounded-[22px] border border-primary/12 bg-[linear-gradient(135deg,rgba(20,184,166,0.06),rgba(59,130,246,0.03))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/12 text-amber-100">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
                   <Package className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/75">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary/80">
                     Seller Tip
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-amber-50/90">
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
                     Mark an item as sold once a deal is done. If the deal is canceled, you can make it active again. After the item is given away, delete the listing to keep the marketplace clean.
                   </p>
                 </div>
@@ -734,9 +747,9 @@ const Dashboard = () => {
                 const soldActionBlocked = listing.moderation_status === "pending_review" && !listing.sold;
                 const coverImage = getListingCoverImage(listing.category, listing.images);
                 return (
-                <div key={listing.id} className="glass animate-fade-in rounded-2xl border border-border/70 p-4">
+                <div key={listing.id} className="glass animate-fade-in rounded-[24px] border border-border/70 bg-card/95 p-4 shadow-[0_16px_34px_rgba(15,23,42,0.07)]">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
+                    <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-muted shadow-sm">
                       {coverImage ? (
                         <img
                           src={coverImage}
@@ -759,7 +772,7 @@ const Dashboard = () => {
                         </h3>
                         <Badge
                           variant="outline"
-                          className={`shrink-0 text-[10px] ${getListingStatusMeta(listing.moderation_status, listing.sold).className}`}
+                          className={`shrink-0 rounded-full text-[10px] ${getListingStatusMeta(listing.moderation_status, listing.sold).className}`}
                         >
                           {getListingStatusMeta(listing.moderation_status, listing.sold).label}
                         </Badge>
@@ -785,7 +798,7 @@ const Dashboard = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className={`h-10 w-full justify-center ${
+                      className={`h-10 w-full justify-center rounded-full ${
                         listing.sold
                           ? "border-amber-500/25 text-amber-700 hover:border-amber-500/35 hover:text-amber-800"
                           : "border-emerald-500/25 text-emerald-700 hover:border-emerald-500/35 hover:text-emerald-800"
@@ -803,7 +816,7 @@ const Dashboard = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-10 w-10 shrink-0 px-0 text-destructive hover:text-destructive"
+                      className="h-10 w-10 shrink-0 rounded-full px-0 text-destructive hover:text-destructive"
                       onClick={() => handleDelete(listing.id)}
                     >
                       <Trash2 className="h-4 w-4" />

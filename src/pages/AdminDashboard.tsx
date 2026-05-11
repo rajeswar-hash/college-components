@@ -898,7 +898,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-primary/10 p-2 text-primary">
@@ -911,7 +911,7 @@ export default function AdminDashboard() {
                 <p className="mt-1 text-[11px] text-muted-foreground">Published marketplace items</p>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-sky-500/10 p-2 text-sky-600">
@@ -924,7 +924,7 @@ export default function AdminDashboard() {
                 <p className="mt-1 text-[11px] text-muted-foreground">Profiles inside the platform</p>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600">
@@ -945,7 +945,7 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+            <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
               <CardContent className="p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
@@ -961,7 +961,7 @@ export default function AdminDashboard() {
           </div>
 
           {isMainAdmin && (
-            <Card className="mt-4 overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+            <Card className="mt-4 overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -1253,7 +1253,7 @@ export default function AdminDashboard() {
         )}
 
         {!isPartnerModerator && <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -1323,12 +1323,22 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
-            <CardHeader className="pb-3">
-              <CardTitle>Admin actions & recent errors</CardTitle>
-            </CardHeader>
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
+              <CardHeader className="pb-3">
+              <div className="flex items-start gap-3">
+                <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+                  <Wrench className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle>Admin actions & recent errors</CardTitle>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Quick operational links, delivery checks, and recent issue visibility in one place.
+                  </p>
+                </div>
+              </div>
+              </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-950/50">
+                <div className="rounded-[22px] border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-950/50">
                 <p className="text-sm font-semibold text-foreground">Brevo email controls</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   Check how many emails are left for the day in Brevo, or open their pricing page if you need to buy more email capacity.
@@ -1381,7 +1391,7 @@ export default function AdminDashboard() {
               >
                 {cleaningDatabase ? "Cleaning database..." : "Clean safe database junk"} <Wrench className="h-4 w-4" />
               </Button>
-              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
+                <div className="grid grid-cols-2 gap-3 rounded-[22px] border border-border/70 bg-background/70 p-3 shadow-sm dark:bg-slate-900/80">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Live now</p>
                   <p className="mt-1 text-sm font-semibold text-foreground">{activeListings} active listings</p>
@@ -1460,50 +1470,50 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <div className={`grid gap-2 ${isPartnerModerator ? "sm:grid-cols-2" : "sm:grid-cols-4"}`}>
-                  {!isPartnerModerator && (
-                  <Button
-                    variant={activeSection === "requests" ? "default" : "outline"}
-                    className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => handleSectionChange("requests")}
-                  >
+                    {!isPartnerModerator && (
+                    <Button
+                      variant={activeSection === "requests" ? "default" : "outline"}
+                      className={`h-10 w-full justify-between rounded-xl text-xs sm:text-sm ${activeSection === "requests" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : "bg-background/80"}`}
+                      onClick={() => handleSectionChange("requests")}
+                    >
                     <span>College Requests</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{collegeRequests.length}</Badge>
                   </Button>
                   )}
-                    <Button
-                      variant={activeSection === "listings" ? "default" : "outline"}
-                      className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => handleSectionChange("listings")}
-                  >
+                      <Button
+                       variant={activeSection === "listings" ? "default" : "outline"}
+                        className={`h-10 w-full justify-between rounded-xl text-xs sm:text-sm ${activeSection === "listings" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : "bg-background/80"}`}
+                      onClick={() => handleSectionChange("listings")}
+                    >
                       <span>Listing Moderation</span>
                         <Badge variant="secondary" className="ml-2 text-[10px]">{pendingListings.length + flaggedListings.length}</Badge>
                     </Button>
                     {isPartnerModerator && (
-                    <Button
-                      variant={activeSection === "members" ? "default" : "outline"}
-                      className="h-9 w-full justify-between text-xs sm:text-sm"
-                      onClick={() => handleSectionChange("members")}
-                    >
+                      <Button
+                       variant={activeSection === "members" ? "default" : "outline"}
+                        className={`h-10 w-full justify-between rounded-xl text-xs sm:text-sm ${activeSection === "members" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : "bg-background/80"}`}
+                        onClick={() => handleSectionChange("members")}
+                      >
                       <span>Seller Approvals</span>
                       <Badge variant="secondary" className="ml-2 text-[10px]">{pendingSellerApprovals.length}</Badge>
                     </Button>
                     )}
                     {!isPartnerModerator && (
                     <Button
-                      variant={activeSection === "colleges" ? "default" : "outline"}
-                    className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => handleSectionChange("colleges")}
-                  >
+                     variant={activeSection === "colleges" ? "default" : "outline"}
+                      className={`h-10 w-full justify-between rounded-xl text-xs sm:text-sm ${activeSection === "colleges" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : "bg-background/80"}`}
+                      onClick={() => handleSectionChange("colleges")}
+                    >
                     <span>College List</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{collegeList.length || "All"}</Badge>
                   </Button>
                   )}
                   {!isPartnerModerator && (
-                  <Button
-                    variant={activeSection === "members" ? "default" : "outline"}
-                    className="h-9 w-full justify-between text-xs sm:text-sm"
-                    onClick={() => handleSectionChange("members")}
-                  >
+                    <Button
+                     variant={activeSection === "members" ? "default" : "outline"}
+                      className={`h-10 w-full justify-between rounded-xl text-xs sm:text-sm ${activeSection === "members" ? "gradient-bg border-0 text-primary-foreground hover:opacity-90" : "bg-background/80"}`}
+                      onClick={() => handleSectionChange("members")}
+                    >
                     <span>Member Snapshot</span>
                     <Badge variant="secondary" className="ml-2 text-[10px]">{profiles.length}</Badge>
                   </Button>
@@ -1514,7 +1524,7 @@ export default function AdminDashboard() {
           </Card>
           <div ref={sectionContentRef}>
           {activeSection === "requests" && (
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)]">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -1594,7 +1604,7 @@ export default function AdminDashboard() {
           )}
 
           {activeSection === "listings" && (
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -1768,7 +1778,7 @@ export default function AdminDashboard() {
           )}
 
           {activeSection === "colleges" && (
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -1790,7 +1800,7 @@ export default function AdminDashboard() {
                 </Alert>
               )}
 
-              <div className="grid gap-2 rounded-2xl border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] dark:bg-slate-950/50">
+              <div className="grid gap-2 rounded-[22px] border border-border/70 bg-background/70 p-3 shadow-sm md:grid-cols-[1fr_auto] dark:bg-slate-950/50">
                 <Input
                   value={newCollegeName}
                   onChange={(event) => setNewCollegeName(event.target.value)}
@@ -1844,7 +1854,7 @@ export default function AdminDashboard() {
           )}
 
           {activeSection === "members" && (
-          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-sm dark:bg-slate-900/80">
+          <Card className="overflow-hidden border-border/70 bg-background/80 shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:bg-slate-900/80">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -1859,7 +1869,7 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
             <CardContent>
-              <div className="mb-5 rounded-2xl border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
+              <div className="mb-5 rounded-[22px] border border-border/70 bg-background/70 p-4 shadow-sm dark:bg-slate-950/50">
                 <div className="mb-4 flex flex-wrap gap-2">
                   <Button
                     size="sm"
