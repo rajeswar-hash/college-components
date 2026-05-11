@@ -428,13 +428,13 @@ const ProductDetail = () => {
     <div className="min-h-screen overflow-x-hidden bg-background">
       <Navbar />
       <div className="container mx-auto max-w-4xl overflow-x-hidden px-4 py-8">
-        <Button variant="ghost" onClick={handleBack} className="mb-6">
+        <Button variant="ghost" onClick={handleBack} className="mb-6 rounded-full px-3 text-foreground/90 hover:bg-primary/5 hover:text-primary">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
 
         <div className="animate-fade-in grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
           <div
-            className="relative aspect-square overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:sticky lg:top-24"
+            className="relative aspect-square overflow-hidden rounded-[26px] border border-border/60 bg-muted shadow-[0_20px_48px_rgba(15,23,42,0.10)] lg:sticky lg:top-24"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -495,12 +495,14 @@ const ProductDetail = () => {
             )}
           </div>
 
-          <div className="rounded-[18px] border border-border/70 bg-card px-4 py-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:px-5">
+          <div className="rounded-[24px] border border-border/70 bg-card/95 px-4 py-5 shadow-[0_20px_48px_rgba(15,23,42,0.08)] sm:px-5 sm:py-6">
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">{displayCategory}</Badge>
-                  {shouldShowCondition && <Badge variant="outline">{displayCondition}</Badge>}
+                  <Badge variant="secondary" className="rounded-full px-3 py-1">
+                    {displayCategory}
+                  </Badge>
+                  {shouldShowCondition && <Badge variant="outline" className="rounded-full px-3 py-1">{displayCondition}</Badge>}
                 </div>
 
                 <div className="space-y-3">
@@ -522,15 +524,20 @@ const ProductDetail = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/60 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    Sold by <span className="font-medium text-foreground">{listing.seller_name}</span>
-                  </p>
+                <div className="flex flex-col gap-3 rounded-[22px] border border-border/70 bg-[linear-gradient(135deg,rgba(20,184,166,0.06),rgba(59,130,246,0.05))] p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Seller
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Sold by <span className="font-medium text-foreground">{listing.seller_name}</span>
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-xl sm:min-w-[220px]"
+                    className="h-10 rounded-full border-primary/15 bg-background/85 sm:min-w-[220px]"
                     onClick={handleViewSellerItems}
                   >
                     <Store className="mr-2 h-4 w-4" />
@@ -579,7 +586,7 @@ const ProductDetail = () => {
                   </Button>
                 )}
 
-                <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+                <div className="rounded-[22px] border border-border/70 bg-background/75 p-4">
                   <div className="flex items-start gap-3">
                     <div className="rounded-full bg-primary/10 p-2 text-primary">
                       <MapPin className="h-4 w-4" />

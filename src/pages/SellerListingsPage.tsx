@@ -127,13 +127,13 @@ const SellerListingsPage = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <Button variant="ghost" onClick={handleBack} className="mb-6">
+        <Button variant="ghost" onClick={handleBack} className="mb-6 rounded-full px-3 text-foreground/90 hover:bg-primary/5 hover:text-primary">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
 
-        <div className="mb-8 rounded-[24px] border border-border/70 bg-card/90 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+        <div className="mb-8 rounded-[28px] border border-border/70 bg-[linear-gradient(135deg,rgba(20,184,166,0.08),rgba(15,23,42,0.96),rgba(59,130,246,0.08))] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
           <div className="flex items-start gap-4">
-            <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+            <div className="rounded-[20px] bg-primary/10 p-3 text-primary shadow-[0_10px_24px_rgba(20,184,166,0.10)]">
               <PackageSearch className="h-6 w-6" />
             </div>
             <div className="min-w-0">
@@ -143,7 +143,7 @@ const SellerListingsPage = () => {
               <h1 className="mt-2 text-2xl font-bold text-foreground sm:text-3xl">
                 More items from {sellerLabel}
               </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 Browse other active listings from the same seller and contact them for anything you like.
               </p>
             </div>
